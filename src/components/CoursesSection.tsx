@@ -1,11 +1,42 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Star, Clock, Users } from "lucide-react";
+import { Star, Clock, Users, Share2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { toast } from "@/hooks/use-toast";
 
 const CoursesSection = () => {
+  const { user } = useAuth();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const getRefLink = (courseId: string) => {
+    const base = `${window.location.origin}/course/${courseId}`;
+    return user ? `${base}?ref=${user.id}` : base;
+  };
+
+  const handleCopy = (courseId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(getRefLink(courseId));
+    toast({ title: "Link copied!" });
+  };
+
+  const handleWhatsApp = (course: any, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const msg = encodeURIComponent(`Check out "${course.title}" on AllCoachHub! ${getRefLink(course.id)}`);
+    window.open(`https://wa.me/?text=${msg}`, "_blank");
+  };
+
+  const handleEmail = (course: any, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const subject = encodeURIComponent(`Check out: ${course.title}`);
+    const body = encodeURIComponent(`I found this great course on AllCoachHub!\n\n${course.title}\n\n${getRefLink(course.id)}`);
+    window.open(`mailto:?subject=${subject}&body=${body}`);
+  };
 
   useEffect(() => {
     supabase.from("courses").select("*").eq("is_published", true).limit(8).then(({ data }) => {
@@ -70,9 +101,32 @@ const CoursesSection = () => {
                         <span className="text-sm text-muted-foreground line-through">${Number(course.original_price_usd)}</span>
                       )}
                     </div>
-                    <span className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-all group-hover:brightness-110">
-                      Enroll
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {!course.id?.startsWith("static") && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                              className="rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                              title="Share & Earn"
+                            >
+                              <Share2 className="h-4 w-4" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-48 p-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                            <p className="mb-2 text-xs font-semibold text-foreground">Share & Earn 10%</p>
+                            <div className="flex flex-col gap-1">
+                              <button onClick={(e) => handleCopy(course.id, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Link</button>
+                              <button onClick={(e) => handleWhatsApp(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 WhatsApp</button>
+                              <button onClick={(e) => handleEmail(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 Email</button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                      <span className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-all group-hover:brightness-110">
+                        Enroll
+                      </span>
+                    </div>
                   </div>
                 </div>
               </Link>
