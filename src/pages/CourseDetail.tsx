@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Star, Clock, Users, ArrowLeft, Heart } from "lucide-react";
+import { Star, Clock, Users, ArrowLeft, Heart, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -164,6 +165,22 @@ const CourseDetail = () => {
                 <Heart className={`h-4 w-4 ${wishlisted ? "fill-primary" : ""}`} />
                 {wishlisted ? "In Wishlist" : "Add to Wishlist"}
               </button>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-border py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary">
+                    <Share2 className="h-4 w-4" /> Share & Earn 10%
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-3">
+                  <p className="mb-2 text-xs font-semibold text-foreground">Share this course & earn 10% commission!</p>
+                  <div className="flex flex-col gap-1">
+                    <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/course/${id}${user ? `?ref=${user.id}` : ""}`); toast({ title: "Link copied!" }); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Link</button>
+                    <button onClick={() => { const msg = encodeURIComponent(`Check out "${course.title}"! ${window.location.origin}/course/${id}${user ? `?ref=${user.id}` : ""}`); window.open(`https://wa.me/?text=${msg}`, "_blank"); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 WhatsApp</button>
+                    <button onClick={() => { const s = encodeURIComponent(`Check out: ${course.title}`); const b = encodeURIComponent(`${course.title}\n\n${window.location.origin}/course/${id}${user ? `?ref=${user.id}` : ""}`); window.open(`mailto:?subject=${s}&body=${b}`); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 Email</button>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>
