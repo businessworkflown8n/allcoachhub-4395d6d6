@@ -102,27 +102,25 @@ const CoursesSection = () => {
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      {!course.id?.startsWith("static") && (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button
-                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                              className="rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-                              title="Share & Earn"
-                            >
-                              <Share2 className="h-4 w-4" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-48 p-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
-                            <p className="mb-2 text-xs font-semibold text-foreground">Share & Earn 10%</p>
-                            <div className="flex flex-col gap-1">
-                              <button onClick={(e) => handleCopy(course.id, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Link</button>
-                              <button onClick={(e) => handleWhatsApp(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 WhatsApp</button>
-                              <button onClick={(e) => handleEmail(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 Email</button>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      )}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                            className="rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                            title="Share & Earn"
+                          >
+                            <Share2 className="h-4 w-4" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-48 p-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                          <p className="mb-2 text-xs font-semibold text-foreground">Share & Earn 10%</p>
+                          <div className="flex flex-col gap-1">
+                            <button onClick={(e) => handleCopy(course.id, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Link</button>
+                            <button onClick={(e) => handleWhatsApp(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 WhatsApp</button>
+                            <button onClick={(e) => handleEmail(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 Email</button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                       <span className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-all group-hover:brightness-110">
                         Enroll
                       </span>
