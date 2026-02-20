@@ -1,0 +1,151 @@
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ArrowRight, CheckCircle, GraduationCap, Users } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+
+const SignupForm = () => {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"learner" | "coach">("learner");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fullName || !email || !password) return;
+
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: {
+          full_name: fullName,
+          role,
+        },
+      },
+    });
+
+    setLoading(false);
+
+    if (error) {
+      toast({
+        title: "Signup failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSuccess(true);
+  };
+
+  if (success) {
+    return (
+      <div className="py-8 text-center">
+        <CheckCircle className="mx-auto mb-4 h-12 w-12 text-primary" />
+        <h3 className="mb-2 text-lg font-semibold text-foreground">Check your email</h3>
+        <p className="text-sm text-muted-foreground">
+          We've sent a verification link to <strong className="text-foreground">{email}</strong>.
+          Click the link to activate your account.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Role Selection */}
+      <div className="space-y-3">
+        <Label className="text-foreground">I want to join as</Label>
+        <RadioGroup
+          value={role}
+          onValueChange={(v) => setRole(v as "learner" | "coach")}
+          className="grid grid-cols-2 gap-3"
+        >
+          <label
+            className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border p-4 transition-all ${
+              role === "learner"
+                ? "border-primary bg-primary/10"
+                : "border-border bg-secondary hover:border-muted-foreground/30"
+            }`}
+          >
+            <RadioGroupItem value="learner" className="sr-only" />
+            <GraduationCap className={`h-6 w-6 ${role === "learner" ? "text-primary" : "text-muted-foreground"}`} />
+            <span className={`text-sm font-medium ${role === "learner" ? "text-primary" : "text-muted-foreground"}`}>
+              Learner
+            </span>
+          </label>
+          <label
+            className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border p-4 transition-all ${
+              role === "coach"
+                ? "border-primary bg-primary/10"
+                : "border-border bg-secondary hover:border-muted-foreground/30"
+            }`}
+          >
+            <RadioGroupItem value="coach" className="sr-only" />
+            <Users className={`h-6 w-6 ${role === "coach" ? "text-primary" : "text-muted-foreground"}`} />
+            <span className={`text-sm font-medium ${role === "coach" ? "text-primary" : "text-muted-foreground"}`}>
+              Coach
+            </span>
+          </label>
+        </RadioGroup>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="fullName" className="text-foreground">Full Name</Label>
+        <Input
+          id="fullName"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          placeholder="John Doe"
+          required
+          className="bg-secondary border-border"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-foreground">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          required
+          className="bg-secondary border-border"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="password" className="text-foreground">Password</Label>
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Min 6 characters"
+          minLength={6}
+          required
+          className="bg-secondary border-border"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="glow-lime flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-semibold text-primary-foreground transition-all hover:brightness-110 disabled:opacity-50"
+      >
+        {loading ? "Creating account..." : "Create Account"}
+        {!loading && <ArrowRight className="h-4 w-4" />}
+      </button>
+    </form>
+  );
+};
+
+export default SignupForm;
