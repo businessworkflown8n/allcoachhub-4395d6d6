@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import SignupForm from "@/components/auth/SignupForm";
 import LoginForm from "@/components/auth/LoginForm";
 import { Sparkles } from "lucide-react";
@@ -8,8 +9,11 @@ import { Sparkles } from "lucide-react";
 const Auth = () => {
   const [mode, setMode] = useState<"login" | "signup">("signup");
   const { user, loading } = useAuth();
+  const { role, loading: roleLoading } = useUserRole();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get("redirect");
 
-  if (loading) {
+  if (loading || (user && roleLoading)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -17,7 +21,11 @@ const Auth = () => {
     );
   }
 
-  if (user) return <Navigate to="/" replace />;
+  if (user) {
+    if (redirect) return <Navigate to={redirect} replace />;
+    const dashboardPath = role === "admin" ? "/admin" : role === "coach" ? "/coach" : "/learner";
+    return <Navigate to={dashboardPath} replace />;
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -30,9 +38,7 @@ const Auth = () => {
             {mode === "signup" ? "Create your account" : "Welcome back"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {mode === "signup"
-              ? "Join as a Learner or Coach"
-              : "Sign in to your account"}
+            {mode === "signup" ? "Join as a Learner or Coach" : "Sign in to your account"}
           </p>
         </div>
 
@@ -43,22 +49,12 @@ const Auth = () => {
             {mode === "signup" ? (
               <>
                 Already have an account?{" "}
-                <button
-                  onClick={() => setMode("login")}
-                  className="font-medium text-primary hover:underline"
-                >
-                  Sign in
-                </button>
+                <button onClick={() => setMode("login")} className="font-medium text-primary hover:underline">Sign in</button>
               </>
             ) : (
               <>
                 Don't have an account?{" "}
-                <button
-                  onClick={() => setMode("signup")}
-                  className="font-medium text-primary hover:underline"
-                >
-                  Sign up
-                </button>
+                <button onClick={() => setMode("signup")} className="font-medium text-primary hover:underline">Sign up</button>
               </>
             )}
           </div>

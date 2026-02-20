@@ -1,0 +1,36 @@
+import { Routes, Route, Navigate } from "react-router-dom";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield } from "lucide-react";
+import AdminOverview from "@/components/admin/AdminOverview";
+import AdminCoaches from "@/components/admin/AdminCoaches";
+import AdminLearners from "@/components/admin/AdminLearners";
+import AdminRevenue from "@/components/admin/AdminRevenue";
+import AdminReviews from "@/components/admin/AdminReviews";
+import AdminSettings from "@/components/admin/AdminSettings";
+
+const navItems = [
+  { label: "Overview", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
+  { label: "Coaches", path: "/admin/coaches", icon: <Shield className="h-4 w-4" /> },
+  { label: "Learners", path: "/admin/learners", icon: <GraduationCap className="h-4 w-4" /> },
+  { label: "Revenue", path: "/admin/revenue", icon: <DollarSign className="h-4 w-4" /> },
+  { label: "Reviews", path: "/admin/reviews", icon: <Star className="h-4 w-4" /> },
+  { label: "Settings", path: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
+];
+
+const AdminDashboard = () => {
+  return (
+    <DashboardLayout navItems={navItems} title="Admin Dashboard">
+      <Routes>
+        <Route index element={<AdminOverview />} />
+        <Route path="coaches" element={<AdminCoaches />} />
+        <Route path="learners" element={<AdminLearners />} />
+        <Route path="revenue" element={<AdminRevenue />} />
+        <Route path="reviews" element={<AdminReviews />} />
+        <Route path="settings" element={<AdminSettings />} />
+        <Route path="*" element={<Navigate to="/admin" replace />} />
+      </Routes>
+    </DashboardLayout>
+  );
+};
+
+export default AdminDashboard;
