@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users } from "lucide-react";
+import { Users, Download, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const CoachEnrollments = () => {
   const { user } = useAuth();
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -19,12 +22,42 @@ const CoachEnrollments = () => {
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
+  const filtered = enrollments.filter((e) => {
+    const q = search.toLowerCase();
+    return !q || e.full_name?.toLowerCase().includes(q) || e.email?.toLowerCase().includes(q) || e.contact_number?.includes(q) || (e.courses as any)?.title?.toLowerCase().includes(q) || e.country?.toLowerCase().includes(q);
+  });
+
   const totalEnrollments = enrollments.length;
   const countries = [...new Set(enrollments.map((e) => e.country))];
 
+  const exportCSV = () => {
+    const headers = ["Name", "Email", "Mobile", "WhatsApp", "Course", "Country", "City", "Industry", "Job Title", "Experience", "Education", "Payment", "Date"];
+    const rows = filtered.map((e) => [
+      e.full_name, e.email, e.contact_number, e.whatsapp_number,
+      (e.courses as any)?.title, e.country, e.city, e.industry,
+      e.current_job_title, e.experience_level, e.education_qualification,
+      e.payment_status, new Date(e.enrolled_at).toLocaleDateString()
+    ]);
+    const csv = [headers, ...rows].map((r) => r.map((v: string) => `"${(v || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "enrollments.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-foreground">Enrollment Analytics</h2>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-xl font-bold text-foreground">Enrollment Analytics</h2>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search by name, email, course..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 w-64" />
+          </div>
+          <Button variant="outline" size="sm" onClick={exportCSV}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
+        </div>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-4">
@@ -42,33 +75,53 @@ const CoachEnrollments = () => {
         </div>
       </div>
 
-      {enrollments.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="text-center py-16">
           <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No enrollments yet</p>
+          <p className="text-muted-foreground">{search ? "No matching learners found" : "No enrollments yet"}</p>
         </div>
       ) : (
         <div className="rounded-xl border border-border overflow-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Student</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Mobile</TableHead>
+                <TableHead>WhatsApp</TableHead>
                 <TableHead>Course</TableHead>
                 <TableHead>Country</TableHead>
+                <TableHead>City</TableHead>
+                <TableHead>Industry</TableHead>
+                <TableHead>Job Title</TableHead>
+                <TableHead>Experience</TableHead>
+                <TableHead>Education</TableHead>
+                <TableHead>LinkedIn</TableHead>
                 <TableHead>Payment</TableHead>
                 <TableHead>Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {enrollments.map((e) => (
+              {filtered.map((e) => (
                 <TableRow key={e.id}>
-                  <TableCell className="text-foreground">{e.full_name}</TableCell>
-                  <TableCell className="text-foreground">{(e.courses as any)?.title}</TableCell>
+                  <TableCell className="text-foreground font-medium whitespace-nowrap">{e.full_name}</TableCell>
+                  <TableCell className="text-foreground whitespace-nowrap">{e.email}</TableCell>
+                  <TableCell className="text-foreground whitespace-nowrap">{e.contact_number}</TableCell>
+                  <TableCell className="text-foreground whitespace-nowrap">{e.whatsapp_number}</TableCell>
+                  <TableCell className="text-foreground whitespace-nowrap">{(e.courses as any)?.title}</TableCell>
                   <TableCell className="text-muted-foreground">{e.country}</TableCell>
+                  <TableCell className="text-muted-foreground">{e.city}</TableCell>
+                  <TableCell className="text-muted-foreground">{e.industry}</TableCell>
+                  <TableCell className="text-muted-foreground whitespace-nowrap">{e.current_job_title}</TableCell>
+                  <TableCell className="text-muted-foreground">{e.experience_level}</TableCell>
+                  <TableCell className="text-muted-foreground">{e.education_qualification}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {e.linkedin_profile ? <a href={e.linkedin_profile} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View</a> : "—"}
+                  </TableCell>
                   <TableCell>
                     <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${e.payment_status === "paid" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>{e.payment_status}</span>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{new Date(e.enrolled_at).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-muted-foreground whitespace-nowrap">{new Date(e.enrolled_at).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
