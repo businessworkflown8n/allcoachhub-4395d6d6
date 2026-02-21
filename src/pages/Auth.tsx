@@ -7,10 +7,11 @@ import LoginForm from "@/components/auth/LoginForm";
 import { Sparkles } from "lucide-react";
 
 const Auth = () => {
-  const [mode, setMode] = useState<"login" | "signup">("signup");
+  const [searchParams] = useSearchParams();
+  const initialMode = searchParams.get("mode") === "login" ? "login" : "signup";
+  const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const { user, loading } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
-  const [searchParams] = useSearchParams();
   const redirect = searchParams.get("redirect");
 
   if (loading || (user && roleLoading)) {
