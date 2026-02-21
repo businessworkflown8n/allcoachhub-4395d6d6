@@ -1,4 +1,5 @@
 import { ArrowRight, Users, BookOpen, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const stats = [
@@ -8,6 +9,7 @@ const stats = [
 ];
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16">
       <div
@@ -32,10 +34,10 @@ const HeroSection = () => {
         </p>
 
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <button className="glow-lime inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-3.5 font-semibold text-primary-foreground transition-all hover:brightness-110">
+          <button onClick={() => navigate("/auth?mode=signup")} className="glow-lime inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-3.5 font-semibold text-primary-foreground transition-all hover:brightness-110">
             Get Started Free <ArrowRight className="h-4 w-4" />
           </button>
-          <button className="rounded-lg border border-border bg-secondary px-8 py-3.5 font-semibold text-foreground transition-colors hover:bg-border">
+          <button onClick={() => document.getElementById("coaches")?.scrollIntoView({ behavior: "smooth" })} className="rounded-lg border border-border bg-secondary px-8 py-3.5 font-semibold text-foreground transition-colors hover:bg-border">
             Browse Coaches
           </button>
         </div>
