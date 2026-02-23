@@ -1,53 +1,35 @@
 import { Star } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const coaches = [
   {
-    initials: "SC",
-    name: "Sarah Chen",
-    title: "AI Strategy & Prompt Engineering Expert",
-    rating: 4.9,
-    reviews: 234,
-    tags: ["Prompt Engineering", "LLMs", "AI Strategy"],
+    initials: "SC", name: "Sarah Chen", title: "AI Strategy & Prompt Engineering Expert",
+    rating: 4.9, reviews: 234, tags: ["Prompt Engineering", "LLMs", "AI Strategy"],
     bio: "Former Google AI researcher with 10+ years in machine learning. I help professionals master prompt engineering and build AI-powered workflows that save hours daily.",
-    students: "1,820",
-    price: "$49",
+    students: "1,820", price_usd: 49, price_inr: 3999,
   },
   {
-    initials: "MR",
-    name: "Marcus Rivera",
-    title: "AI Automation & No-Code Specialist",
-    rating: 4.8,
-    reviews: 189,
-    tags: ["AI Automation", "No-Code AI", "AI Agents"],
+    initials: "MR", name: "Marcus Rivera", title: "AI Automation & No-Code Specialist",
+    rating: 4.8, reviews: 189, tags: ["AI Automation", "No-Code AI", "AI Agents"],
     bio: "Built 200+ AI automations for Fortune 500 companies. Teaching founders and teams to automate their business with AI — no coding required.",
-    students: "1,450",
-    price: "$59",
+    students: "1,450", price_usd: 59, price_inr: 4799,
   },
   {
-    initials: "DAP",
-    name: "Dr. Aisha Patel",
-    title: "LLM Fine-tuning & AI Research",
-    rating: 4.9,
-    reviews: 156,
-    tags: ["LLMs & Fine-tuning", "Gen AI for Devs", "AI Research"],
+    initials: "DAP", name: "Dr. Aisha Patel", title: "LLM Fine-tuning & AI Research",
+    rating: 4.9, reviews: 156, tags: ["LLMs & Fine-tuning", "Gen AI for Devs", "AI Research"],
     bio: "PhD in NLP from Stanford. I simplify complex AI concepts and teach developers how to fine-tune and deploy custom language models.",
-    students: "980",
-    price: "$79",
+    students: "980", price_usd: 79, price_inr: 6499,
   },
   {
-    initials: "LN",
-    name: "Lina Nakamura",
-    title: "AI Agents & Autonomous Systems",
-    rating: 4.8,
-    reviews: 98,
-    tags: ["AI Agents", "AI Automation", "Gen AI for Devs"],
+    initials: "LN", name: "Lina Nakamura", title: "AI Agents & Autonomous Systems",
+    rating: 4.8, reviews: 98, tags: ["AI Agents", "AI Automation", "Gen AI for Devs"],
     bio: "Building the future of autonomous AI agents. Learn to create, deploy, and manage AI agents that work 24/7 for your business.",
-    students: "670",
-    price: "$69",
+    students: "670", price_usd: 69, price_inr: 5699,
   },
 ];
 
 const CoachesSection = () => {
+  const { symbol, currency } = useCurrency();
   return (
     <section id="coaches" className="py-24">
       <div className="container mx-auto px-4">
@@ -90,7 +72,7 @@ const CoachesSection = () => {
 
               <div className="flex items-center justify-between border-t border-border pt-4">
                 <span className="text-sm text-muted-foreground">{coach.students} students</span>
-                <span className="text-sm font-semibold text-foreground">From {coach.price}</span>
+                <span className="text-sm font-semibold text-foreground">From {symbol}{currency === "INR" ? coach.price_inr : coach.price_usd}</span>
               </div>
             </div>
           ))}

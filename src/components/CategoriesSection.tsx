@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Clock, ArrowRight } from "lucide-react";
+import { X, Clock } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const categories = [
   { emoji: "✨", name: "Prompt Engineering", count: 42 },
@@ -14,39 +15,39 @@ const categories = [
   { emoji: "🏢", name: "AI for Business", count: 22 },
 ];
 
-const staticCoursesByCategory: Record<string, { id: string; title: string; level: string; duration_hours: number; price_usd: number; original_price_usd: number | null; discount_percent: number | null }[]> = {
+const staticCoursesByCategory: Record<string, any[]> = {
   "Prompt Engineering": [
-    { id: "s1", title: "Master Prompt Engineering: Zero to Expert", level: "Beginner", duration_hours: 8, price_usd: 49, original_price_usd: 99, discount_percent: 51 },
-    { id: "s2", title: "Advanced Prompt Patterns for ChatGPT & Claude", level: "Advanced", duration_hours: 6, price_usd: 59, original_price_usd: null, discount_percent: null },
-    { id: "s3", title: "Prompt Engineering for Business Teams", level: "Intermediate", duration_hours: 5, price_usd: 39, original_price_usd: 79, discount_percent: 51 },
+    { id: "s1", title: "Master Prompt Engineering: Zero to Expert", level: "Beginner", duration_hours: 8, price_usd: 49, price_inr: 3999, original_price_usd: 99, original_price_inr: 7999, discount_percent: 51 },
+    { id: "s2", title: "Advanced Prompt Patterns for ChatGPT & Claude", level: "Advanced", duration_hours: 6, price_usd: 59, price_inr: 4799, original_price_usd: null, original_price_inr: null, discount_percent: null },
+    { id: "s3", title: "Prompt Engineering for Business Teams", level: "Intermediate", duration_hours: 5, price_usd: 39, price_inr: 3199, original_price_usd: 79, original_price_inr: 6499, discount_percent: 51 },
   ],
   "AI Agents": [
-    { id: "s4", title: "Build AI Agents with No Code", level: "Intermediate", duration_hours: 12, price_usd: 69, original_price_usd: 129, discount_percent: 47 },
-    { id: "s5", title: "Autonomous AI Agents Masterclass", level: "Advanced", duration_hours: 14, price_usd: 89, original_price_usd: null, discount_percent: null },
+    { id: "s4", title: "Build AI Agents with No Code", level: "Intermediate", duration_hours: 12, price_usd: 69, price_inr: 5699, original_price_usd: 129, original_price_inr: 10699, discount_percent: 47 },
+    { id: "s5", title: "Autonomous AI Agents Masterclass", level: "Advanced", duration_hours: 14, price_usd: 89, price_inr: 7399, original_price_usd: null, original_price_inr: null, discount_percent: null },
   ],
   "LLMs & Fine-tuning": [
-    { id: "s6", title: "Fine-Tune Your Own LLM", level: "Advanced", duration_hours: 16, price_usd: 99, original_price_usd: 199, discount_percent: 50 },
-    { id: "s7", title: "Understanding Large Language Models", level: "Beginner", duration_hours: 10, price_usd: 49, original_price_usd: null, discount_percent: null },
+    { id: "s6", title: "Fine-Tune Your Own LLM", level: "Advanced", duration_hours: 16, price_usd: 99, price_inr: 8199, original_price_usd: 199, original_price_inr: 16499, discount_percent: 50 },
+    { id: "s7", title: "Understanding Large Language Models", level: "Beginner", duration_hours: 10, price_usd: 49, price_inr: 3999, original_price_usd: null, original_price_inr: null, discount_percent: null },
   ],
   "AI Automation": [
-    { id: "s8", title: "AI Automation Bootcamp", level: "Intermediate", duration_hours: 10, price_usd: 59, original_price_usd: 99, discount_percent: 40 },
-    { id: "s9", title: "Automate Everything with AI & Zapier", level: "Beginner", duration_hours: 6, price_usd: 39, original_price_usd: null, discount_percent: null },
+    { id: "s8", title: "AI Automation Bootcamp", level: "Intermediate", duration_hours: 10, price_usd: 59, price_inr: 4799, original_price_usd: 99, original_price_inr: 7999, discount_percent: 40 },
+    { id: "s9", title: "Automate Everything with AI & Zapier", level: "Beginner", duration_hours: 6, price_usd: 39, price_inr: 3199, original_price_usd: null, original_price_inr: null, discount_percent: null },
   ],
   "No-Code AI": [
-    { id: "s10", title: "No-Code AI Tools Masterclass", level: "Beginner", duration_hours: 8, price_usd: 39, original_price_usd: 69, discount_percent: 43 },
-    { id: "s11", title: "Build AI Apps Without Coding", level: "Intermediate", duration_hours: 10, price_usd: 59, original_price_usd: null, discount_percent: null },
+    { id: "s10", title: "No-Code AI Tools Masterclass", level: "Beginner", duration_hours: 8, price_usd: 39, price_inr: 3199, original_price_usd: 69, original_price_inr: 5699, discount_percent: 43 },
+    { id: "s11", title: "Build AI Apps Without Coding", level: "Intermediate", duration_hours: 10, price_usd: 59, price_inr: 4799, original_price_usd: null, original_price_inr: null, discount_percent: null },
   ],
   "AI for Marketing": [
-    { id: "s12", title: "AI-Powered Marketing Masterclass", level: "Beginner", duration_hours: 6, price_usd: 39, original_price_usd: null, discount_percent: null },
-    { id: "s13", title: "Content Creation with Generative AI", level: "Intermediate", duration_hours: 8, price_usd: 49, original_price_usd: 89, discount_percent: 45 },
+    { id: "s12", title: "AI-Powered Marketing Masterclass", level: "Beginner", duration_hours: 6, price_usd: 39, price_inr: 3199, original_price_usd: null, original_price_inr: null, discount_percent: null },
+    { id: "s13", title: "Content Creation with Generative AI", level: "Intermediate", duration_hours: 8, price_usd: 49, price_inr: 3999, original_price_usd: 89, original_price_inr: 7399, discount_percent: 45 },
   ],
   "Gen AI for Devs": [
-    { id: "s14", title: "Generative AI for Software Developers", level: "Intermediate", duration_hours: 12, price_usd: 69, original_price_usd: 129, discount_percent: 47 },
-    { id: "s15", title: "Building with OpenAI & LangChain", level: "Advanced", duration_hours: 14, price_usd: 89, original_price_usd: null, discount_percent: null },
+    { id: "s14", title: "Generative AI for Software Developers", level: "Intermediate", duration_hours: 12, price_usd: 69, price_inr: 5699, original_price_usd: 129, original_price_inr: 10699, discount_percent: 47 },
+    { id: "s15", title: "Building with OpenAI & LangChain", level: "Advanced", duration_hours: 14, price_usd: 89, price_inr: 7399, original_price_usd: null, original_price_inr: null, discount_percent: null },
   ],
   "AI for Business": [
-    { id: "s16", title: "AI Strategy for Business Leaders", level: "Beginner", duration_hours: 5, price_usd: 49, original_price_usd: null, discount_percent: null },
-    { id: "s17", title: "Implementing AI in Your Organization", level: "Intermediate", duration_hours: 8, price_usd: 59, original_price_usd: 99, discount_percent: 40 },
+    { id: "s16", title: "AI Strategy for Business Leaders", level: "Beginner", duration_hours: 5, price_usd: 49, price_inr: 3999, original_price_usd: null, original_price_inr: null, discount_percent: null },
+    { id: "s17", title: "Implementing AI in Your Organization", level: "Intermediate", duration_hours: 8, price_usd: 59, price_inr: 4799, original_price_usd: 99, original_price_inr: 7999, discount_percent: 40 },
   ],
 };
 
@@ -54,6 +55,7 @@ const CategoriesSection = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [dbCourses, setDbCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const { symbol, priceKey, originalPriceKey } = useCurrency();
 
   useEffect(() => {
     if (!activeCategory) return;
@@ -95,7 +97,6 @@ const CategoriesSection = () => {
           ))}
         </div>
 
-        {/* Courses panel */}
         {activeCategory && (
           <div className="mx-auto mt-8 max-w-5xl animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="rounded-xl border border-border bg-card p-6">
@@ -119,6 +120,8 @@ const CategoriesSection = () => {
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {displayCourses.map((course) => {
                     const isStatic = course.id?.startsWith("s");
+                    const price = Number(course[priceKey] || course.price_usd);
+                    const originalPrice = Number(course[originalPriceKey] || course.original_price_usd || 0);
                     return (
                       <Link
                         to={isStatic ? "#" : `/course/${course.id}`}
@@ -138,9 +141,9 @@ const CategoriesSection = () => {
                             <span>{Number(course.duration_hours)}h</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-foreground">${Number(course.price_usd)}</span>
-                            {course.original_price_usd && Number(course.original_price_usd) > Number(course.price_usd) && (
-                              <span className="text-xs text-muted-foreground line-through">${Number(course.original_price_usd)}</span>
+                            <span className="text-sm font-bold text-foreground">{symbol}{price}</span>
+                            {originalPrice > price && (
+                              <span className="text-xs text-muted-foreground line-through">{symbol}{originalPrice}</span>
                             )}
                           </div>
                         </div>
