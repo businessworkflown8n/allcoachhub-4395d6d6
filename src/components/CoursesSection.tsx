@@ -5,9 +5,11 @@ import { Star, Clock, Users, Share2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "@/hooks/use-toast";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const CoursesSection = () => {
   const { user } = useAuth();
+  const { symbol, priceKey, originalPriceKey } = useCurrency();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,10 +49,10 @@ const CoursesSection = () => {
 
   // Fallback static courses if no DB courses exist
   const staticCourses = [
-    { id: "static-1", category: "Prompt Engineering", title: "Master Prompt Engineering: From Zero to Expert", duration_hours: 8, level: "Beginner", price_usd: 49, original_price_usd: 99, discount_percent: 51 },
-    { id: "static-2", category: "AI Agents", title: "Build AI Agents with No Code", duration_hours: 12, level: "Intermediate", price_usd: 69, original_price_usd: 129, discount_percent: 47 },
-    { id: "static-3", category: "AI for Marketing", title: "AI-Powered Marketing Masterclass", duration_hours: 6, level: "Beginner", price_usd: 39, original_price_usd: null, discount_percent: 0 },
-    { id: "static-4", category: "LLMs & Fine-tuning", title: "Fine-Tune Your Own LLM", duration_hours: 16, level: "Advanced", price_usd: 99, original_price_usd: 199, discount_percent: 50 },
+    { id: "static-1", category: "Prompt Engineering", title: "Master Prompt Engineering: From Zero to Expert", duration_hours: 8, level: "Beginner", price_usd: 49, price_inr: 3999, original_price_usd: 99, original_price_inr: 7999, discount_percent: 51 },
+    { id: "static-2", category: "AI Agents", title: "Build AI Agents with No Code", duration_hours: 12, level: "Intermediate", price_usd: 69, price_inr: 5699, original_price_usd: 129, original_price_inr: 10699, discount_percent: 47 },
+    { id: "static-3", category: "AI for Marketing", title: "AI-Powered Marketing Masterclass", duration_hours: 6, level: "Beginner", price_usd: 39, price_inr: 3199, original_price_usd: null, original_price_inr: null, discount_percent: 0 },
+    { id: "static-4", category: "LLMs & Fine-tuning", title: "Fine-Tune Your Own LLM", duration_hours: 16, level: "Advanced", price_usd: 99, price_inr: 8199, original_price_usd: 199, original_price_inr: 16499, discount_percent: 50 },
   ];
 
   const displayCourses = courses.length > 0 ? courses : staticCourses;
@@ -96,10 +98,14 @@ const CoursesSection = () => {
 
                   <div className="flex items-center justify-between border-t border-border pt-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold text-foreground">${Number(course.price_usd)}</span>
-                      {course.original_price_usd && Number(course.original_price_usd) > Number(course.price_usd) && (
-                        <span className="text-sm text-muted-foreground line-through">${Number(course.original_price_usd)}</span>
-                      )}
+                      <span className="text-lg font-bold text-foreground">{symbol}{Number(course[priceKey] || course.price_usd)}</span>
+                      {(() => {
+                        const orig = Number(course[originalPriceKey] || course.original_price_usd || 0);
+                        const price = Number(course[priceKey] || course.price_usd);
+                        return orig > price ? (
+                          <span className="text-sm text-muted-foreground line-through">{symbol}{orig}</span>
+                        ) : null;
+                      })()}
                     </div>
                     <div className="flex items-center gap-2">
                       <Popover>
