@@ -1,8 +1,21 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { DollarSign, IndianRupee, TrendingUp, Clock, ArrowUpRight, Users } from "lucide-react";
+import { DollarSign, IndianRupee, TrendingUp, Clock, ArrowUpRight, Users, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+
+const USD_TO_INR_FALLBACK = 83.5;
+
+const useExchangeRate = () => {
+  const [rate, setRate] = useState<number>(USD_TO_INR_FALLBACK);
+  useEffect(() => {
+    fetch("https://open.er-api.com/v6/latest/USD")
+      .then((r) => r.json())
+      .then((data) => { if (data?.rates?.INR) setRate(data.rates.INR); })
+      .catch(() => {});
+  }, []);
+  return { rate };
+};
 
 const CoachEarnings = () => {
   const { user } = useAuth();
@@ -10,6 +23,7 @@ const CoachEarnings = () => {
   const [payouts, setPayouts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
+  const { rate: usdToInr } = useExchangeRate();
 
   useEffect(() => {
     if (!user) return;
@@ -24,18 +38,26 @@ const CoachEarnings = () => {
   }, [user]);
 
   const paidEnrollments = enrollments.filter((e) => e.payment_status === "paid");
-  const totalEarningsUSD = paidEnrollments
-    .filter((e) => e.currency === "USD")
-    .reduce((sum, e) => sum + Number(e.amount_paid || 0), 0);
-  const totalEarningsINR = paidEnrollments
-    .filter((e) => e.currency !== "USD")
-    .reduce((sum, e) => sum + Number(e.amount_paid || 0), 0);
+
+  // Calculate earnings from course fees (not amount_paid)
+  const totalEarningsUSD = paidEnrollments.reduce((sum, e) => {
+    const course = e.courses as any;
+    return sum + Number(course?.price_usd || 0);
+  }, 0);
+  const totalEarningsINR = paidEnrollments.reduce((sum, e) => {
+    const course = e.courses as any;
+    return sum + Number(course?.price_inr || 0);
+  }, 0);
+
+  const combinedTotalUSD = totalEarningsUSD + (totalEarningsINR / usdToInr);
+  const combinedTotalINR = (totalEarningsUSD * usdToInr) + totalEarningsINR;
+
   const totalPaidOut = payouts.filter((p) => p.status === "paid").reduce((sum, p) => sum + Number(p.amount), 0);
 
   const requestPayout = async () => {
-    if (!user || (totalEarningsUSD + totalEarningsINR) <= 0) return;
+    if (!user || combinedTotalUSD <= 0) return;
     setRequesting(true);
-    const { error } = await supabase.from("payouts").insert({ coach_id: user.id, amount: totalEarningsUSD + totalEarningsINR });
+    const { error } = await supabase.from("payouts").insert({ coach_id: user.id, amount: combinedTotalUSD });
     setRequesting(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
@@ -51,7 +73,7 @@ const CoachEarnings = () => {
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-foreground">Earnings</h2>
 
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         <div className="rounded-xl border border-border bg-card p-4">
           <Users className="h-5 w-5 text-primary mb-2" />
           <p className="text-2xl font-bold text-foreground">{paidEnrollments.length}</p>
@@ -59,18 +81,23 @@ const CoachEarnings = () => {
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <DollarSign className="h-5 w-5 text-green-400 mb-2" />
-          <p className="text-2xl font-bold text-foreground">${totalEarningsUSD.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">Earnings (USD)</p>
+          <p className="text-2xl font-bold text-foreground">${combinedTotalUSD.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">Total Earnings (USD)</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <IndianRupee className="h-5 w-5 text-green-400 mb-2" />
-          <p className="text-2xl font-bold text-foreground">₹{totalEarningsINR.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">Earnings (INR)</p>
+          <p className="text-2xl font-bold text-foreground">₹{combinedTotalINR.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">Total Earnings (INR)</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <Clock className="h-5 w-5 text-yellow-400 mb-2" />
           <p className="text-2xl font-bold text-foreground">${totalPaidOut.toFixed(2)}</p>
           <p className="text-xs text-muted-foreground">Total Paid Out</p>
+        </div>
+        <div className="col-span-2 sm:col-span-1 rounded-xl border border-border bg-card p-4">
+          <RefreshCw className="h-5 w-5 text-muted-foreground mb-2" />
+          <p className="text-lg font-bold text-foreground">1 USD = ₹{usdToInr.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">Live Exchange Rate</p>
         </div>
       </div>
 
@@ -80,11 +107,12 @@ const CoachEarnings = () => {
           <h3 className="text-sm font-semibold text-foreground">Earnings by Course</h3>
           {Object.entries(
             paidEnrollments.reduce((acc: Record<string, { usd: number; inr: number; count: number }>, e) => {
-              const title = (e.courses as any)?.title || "Unknown";
+              const course = e.courses as any;
+              const title = course?.title || "Unknown";
               if (!acc[title]) acc[title] = { usd: 0, inr: 0, count: 0 };
               acc[title].count++;
-              if (e.currency === "USD") acc[title].usd += Number(e.amount_paid || 0);
-              else acc[title].inr += Number(e.amount_paid || 0);
+              acc[title].usd += Number(course?.price_usd || 0);
+              acc[title].inr += Number(course?.price_inr || 0);
               return acc;
             }, {})
           ).map(([title, val]) => {
