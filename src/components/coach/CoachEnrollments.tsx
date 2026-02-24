@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Download, Search } from "lucide-react";
+import { Users, Download, Search, DollarSign, IndianRupee, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -69,6 +69,13 @@ const CoachEnrollments = () => {
   });
 
   const totalEnrollments = enrollments.length;
+  const paidEnrollments = enrollments.filter((e) => e.payment_status === "paid");
+  const totalEarningsUSD = paidEnrollments
+    .filter((e) => e.currency === "USD")
+    .reduce((sum, e) => sum + Number(e.amount_paid || 0), 0);
+  const totalEarningsINR = paidEnrollments
+    .filter((e) => e.currency !== "USD")
+    .reduce((sum, e) => sum + Number(e.amount_paid || 0), 0);
   const countries = [...new Set(enrollments.map((e) => e.country))];
 
   const exportCSV = () => {
@@ -100,19 +107,31 @@ const CoachEnrollments = () => {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         <div className="rounded-xl border border-border bg-card p-4">
           <Users className="h-5 w-5 text-primary mb-2" />
           <p className="text-2xl font-bold text-foreground">{totalEnrollments}</p>
           <p className="text-xs text-muted-foreground">Total Enrollments</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
+          <Globe className="h-5 w-5 text-primary mb-2" />
           <p className="text-2xl font-bold text-foreground">{countries.length}</p>
           <p className="text-xs text-muted-foreground">Countries</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-2xl font-bold text-foreground">{enrollments.filter((e) => e.payment_status === "paid").length}</p>
+          <Users className="h-5 w-5 text-green-400 mb-2" />
+          <p className="text-2xl font-bold text-foreground">{paidEnrollments.length}</p>
           <p className="text-xs text-muted-foreground">Paid Enrollments</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <DollarSign className="h-5 w-5 text-green-400 mb-2" />
+          <p className="text-2xl font-bold text-foreground">${totalEarningsUSD.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">Earnings (USD)</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <IndianRupee className="h-5 w-5 text-green-400 mb-2" />
+          <p className="text-2xl font-bold text-foreground">₹{totalEarningsINR.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">Earnings (INR)</p>
         </div>
       </div>
 
