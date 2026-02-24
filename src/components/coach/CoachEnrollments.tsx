@@ -17,7 +17,7 @@ const CoachEnrollments = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("enrollments").select("*, courses(title)").eq("coach_id", user.id).order("enrolled_at", { ascending: false }).then(({ data }) => {
+    supabase.from("enrollments").select("*, courses(title, price_usd, price_inr)").eq("coach_id", user.id).order("enrolled_at", { ascending: false }).then(({ data }) => {
       setEnrollments(data || []);
       setLoading(false);
     });
@@ -79,13 +79,18 @@ const CoachEnrollments = () => {
   const countries = [...new Set(enrollments.map((e) => e.country))];
 
   const exportCSV = () => {
-    const headers = ["Name", "Email", "Mobile", "WhatsApp", "Course", "Country", "City", "Industry", "Job Title", "Experience", "Education", "Payment", "Date"];
-    const rows = filtered.map((e) => [
-      e.full_name, e.email, e.contact_number, e.whatsapp_number,
-      (e.courses as any)?.title, e.country, e.city, e.industry,
-      e.current_job_title, e.experience_level, e.education_qualification,
-      e.payment_status, new Date(e.enrolled_at).toLocaleDateString()
-    ]);
+    const headers = ["Name", "Email", "Mobile", "WhatsApp", "Course", "Course Fee", "Amount Paid", "Country", "City", "Industry", "Job Title", "Experience", "Education", "Payment", "Date"];
+    const rows = filtered.map((e) => {
+      const course = e.courses as any;
+      const fee = e.currency === "USD" ? `$${course?.price_usd || 0}` : `₹${course?.price_inr || 0}`;
+      const paid = e.amount_paid ? (e.currency === "USD" ? `$${e.amount_paid}` : `₹${e.amount_paid}`) : "—";
+      return [
+        e.full_name, e.email, e.contact_number, e.whatsapp_number,
+        course?.title, fee, paid, e.country, e.city, e.industry,
+        e.current_job_title, e.experience_level, e.education_qualification,
+        e.payment_status, new Date(e.enrolled_at).toLocaleDateString()
+      ];
+    });
     const csv = [headers, ...rows].map((r) => r.map((v: string) => `"${(v || "").replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -150,6 +155,8 @@ const CoachEnrollments = () => {
                 <TableHead>Mobile</TableHead>
                 <TableHead>WhatsApp</TableHead>
                 <TableHead>Course</TableHead>
+                <TableHead>Course Fee</TableHead>
+                <TableHead>Amount Paid</TableHead>
                 <TableHead>Country</TableHead>
                 <TableHead>City</TableHead>
                 <TableHead>Industry</TableHead>
@@ -169,6 +176,16 @@ const CoachEnrollments = () => {
                   <TableCell className="text-foreground whitespace-nowrap">{e.contact_number}</TableCell>
                   <TableCell className="text-foreground whitespace-nowrap">{e.whatsapp_number}</TableCell>
                   <TableCell className="text-foreground whitespace-nowrap">{(e.courses as any)?.title}</TableCell>
+                  <TableCell className="text-foreground whitespace-nowrap">
+                    {e.currency === "USD"
+                      ? `$${(e.courses as any)?.price_usd || 0}`
+                      : `₹${(e.courses as any)?.price_inr || 0}`}
+                  </TableCell>
+                  <TableCell className="text-foreground whitespace-nowrap font-medium">
+                    {e.amount_paid
+                      ? (e.currency === "USD" ? `$${e.amount_paid}` : `₹${e.amount_paid}`)
+                      : "—"}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">{e.country}</TableCell>
                   <TableCell className="text-muted-foreground">{e.city}</TableCell>
                   <TableCell className="text-muted-foreground">{e.industry}</TableCell>
