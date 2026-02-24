@@ -14,7 +14,7 @@ const CoachEarnings = () => {
   useEffect(() => {
     if (!user) return;
     Promise.all([
-      supabase.from("enrollments").select("*, courses(title)").eq("coach_id", user.id),
+      supabase.from("enrollments").select("*, courses(title, price_usd, price_inr)").eq("coach_id", user.id),
       supabase.from("payouts").select("*").eq("coach_id", user.id).order("requested_at", { ascending: false }),
     ]).then(([e, po]) => {
       setEnrollments(e.data || []);
