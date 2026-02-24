@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
+import logo from "@/assets/logo.gif";
 import { useState } from "react";
 
 interface NavItem {
@@ -38,9 +39,7 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-border bg-card transition-transform lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-16 items-center justify-between border-b border-border px-4">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Sparkles className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <img src={logo} alt="AI Coach Portal" className="h-8 w-8 rounded-lg" />
             <span className="text-sm font-bold text-foreground">{title}</span>
           </Link>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground">
