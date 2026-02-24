@@ -1,5 +1,7 @@
-import { Star } from "lucide-react";
+import { useState } from "react";
+import { Star, SlidersHorizontal } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const coaches = [
   {
@@ -30,10 +32,27 @@ const coaches = [
 
 const CoachesSection = () => {
   const { symbol, currency } = useCurrency();
+  const [ratingFilter, setRatingFilter] = useState("all");
+  const [priceFilter, setPriceFilter] = useState("all");
+
+  const filtered = coaches
+    .filter((c) => {
+      if (ratingFilter === "4.9") return c.rating >= 4.9;
+      if (ratingFilter === "4.8") return c.rating >= 4.8;
+      if (ratingFilter === "4.5") return c.rating >= 4.5;
+      return true;
+    })
+    .sort((a, b) => {
+      const key = currency === "INR" ? "price_inr" : "price_usd";
+      if (priceFilter === "low") return a[key] - b[key];
+      if (priceFilter === "high") return b[key] - a[key];
+      return 0;
+    });
+
   return (
     <section id="coaches" className="py-24">
       <div className="container mx-auto px-4">
-        <div className="mb-12 flex items-end justify-between">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="mb-3 text-3xl font-bold text-foreground">Featured AI Coaches</h2>
             <p className="text-muted-foreground">Learn from industry-leading AI experts</p>
@@ -41,8 +60,36 @@ const CoachesSection = () => {
           <button className="text-sm font-medium text-primary transition-colors hover:underline">View All →</button>
         </div>
 
+        <div className="mb-6 flex flex-wrap items-center gap-3">
+          <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+          <Select value={ratingFilter} onValueChange={setRatingFilter}>
+            <SelectTrigger className="w-40 bg-card border-border">
+              <SelectValue placeholder="Rating" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50">
+              <SelectItem value="all">All Ratings</SelectItem>
+              <SelectItem value="4.9">4.9+ ★</SelectItem>
+              <SelectItem value="4.8">4.8+ ★</SelectItem>
+              <SelectItem value="4.5">4.5+ ★</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={priceFilter} onValueChange={setPriceFilter}>
+            <SelectTrigger className="w-44 bg-card border-border">
+              <SelectValue placeholder="Price" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50">
+              <SelectItem value="all">Default Order</SelectItem>
+              <SelectItem value="low">Price: Low → High</SelectItem>
+              <SelectItem value="high">Price: High → Low</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2">
-          {coaches.map((coach) => (
+          {filtered.length === 0 && (
+            <div className="col-span-2 py-12 text-center text-muted-foreground">No coaches match the selected filters.</div>
+          )}
+          {filtered.map((coach) => (
             <div
               key={coach.name}
               className="rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/20"
