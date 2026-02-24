@@ -91,19 +91,21 @@ const CoachEnrollments = () => {
   const totalEnrollments = enrollments.length;
   const paidEnrollments = enrollments.filter((e) => e.payment_status === "paid");
 
-  // Calculate total earnings based on course fee × paid enrollments
-  const totalEarningsUSD = paidEnrollments.reduce((sum, e) => {
+  // Sum course fee per paid enrollment based on learner's currency
+  let rawUSD = 0;
+  let rawINR = 0;
+  paidEnrollments.forEach((e) => {
     const course = e.courses as any;
-    return sum + Number(course?.price_usd || 0);
-  }, 0);
-  const totalEarningsINR = paidEnrollments.reduce((sum, e) => {
-    const course = e.courses as any;
-    return sum + Number(course?.price_inr || 0);
-  }, 0);
+    if (e.currency === "USD") {
+      rawUSD += Number(course?.price_usd || 0);
+    } else {
+      rawINR += Number(course?.price_inr || 0);
+    }
+  });
 
-  // Combined total in both currencies using live exchange rate
-  const combinedTotalUSD = totalEarningsUSD + (totalEarningsINR / usdToInr);
-  const combinedTotalINR = (totalEarningsUSD * usdToInr) + totalEarningsINR;
+  // Show combined totals converted via live rate
+  const combinedTotalUSD = rawUSD + (rawINR / usdToInr);
+  const combinedTotalINR = (rawUSD * usdToInr) + rawINR;
 
   const countries = [...new Set(enrollments.map((e) => e.country))];
 

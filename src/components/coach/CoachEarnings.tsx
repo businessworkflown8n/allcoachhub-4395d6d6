@@ -39,18 +39,20 @@ const CoachEarnings = () => {
 
   const paidEnrollments = enrollments.filter((e) => e.payment_status === "paid");
 
-  // Calculate earnings from course fees (not amount_paid)
-  const totalEarningsUSD = paidEnrollments.reduce((sum, e) => {
+  // Sum course fee per paid enrollment based on learner's currency
+  let rawUSD = 0;
+  let rawINR = 0;
+  paidEnrollments.forEach((e) => {
     const course = e.courses as any;
-    return sum + Number(course?.price_usd || 0);
-  }, 0);
-  const totalEarningsINR = paidEnrollments.reduce((sum, e) => {
-    const course = e.courses as any;
-    return sum + Number(course?.price_inr || 0);
-  }, 0);
+    if (e.currency === "USD") {
+      rawUSD += Number(course?.price_usd || 0);
+    } else {
+      rawINR += Number(course?.price_inr || 0);
+    }
+  });
 
-  const combinedTotalUSD = totalEarningsUSD + (totalEarningsINR / usdToInr);
-  const combinedTotalINR = (totalEarningsUSD * usdToInr) + totalEarningsINR;
+  const combinedTotalUSD = rawUSD + (rawINR / usdToInr);
+  const combinedTotalINR = (rawUSD * usdToInr) + rawINR;
 
   const totalPaidOut = payouts.filter((p) => p.status === "paid").reduce((sum, p) => sum + Number(p.amount), 0);
 
@@ -111,8 +113,8 @@ const CoachEarnings = () => {
               const title = course?.title || "Unknown";
               if (!acc[title]) acc[title] = { usd: 0, inr: 0, count: 0 };
               acc[title].count++;
-              acc[title].usd += Number(course?.price_usd || 0);
-              acc[title].inr += Number(course?.price_inr || 0);
+              if (e.currency === "USD") acc[title].usd += Number(course?.price_usd || 0);
+              else acc[title].inr += Number(course?.price_inr || 0);
               return acc;
             }, {})
           ).map(([title, val]) => {
@@ -132,7 +134,7 @@ const CoachEarnings = () => {
         </div>
       )}
 
-      <button onClick={requestPayout} disabled={requesting || (totalEarningsUSD + totalEarningsINR) <= 0} className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
+      <button onClick={requestPayout} disabled={requesting || combinedTotalUSD <= 0} className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
         <ArrowUpRight className="h-4 w-4" />
         {requesting ? "Requesting..." : "Request Withdrawal"}
       </button>
