@@ -9,7 +9,9 @@ import { toast } from "@/hooks/use-toast";
 const SignupForm = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [role, setRole] = useState<"learner" | "coach">("learner");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -27,6 +29,8 @@ const SignupForm = () => {
         data: {
           full_name: fullName,
           role,
+          mobile,
+          ...(role === "coach" ? { company_name: companyName } : {}),
         },
       },
     });
@@ -121,6 +125,33 @@ const SignupForm = () => {
           className="bg-secondary border-border"
         />
       </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="mobile" className="text-foreground">Mobile Number</Label>
+        <Input
+          id="mobile"
+          type="tel"
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value)}
+          placeholder="+91 9876543210"
+          required
+          className="bg-secondary border-border"
+        />
+      </div>
+
+      {role === "coach" && (
+        <div className="space-y-2">
+          <Label htmlFor="companyName" className="text-foreground">Company Name</Label>
+          <Input
+            id="companyName"
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+            placeholder="Your company or brand name"
+            required
+            className="bg-secondary border-border"
+          />
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="password" className="text-foreground">Password</Label>
