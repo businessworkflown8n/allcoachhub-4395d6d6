@@ -58,9 +58,9 @@ const CoursesSection = () => {
   const displayCourses = courses.length > 0 ? courses : staticCourses;
 
   return (
-    <section id="courses" className="py-24">
+    <section id="courses" className="py-12 sm:py-24">
       <div className="container mx-auto px-4">
-        <div className="mb-12 flex items-end justify-between">
+        <div className="mb-8 flex flex-col gap-2 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="mb-3 text-3xl font-bold text-foreground">Popular Courses</h2>
             <p className="text-muted-foreground">Top-rated courses chosen by thousands of students</p>

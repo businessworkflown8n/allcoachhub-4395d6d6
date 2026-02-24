@@ -50,7 +50,7 @@ const CoachesSection = () => {
     });
 
   return (
-    <section id="coaches" className="py-24">
+    <section id="coaches" className="py-12 sm:py-24">
       <div className="container mx-auto px-4">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 const CTASection = () => {
   const navigate = useNavigate();
   return (
-    <section className="py-24">
+    <section className="py-12 sm:py-24">
       <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-card p-12 text-center md:p-16">
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">Ready to Master AI?</h2>
+        <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-card p-6 text-center sm:p-12 md:p-16">
+          <h2 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl md:text-4xl">Ready to Master AI?</h2>
           <p className="mb-8 text-muted-foreground">
             Join thousands of professionals learning from the best AI coaches. Start your journey today.
           </p>

@@ -74,7 +74,7 @@ const CategoriesSection = () => {
   const displayCourses = dbCourses.length > 0 ? dbCourses : (staticCoursesByCategory[activeCategory || ""] || []);
 
   return (
-    <section className="py-24">
+    <section className="py-12 sm:py-24">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
           <h2 className="mb-3 text-3xl font-bold text-foreground">Explore AI Categories</h2>
@@ -86,12 +86,12 @@ const CategoriesSection = () => {
             <button
               key={cat.name}
               onClick={() => setActiveCategory(cat.name)}
-              className={`group cursor-pointer rounded-xl border p-6 text-center transition-all hover:border-primary/30 hover:bg-secondary ${
+              className={`group cursor-pointer rounded-xl border p-4 text-center transition-all hover:border-primary/30 hover:bg-secondary sm:p-6 ${
                 activeCategory === cat.name ? "border-primary bg-secondary" : "border-border bg-card"
               }`}
             >
-              <div className="mb-3 text-3xl">{cat.emoji}</div>
-              <h3 className="mb-1 text-sm font-semibold text-foreground">{cat.name}</h3>
+              <div className="mb-2 text-2xl sm:mb-3 sm:text-3xl">{cat.emoji}</div>
+              <h3 className="mb-1 text-xs font-semibold text-foreground sm:text-sm">{cat.name}</h3>
               <p className="text-xs text-muted-foreground">{cat.count} courses</p>
             </button>
           ))}
