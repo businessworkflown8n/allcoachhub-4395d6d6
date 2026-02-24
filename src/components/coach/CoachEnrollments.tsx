@@ -5,12 +5,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Users, Download, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 
 const CoachEnrollments = () => {
   const { user } = useAuth();
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -19,6 +22,44 @@ const CoachEnrollments = () => {
       setLoading(false);
     });
   }, [user]);
+
+  const handlePaymentStatusChange = async (enrollmentId: string, newStatus: string) => {
+    setUpdatingId(enrollmentId);
+    try {
+      const { error } = await supabase
+        .from("enrollments")
+        .update({ payment_status: newStatus })
+        .eq("id", enrollmentId);
+
+      if (error) throw error;
+
+      setEnrollments((prev) =>
+        prev.map((e) => (e.id === enrollmentId ? { ...e, payment_status: newStatus } : e))
+      );
+
+      if (newStatus === "paid") {
+        // Send confirmation email via edge function
+        supabase.functions.invoke("send-payment-confirmation", {
+          body: { enrollmentId },
+        }).then(({ error: fnError }) => {
+          if (fnError) console.error("Email notification error:", fnError);
+        });
+      }
+
+      toast({
+        title: "Payment status updated",
+        description: `Status changed to "${newStatus}" successfully.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Update failed",
+        description: err.message || "Could not update payment status.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
@@ -97,7 +138,7 @@ const CoachEnrollments = () => {
                 <TableHead>Experience</TableHead>
                 <TableHead>Education</TableHead>
                 <TableHead>LinkedIn</TableHead>
-                <TableHead>Payment</TableHead>
+                <TableHead>Payment Status</TableHead>
                 <TableHead>Date</TableHead>
               </TableRow>
             </TableHeader>
@@ -119,7 +160,29 @@ const CoachEnrollments = () => {
                     {e.linkedin_profile ? <a href={e.linkedin_profile} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View</a> : "—"}
                   </TableCell>
                   <TableCell>
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${e.payment_status === "paid" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>{e.payment_status}</span>
+                    <Select
+                      value={e.payment_status}
+                      onValueChange={(val) => handlePaymentStatusChange(e.id, val)}
+                      disabled={updatingId === e.id}
+                    >
+                      <SelectTrigger className="w-[120px] h-8 text-xs bg-popover border-border">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-border z-[9999]">
+                        <SelectItem value="pending">
+                          <span className="flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-yellow-400" />
+                            Pending
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="paid">
+                          <span className="flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-green-400" />
+                            Paid
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell className="text-muted-foreground whitespace-nowrap">{new Date(e.enrolled_at).toLocaleDateString()}</TableCell>
                 </TableRow>
