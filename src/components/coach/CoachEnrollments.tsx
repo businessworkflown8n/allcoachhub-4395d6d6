@@ -2,11 +2,30 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Download, Search, DollarSign, IndianRupee, Globe } from "lucide-react";
+import { Users, Download, Search, DollarSign, IndianRupee, Globe, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+
+const USD_TO_INR_FALLBACK = 83.5;
+
+const useExchangeRate = () => {
+  const [rate, setRate] = useState<number>(USD_TO_INR_FALLBACK);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("https://open.er-api.com/v6/latest/USD")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.rates?.INR) setRate(data.rates.INR);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { rate, loading };
+};
 
 const CoachEnrollments = () => {
   const { user } = useAuth();
@@ -14,6 +33,7 @@ const CoachEnrollments = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const { rate: usdToInr } = useExchangeRate();
 
   useEffect(() => {
     if (!user) return;
@@ -70,12 +90,21 @@ const CoachEnrollments = () => {
 
   const totalEnrollments = enrollments.length;
   const paidEnrollments = enrollments.filter((e) => e.payment_status === "paid");
-  const totalEarningsUSD = paidEnrollments
-    .filter((e) => e.currency === "USD")
-    .reduce((sum, e) => sum + Number(e.amount_paid || 0), 0);
-  const totalEarningsINR = paidEnrollments
-    .filter((e) => e.currency !== "USD")
-    .reduce((sum, e) => sum + Number(e.amount_paid || 0), 0);
+
+  // Calculate total earnings based on course fee × paid enrollments
+  const totalEarningsUSD = paidEnrollments.reduce((sum, e) => {
+    const course = e.courses as any;
+    return sum + Number(course?.price_usd || 0);
+  }, 0);
+  const totalEarningsINR = paidEnrollments.reduce((sum, e) => {
+    const course = e.courses as any;
+    return sum + Number(course?.price_inr || 0);
+  }, 0);
+
+  // Combined total in both currencies using live exchange rate
+  const combinedTotalUSD = totalEarningsUSD + (totalEarningsINR / usdToInr);
+  const combinedTotalINR = (totalEarningsUSD * usdToInr) + totalEarningsINR;
+
   const countries = [...new Set(enrollments.map((e) => e.country))];
 
   const exportCSV = () => {
@@ -112,7 +141,7 @@ const CoachEnrollments = () => {
         </div>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         <div className="rounded-xl border border-border bg-card p-4">
           <Users className="h-5 w-5 text-primary mb-2" />
           <p className="text-2xl font-bold text-foreground">{totalEnrollments}</p>
@@ -130,13 +159,18 @@ const CoachEnrollments = () => {
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <DollarSign className="h-5 w-5 text-green-400 mb-2" />
-          <p className="text-2xl font-bold text-foreground">${totalEarningsUSD.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">Earnings (USD)</p>
+          <p className="text-2xl font-bold text-foreground">${combinedTotalUSD.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">Total Earnings (USD)</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <IndianRupee className="h-5 w-5 text-green-400 mb-2" />
-          <p className="text-2xl font-bold text-foreground">₹{totalEarningsINR.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">Earnings (INR)</p>
+          <p className="text-2xl font-bold text-foreground">₹{combinedTotalINR.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">Total Earnings (INR)</p>
+        </div>
+        <div className="col-span-2 sm:col-span-1 rounded-xl border border-border bg-card p-4">
+          <RefreshCw className="h-5 w-5 text-muted-foreground mb-2" />
+          <p className="text-lg font-bold text-foreground">1 USD = ₹{usdToInr.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">Live Exchange Rate</p>
         </div>
       </div>
 
