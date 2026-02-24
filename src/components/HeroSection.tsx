@@ -110,7 +110,7 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16">
+    <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden px-2 pt-16">
       <div
         className="absolute inset-0 bg-cover bg-center opacity-40"
         style={{ backgroundImage: `url(${heroBg})` }}
@@ -123,12 +123,12 @@ const HeroSection = () => {
           <span className="text-sm text-muted-foreground">The #1 Marketplace for AI Education</span>
         </div>
 
-        <h1 className="mb-6 text-5xl font-extrabold leading-tight tracking-tight text-foreground md:text-7xl">
+        <h1 className="mb-4 text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-5xl md:text-7xl">
           Learn AI from the{" "}
           <span className="text-gradient-lime">World's Best</span> Coaches
         </h1>
 
-        <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
+        <p className="mx-auto mb-8 max-w-2xl text-sm text-muted-foreground sm:text-base md:text-lg">
           Master prompt engineering, AI agents, automation, and more. Book 1:1 sessions with expert coaches or enroll in structured courses.
         </p>
 
@@ -141,16 +141,16 @@ const HeroSection = () => {
           </button>
         </div>
 
-        <div className="mt-16 flex items-center justify-center gap-10 md:gap-16">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:mt-16 sm:gap-10 md:gap-16">
           {stats.map((stat) => (
             <button
               key={stat.label}
               onClick={() => setActiveModal(stat.key)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 transition-all hover:bg-secondary/80 hover:scale-105 cursor-pointer"
+              className="flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-all hover:bg-secondary/80 hover:scale-105 cursor-pointer sm:flex-row sm:gap-2"
             >
               <stat.icon className="h-5 w-5 text-muted-foreground" />
-              <span className="text-xl font-bold text-foreground">{stat.value}</span>
-              <span className="text-sm text-muted-foreground">{stat.label}</span>
+              <span className="text-lg font-bold text-foreground sm:text-xl">{stat.value}</span>
+              <span className="text-xs text-muted-foreground sm:text-sm">{stat.label}</span>
             </button>
           ))}
         </div>

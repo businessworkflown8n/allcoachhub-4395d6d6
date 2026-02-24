@@ -6,7 +6,7 @@ const steps = [
 
 const HowItWorksSection = () => {
   return (
-    <section id="how-it-works" className="py-24">
+    <section id="how-it-works" className="py-12 sm:py-24">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
           <h2 className="mb-3 text-3xl font-bold text-foreground">How It Works</h2>
