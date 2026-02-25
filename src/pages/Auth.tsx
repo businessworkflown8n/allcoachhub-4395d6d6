@@ -4,7 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import SignupForm from "@/components/auth/SignupForm";
 import LoginForm from "@/components/auth/LoginForm";
-import { Sparkles } from "lucide-react";
+import { Phone } from "lucide-react";
+import logo from "@/assets/logo.gif";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -32,15 +33,20 @@ const Auth = () => {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <Sparkles className="h-6 w-6 text-primary-foreground" />
-          </div>
+          <img src={logo} alt="AI Coach Portal" className="mx-auto mb-4 h-14 w-14 rounded-xl" />
           <h1 className="text-2xl font-bold text-foreground">
             {mode === "signup" ? "Create your account" : "Welcome back"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {mode === "signup" ? "Join as a Learner or Coach" : "Sign in to your account"}
           </p>
+          <a
+            href="tel:+919852411280"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <Phone className="h-4 w-4" />
+            Call Us
+          </a>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6">
