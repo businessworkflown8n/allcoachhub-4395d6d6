@@ -283,6 +283,7 @@ export type Database = {
           category: string | null
           certifications: string[] | null
           city: string | null
+          company_name: string | null
           contact_number: string | null
           country: string | null
           created_at: string
@@ -295,10 +296,16 @@ export type Database = {
           intro_video_url: string | null
           is_suspended: boolean
           job_title: string | null
+          last_active_at: string | null
           linkedin_profile: string | null
+          marketing_consent: boolean
           social_links: Json | null
+          tags: string[] | null
           updated_at: string
           user_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
           whatsapp_number: string | null
         }
         Insert: {
@@ -307,6 +314,7 @@ export type Database = {
           category?: string | null
           certifications?: string[] | null
           city?: string | null
+          company_name?: string | null
           contact_number?: string | null
           country?: string | null
           created_at?: string
@@ -319,10 +327,16 @@ export type Database = {
           intro_video_url?: string | null
           is_suspended?: boolean
           job_title?: string | null
+          last_active_at?: string | null
           linkedin_profile?: string | null
+          marketing_consent?: boolean
           social_links?: Json | null
+          tags?: string[] | null
           updated_at?: string
           user_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           whatsapp_number?: string | null
         }
         Update: {
@@ -331,6 +345,7 @@ export type Database = {
           category?: string | null
           certifications?: string[] | null
           city?: string | null
+          company_name?: string | null
           contact_number?: string | null
           country?: string | null
           created_at?: string
@@ -343,10 +358,16 @@ export type Database = {
           intro_video_url?: string | null
           is_suspended?: boolean
           job_title?: string | null
+          last_active_at?: string | null
           linkedin_profile?: string | null
+          marketing_consent?: boolean
           social_links?: Json | null
+          tags?: string[] | null
           updated_at?: string
           user_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           whatsapp_number?: string | null
         }
         Relationships: []
@@ -477,7 +498,92 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      coach_profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          category: string | null
+          certifications: string[] | null
+          country: string | null
+          created_at: string | null
+          education: string | null
+          experience: string | null
+          full_name: string | null
+          industry: string | null
+          intro_video_url: string | null
+          job_title: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          category?: string | null
+          certifications?: string[] | null
+          country?: string | null
+          created_at?: string | null
+          education?: string | null
+          experience?: string | null
+          full_name?: string | null
+          industry?: string | null
+          intro_video_url?: string | null
+          job_title?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          category?: string | null
+          certifications?: string[] | null
+          country?: string | null
+          created_at?: string | null
+          education?: string | null
+          experience?: string | null
+          full_name?: string | null
+          industry?: string | null
+          intro_video_url?: string | null
+          job_title?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      public_reviews: {
+        Row: {
+          anonymous_reviewer_id: string | null
+          coach_id: string | null
+          comment: string | null
+          course_id: string | null
+          created_at: string | null
+          id: string | null
+          rating: number | null
+        }
+        Insert: {
+          anonymous_reviewer_id?: never
+          coach_id?: string | null
+          comment?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+        }
+        Update: {
+          anonymous_reviewer_id?: never
+          coach_id?: string | null
+          comment?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
