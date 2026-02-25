@@ -8,6 +8,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import AdminLogin from "./pages/AdminLogin";
 import CourseDetail from "./pages/CourseDetail";
 import Enroll from "./pages/Enroll";
 import LearnerDashboard from "./pages/LearnerDashboard";
@@ -45,6 +46,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/course/:id" element={<CourseDetail />} />
             <Route path="/enroll/:courseId" element={
               <ProtectedRoute allowedRole="learner">
