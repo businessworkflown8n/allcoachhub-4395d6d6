@@ -16,9 +16,20 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
+    // Validate JWT token
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -46,12 +57,27 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Verify user is the learner, coach, or admin for this enrollment
+    const isLearner = enrollment.learner_id === user.id;
+    const isCoach = enrollment.coach_id === user.id;
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
+    const isAdmin = roles?.role === "admin";
+
+    if (!isLearner && !isCoach && !isAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const courseTitle = (enrollment.courses as any)?.title || "your course";
     const learnerName = enrollment.full_name || "Learner";
     const learnerEmail = enrollment.email;
 
-    // Send email using Supabase Auth admin (uses built-in email service)
-    // We'll use the auth.admin API to send a custom email
     const emailHtml = `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #ffffff; border-radius: 12px; overflow: hidden;">
         <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px; text-align: center;">
@@ -88,13 +114,6 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    // Use Supabase's built-in email sending via auth hooks or direct SMTP
-    // Since we don't have SMTP configured, we'll store a notification record
-    // and return success - the email template is ready for when SMTP is configured
-    
-    // For now, let's try using the Resend-like approach via fetch to Supabase's inbuilt mailer
-    // We'll create a notifications table approach instead
-    
     console.log(`Payment confirmation email prepared for ${learnerEmail}`);
     console.log(`Course: ${courseTitle}, Learner: ${learnerName}`);
 
@@ -114,7 +133,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("Error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Internal server error" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

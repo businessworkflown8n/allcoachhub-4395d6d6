@@ -86,7 +86,18 @@ const Enroll = () => {
       learner_id: user.id,
       course_id: course.id,
       coach_id: course.coach_id,
-      ...form,
+      full_name: form.full_name,
+      email: form.email,
+      contact_number: form.contact_number,
+      whatsapp_number: form.whatsapp_number,
+      education_qualification: form.education_qualification,
+      current_job_title: form.current_job_title,
+      industry: form.industry,
+      experience_level: form.experience_level,
+      country: form.country,
+      city: form.city,
+      linkedin_profile: form.linkedin_profile,
+      learning_objective: form.learning_objective,
     });
 
     if (error) {
