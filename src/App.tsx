@@ -17,6 +17,7 @@ import LearnerDashboard from "./pages/LearnerDashboard";
 import CoachDashboard from "./pages/CoachDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import ResetPassword from "./pages/ResetPassword";
+import AIBlogs from "./pages/AIBlogs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -79,6 +80,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/ai-blogs" element={<AIBlogs />} />
             <Route path="/course/:id" element={<CourseDetail />} />
             <Route path="/enroll/:courseId" element={
               <ProtectedRoute allowedRole="learner">

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
+import SearchDialog from "@/components/SearchDialog";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -24,9 +25,11 @@ const Navbar = () => {
           <a href="#coaches" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Browse Coaches</a>
           <a href="#courses" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Courses</a>
           <a href="#how-it-works" className="text-sm text-muted-foreground transition-colors hover:text-foreground">How It Works</a>
+          <Link to="/ai-blogs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">AI Blogs</Link>
         </div>
 
         <div className="flex items-center gap-4">
+          <SearchDialog />
           {user ? (
             <>
               <Link to={dashboardPath} className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground md:block">
@@ -64,6 +67,7 @@ const Navbar = () => {
             <a href="#coaches" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Browse Coaches</a>
             <a href="#courses" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Courses</a>
             <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">How It Works</a>
+            <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">AI Blogs</Link>
             {user && (
               <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Dashboard</Link>
             )}
