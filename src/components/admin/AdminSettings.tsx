@@ -18,13 +18,8 @@ const AdminSettings = () => {
   }, []);
 
   const handleSave = async () => {
-    const numVal = parseFloat(commission);
-    if (isNaN(numVal) || numVal < 0 || numVal > 100) {
-      toast({ title: "Invalid value", description: "Commission must be a number between 0 and 100.", variant: "destructive" });
-      return;
-    }
     setSaving(true);
-    const { error } = await supabase.from("platform_settings").update({ value: String(numVal) }).eq("key", "commission_percent");
+    const { error } = await supabase.from("platform_settings").update({ value: commission }).eq("key", "commission_percent");
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else toast({ title: "Settings saved" });

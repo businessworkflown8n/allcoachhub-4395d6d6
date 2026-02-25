@@ -35,7 +35,7 @@ const AdminLogin = () => {
 
     if (error) {
       setLoading(false);
-      toast({ title: "Authentication failed", description: "Invalid credentials.", variant: "destructive" });
+      toast({ title: "Login failed", description: error.message, variant: "destructive" });
       return;
     }
 
@@ -49,8 +49,7 @@ const AdminLogin = () => {
     if (roleData?.role !== "admin") {
       await supabase.auth.signOut();
       setLoading(false);
-      // Use same message as invalid credentials to prevent user enumeration
-      toast({ title: "Authentication failed", description: "Invalid credentials.", variant: "destructive" });
+      toast({ title: "Access denied", description: "This login is for administrators only.", variant: "destructive" });
       return;
     }
 
