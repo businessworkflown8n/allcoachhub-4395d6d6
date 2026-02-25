@@ -1,0 +1,93 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Search } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
+
+const SearchDialog = () => {
+  const [open, setOpen] = useState(false);
+  const [courses, setCourses] = useState<{ id: string; title: string; category: string }[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((o) => !o);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const fetchCourses = async () => {
+      const { data } = await supabase
+        .from("courses")
+        .select("id, title, category")
+        .eq("is_published", true)
+        .eq("approval_status", "approved")
+        .limit(50);
+      setCourses(data || []);
+    };
+    fetchCourses();
+  }, [open]);
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary"
+        aria-label="Search"
+      >
+        <Search className="h-4 w-4" />
+        <span className="hidden sm:inline">Search...</span>
+        <kbd className="pointer-events-none hidden select-none rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
+          ⌘K
+        </kbd>
+      </button>
+
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput placeholder="Search courses, categories..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Courses">
+            {courses.map((course) => (
+              <CommandItem
+                key={course.id}
+                onSelect={() => {
+                  navigate(`/course/${course.id}`);
+                  setOpen(false);
+                }}
+              >
+                <Search className="mr-2 h-4 w-4" />
+                <div>
+                  <p>{course.title}</p>
+                  <p className="text-xs text-muted-foreground">{course.category}</p>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          <CommandGroup heading="Quick Links">
+            <CommandItem onSelect={() => { navigate("/ai-blogs"); setOpen(false); }}>
+              AI Blogs
+            </CommandItem>
+            <CommandItem onSelect={() => { navigate("/auth"); setOpen(false); }}>
+              Sign In
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+    </>
+  );
+};
+
+export default SearchDialog;
