@@ -1,4 +1,5 @@
-import { Phone } from "lucide-react";
+import { Phone, MessageCircle } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,6 +38,32 @@ const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode; 
   return <>{children}</>;
 };
 
+const FloatingButtons = () => {
+  const isMobile = useIsMobile();
+  return (
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+      {isMobile && (
+        <a
+          href="tel:+919852411280"
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-110"
+          aria-label="Call Us"
+        >
+          <Phone className="h-6 w-6" />
+        </a>
+      )}
+      <a
+        href="https://wa.me/919852411280"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-[hsl(142,70%,45%)] text-white shadow-lg transition-transform hover:scale-110"
+        aria-label="WhatsApp"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </a>
+    </div>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -71,13 +98,7 @@ const App = () => (
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <a
-            href="tel:+919852411280"
-            className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-110"
-            aria-label="Call Us"
-          >
-            <Phone className="h-6 w-6" />
-          </a>
+          <FloatingButtons />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
