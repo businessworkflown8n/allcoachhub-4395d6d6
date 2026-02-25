@@ -84,7 +84,7 @@ const AdminCoaches = () => {
 
   const filtered = useMemo(() => {
     let result = coaches.filter((c) => {
-      const matchesSearch = !search || [c.full_name, c.category, c.country, c.city, c.company_name, c.contact_number].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
+      const matchesSearch = !search || [c.full_name, c.email, c.category, c.country, c.city, c.company_name, c.contact_number].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
       const matchesStatus = statusFilter === "all" || (statusFilter === "active" ? !c.is_suspended : c.is_suspended);
       const matchesCountry = countryFilter === "all" || c.country === countryFilter;
       const matchesCity = cityFilter === "all" || c.city === cityFilter;
@@ -119,10 +119,10 @@ const AdminCoaches = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["Name", "Company", "Email", "Phone", "Status", "Category", "Country", "City", "Courses", "Enrollments", "Revenue", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Joined"];
+    const headers = ["Name", "Company", "Email", "Phone", "WhatsApp", "Status", "Category", "Country", "City", "Courses", "Enrollments", "Revenue", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Joined"];
     const rows = filtered.map((c) => {
       const s = getCoachStats(c.user_id);
-      return [c.full_name, c.company_name, c.contact_number, c.whatsapp_number, c.is_suspended ? "Suspended" : "Active", c.category, c.country, c.city, s.courses, s.enrollments, `$${s.revenue.toFixed(2)}`, c.marketing_consent ? "Yes" : "No", c.utm_source, c.utm_medium, c.utm_campaign, (c.tags || []).join(";"), new Date(c.created_at).toLocaleDateString()];
+      return [c.full_name, c.company_name, c.email, c.contact_number, c.whatsapp_number, c.is_suspended ? "Suspended" : "Active", c.category, c.country, c.city, s.courses, s.enrollments, `$${s.revenue.toFixed(2)}`, c.marketing_consent ? "Yes" : "No", c.utm_source, c.utm_medium, c.utm_campaign, (c.tags || []).join(";"), new Date(c.created_at).toLocaleDateString()];
     });
     const csv = [headers, ...rows].map((r) => r.map(v => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -192,7 +192,7 @@ const AdminCoaches = () => {
           <div className="rounded-xl border border-border bg-card p-5">
             <h3 className="text-sm font-semibold text-foreground mb-3">Contact Information</h3>
             <div className="grid gap-3 sm:grid-cols-2">
-              {[["Company", selectedCoach.company_name], ["Phone", selectedCoach.contact_number], ["WhatsApp", selectedCoach.whatsapp_number], ["LinkedIn", selectedCoach.linkedin_profile], ["City", selectedCoach.city], ["Country", selectedCoach.country]].map(([label, val]) => (
+              {[["Email", selectedCoach.email], ["Company", selectedCoach.company_name], ["Phone", selectedCoach.contact_number], ["WhatsApp", selectedCoach.whatsapp_number], ["LinkedIn", selectedCoach.linkedin_profile], ["City", selectedCoach.city], ["Country", selectedCoach.country]].map(([label, val]) => (
                 <div key={label}><p className="text-xs text-muted-foreground">{label}</p><p className="text-sm text-foreground break-all">{val || "—"}</p></div>
               ))}
             </div>
@@ -344,6 +344,7 @@ const AdminCoaches = () => {
               <TableRow>
                 <TableHead className="w-10"><Checkbox checked={selectedIds.size === filtered.length && filtered.length > 0} onCheckedChange={toggleSelectAll} /></TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Country</TableHead>
@@ -364,6 +365,7 @@ const AdminCoaches = () => {
                   <TableRow key={c.id} className={selectedIds.has(c.user_id) ? "bg-primary/5" : ""}>
                     <TableCell><Checkbox checked={selectedIds.has(c.user_id)} onCheckedChange={() => toggleSelect(c.user_id)} /></TableCell>
                     <TableCell className="text-foreground font-medium">{c.full_name || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">{c.email || "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{c.company_name || "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{c.contact_number || "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{c.country || "—"}</TableCell>
