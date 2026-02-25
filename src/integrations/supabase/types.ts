@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       courses: {
         Row: {
+          approval_status: string
           category: string
           coach_id: string
           created_at: string
@@ -32,11 +33,13 @@ export type Database = {
           original_price_usd: number | null
           price_inr: number
           price_usd: number
+          rejection_reason: string | null
           thumbnail_url: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          approval_status?: string
           category: string
           coach_id: string
           created_at?: string
@@ -53,11 +56,13 @@ export type Database = {
           original_price_usd?: number | null
           price_inr?: number
           price_usd?: number
+          rejection_reason?: string | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          approval_status?: string
           category?: string
           coach_id?: string
           created_at?: string
@@ -74,6 +79,7 @@ export type Database = {
           original_price_usd?: number | null
           price_inr?: number
           price_usd?: number
+          rejection_reason?: string | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
@@ -287,6 +293,7 @@ export type Database = {
           id: string
           industry: string | null
           intro_video_url: string | null
+          is_suspended: boolean
           job_title: string | null
           linkedin_profile: string | null
           social_links: Json | null
@@ -310,6 +317,7 @@ export type Database = {
           id?: string
           industry?: string | null
           intro_video_url?: string | null
+          is_suspended?: boolean
           job_title?: string | null
           linkedin_profile?: string | null
           social_links?: Json | null
@@ -333,6 +341,7 @@ export type Database = {
           id?: string
           industry?: string | null
           intro_video_url?: string | null
+          is_suspended?: boolean
           job_title?: string | null
           linkedin_profile?: string | null
           social_links?: Json | null

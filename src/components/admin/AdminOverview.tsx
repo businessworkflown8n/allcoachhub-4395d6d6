@@ -4,7 +4,7 @@ import { BarChart3, Users, GraduationCap, DollarSign, TrendingUp, BookOpen, Acti
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from "recharts";
 
 const AdminOverview = () => {
-  const [stats, setStats] = useState({ coaches: 0, learners: 0, revenue: 0, enrollments: 0, courses: 0, reviews: 0 });
+  const [stats, setStats] = useState({ coaches: 0, learners: 0, revenue: 0, enrollments: 0, courses: 0, reviews: 0, pendingApprovals: 0 });
   const [enrollmentsByMonth, setEnrollmentsByMonth] = useState<any[]>([]);
   const [revenueByMonth, setRevenueByMonth] = useState<any[]>([]);
   const [coursesByCategory, setCoursesByCategory] = useState<any[]>([]);
@@ -33,6 +33,7 @@ const AdminOverview = () => {
         enrollments: enrollments.count || 0,
         courses: courseData.length,
         reviews: reviews.count || 0,
+        pendingApprovals: courseData.filter((c: any) => c.approval_status === "pending").length,
       });
 
       // Enrollments by month
@@ -82,7 +83,7 @@ const AdminOverview = () => {
     { label: "Total Revenue", value: `$${stats.revenue.toFixed(2)}`, icon: DollarSign, color: "text-green-400" },
     { label: "Total Enrollments", value: stats.enrollments, icon: TrendingUp, color: "text-purple-400" },
     { label: "Total Courses", value: stats.courses, icon: BookOpen, color: "text-orange-400" },
-    { label: "Total Reviews", value: stats.reviews, icon: Activity, color: "text-pink-400" },
+    { label: "Pending Approvals", value: stats.pendingApprovals, icon: Activity, color: "text-yellow-400" },
   ];
 
   return (
