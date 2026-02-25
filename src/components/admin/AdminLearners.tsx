@@ -71,7 +71,7 @@ const AdminLearners = () => {
 
   const filtered = useMemo(() => {
     let result = learners.filter((l) => {
-      const matchesSearch = !search || [l.full_name, l.country, l.industry, l.city, l.contact_number].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
+      const matchesSearch = !search || [l.full_name, l.email, l.country, l.industry, l.city, l.contact_number].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
       const matchesCountry = countryFilter === "all" || l.country === countryFilter;
       const matchesCategory = categoryFilter === "all" || getLearnerStats(l.user_id).categories.includes(categoryFilter);
       return matchesSearch && matchesCountry && matchesCategory;
@@ -108,10 +108,10 @@ const AdminLearners = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["Name", "Email", "Phone", "Country", "City", "Industry", "Job Title", "Enrolled Courses", "Categories", "Progress %", "Total Spent", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Last Active", "Joined"];
+    const headers = ["Name", "Email", "Phone", "WhatsApp", "Country", "City", "Industry", "Job Title", "Education", "Experience Level", "Enrolled Courses", "Categories", "Progress %", "Total Spent", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Last Active", "Joined"];
     const rows = filtered.map((l) => {
       const s = getLearnerStats(l.user_id);
-      return [l.full_name, l.contact_number, l.whatsapp_number, l.country, l.city, l.industry, l.job_title, s.enrolled, s.categories.join(";"), `${s.avgProgress}%`, `$${s.totalSpent.toFixed(2)}`, l.marketing_consent ? "Yes" : "No", l.utm_source, l.utm_medium, l.utm_campaign, (l.tags || []).join(";"), l.last_active_at ? new Date(l.last_active_at).toLocaleDateString() : "", new Date(l.created_at).toLocaleDateString()];
+      return [l.full_name, l.email, l.contact_number, l.whatsapp_number, l.country, l.city, l.industry, l.job_title, l.education, l.experience_level, s.enrolled, s.categories.join(";"), `${s.avgProgress}%`, `$${s.totalSpent.toFixed(2)}`, l.marketing_consent ? "Yes" : "No", l.utm_source, l.utm_medium, l.utm_campaign, (l.tags || []).join(";"), l.last_active_at ? new Date(l.last_active_at).toLocaleDateString() : "", new Date(l.created_at).toLocaleDateString()];
     });
     const csv = [headers, ...rows].map((r) => r.map(v => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -168,7 +168,7 @@ const AdminLearners = () => {
           <div className="rounded-xl border border-border bg-card p-5">
             <h3 className="text-sm font-semibold text-foreground mb-3">Contact & Profile</h3>
             <div className="grid gap-3 sm:grid-cols-2">
-              {[["Phone", selectedLearner.contact_number], ["WhatsApp", selectedLearner.whatsapp_number], ["LinkedIn", selectedLearner.linkedin_profile], ["City", selectedLearner.city], ["Country", selectedLearner.country], ["Industry", selectedLearner.industry], ["Job Title", selectedLearner.job_title], ["Experience", selectedLearner.experience_level], ["Education", selectedLearner.education]].map(([label, val]) => (
+              {[["Email", selectedLearner.email], ["Phone", selectedLearner.contact_number], ["WhatsApp", selectedLearner.whatsapp_number], ["LinkedIn", selectedLearner.linkedin_profile], ["City", selectedLearner.city], ["Country", selectedLearner.country], ["Industry", selectedLearner.industry], ["Job Title", selectedLearner.job_title], ["Experience", selectedLearner.experience_level], ["Education", selectedLearner.education]].map(([label, val]) => (
                 <div key={label}><p className="text-xs text-muted-foreground">{label}</p><p className="text-sm text-foreground">{val || "—"}</p></div>
               ))}
             </div>
@@ -292,6 +292,7 @@ const AdminLearners = () => {
               <TableRow>
                 <TableHead className="w-10"><Checkbox checked={selectedIds.size === filtered.length && filtered.length > 0} onCheckedChange={toggleSelectAll} /></TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Country</TableHead>
                 <TableHead>Enrolled</TableHead>
@@ -311,6 +312,7 @@ const AdminLearners = () => {
                   <TableRow key={l.id} className={selectedIds.has(l.user_id) ? "bg-primary/5" : ""}>
                     <TableCell><Checkbox checked={selectedIds.has(l.user_id)} onCheckedChange={() => toggleSelect(l.user_id)} /></TableCell>
                     <TableCell className="text-foreground font-medium">{l.full_name || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">{l.email || "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{l.contact_number || "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{l.country || "—"}</TableCell>
                     <TableCell className="text-foreground">{s.enrolled}</TableCell>

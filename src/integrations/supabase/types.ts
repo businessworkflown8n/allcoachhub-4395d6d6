@@ -288,6 +288,7 @@ export type Database = {
           country: string | null
           created_at: string
           education: string | null
+          email: string | null
           experience: string | null
           experience_level: string | null
           full_name: string | null
@@ -319,6 +320,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           education?: string | null
+          email?: string | null
           experience?: string | null
           experience_level?: string | null
           full_name?: string | null
@@ -350,6 +352,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           education?: string | null
+          email?: string | null
           experience?: string | null
           experience_level?: string | null
           full_name?: string | null
