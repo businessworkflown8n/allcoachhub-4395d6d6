@@ -18,7 +18,14 @@ const SignupForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !email || !password) return;
+    if (!fullName || !email || !mobile || !password) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     const { error } = await supabase.auth.signUp({
@@ -53,10 +60,9 @@ const SignupForm = () => {
     return (
       <div className="py-8 text-center">
         <CheckCircle className="mx-auto mb-4 h-12 w-12 text-primary" />
-        <h3 className="mb-2 text-lg font-semibold text-foreground">Check your email</h3>
+        <h3 className="mb-2 text-lg font-semibold text-foreground">Thank You For Registration!</h3>
         <p className="text-sm text-muted-foreground">
-          We've sent a verification link to <strong className="text-foreground">{email}</strong>.
-          Click the link to activate your account.
+          Please verify your Email ID for further use. We've sent a verification link to <strong className="text-foreground">{email}</strong>.
         </p>
       </div>
     );
