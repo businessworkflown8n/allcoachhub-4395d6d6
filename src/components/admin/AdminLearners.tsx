@@ -8,14 +8,17 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/hooks/useAuth";
 
 const TAG_OPTIONS = ["High Intent", "High Spend", "Inactive 30 Days", "New Learner", "Repeat Buyer", "VIP"];
 
 const AdminLearners = () => {
+  const { user } = useAuth();
   const [learners, setLearners] = useState<any[]>([]);
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [selectedLearner, setSelectedLearner] = useState<any>(null);
   const [countryFilter, setCountryFilter] = useState<string>("all");
@@ -57,6 +60,36 @@ const AdminLearners = () => {
     if (roleErr || profErr) { toast({ title: "Error", description: (roleErr || profErr)?.message, variant: "destructive" }); return; }
     toast({ title: "Learner removed" });
     fetchAll();
+  };
+
+  const changePaymentStatus = async (enrollment: any, newStatus: string) => {
+    const oldStatus = enrollment.payment_status;
+    if (oldStatus === newStatus) return;
+    setUpdatingStatus(enrollment.id);
+    const { error } = await supabase.from("enrollments").update({ payment_status: newStatus }).eq("id", enrollment.id);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); setUpdatingStatus(null); return; }
+    if (user) {
+      await supabase.from("payment_status_audit").insert({
+        enrollment_id: enrollment.id, old_status: oldStatus, new_status: newStatus, changed_by: user.id,
+      });
+    }
+    setEnrollments(prev => prev.map(e => e.id === enrollment.id ? { ...e, payment_status: newStatus } : e));
+    setUpdatingStatus(null);
+    toast({ title: `Payment status changed to ${newStatus}` });
+  };
+
+  const exportEnrollmentsCSV = (learnerEnrollments: any[]) => {
+    const headers = ["Course", "Category", "Coach", "Amount", "Payment Status", "Payment ID", "Enrollment Date", "Progress"];
+    const rows = learnerEnrollments.map((e) => {
+      const course = courses.find(c => c.id === e.course_id);
+      return [course?.title || "", course?.category || "", e.coach_id, `$${Number(e.amount_paid || 0).toFixed(2)}`, e.payment_status, e.payment_id || "", new Date(e.enrolled_at).toLocaleDateString(), `${e.progress_percent || 0}%`];
+    });
+    const csv = [headers, ...rows].map((r) => r.map(v => `"${v || ""}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "learner_enrollments.csv";
+    a.click();
   };
 
   const updateTags = async (learner: any, tags: string[]) => {
@@ -202,10 +235,15 @@ const AdminLearners = () => {
         {/* Enrollments */}
         {learnerEnrollments.length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-foreground">Course Enrollments ({learnerEnrollments.length})</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-foreground">Course Enrollments ({learnerEnrollments.length})</h3>
+              <Button size="sm" variant="outline" onClick={() => exportEnrollmentsCSV(learnerEnrollments)} className="gap-1 h-8 text-xs">
+                <Download className="h-3 w-3" /> Export
+              </Button>
+            </div>
             <div className="rounded-xl border border-border overflow-auto">
               <Table>
-                <TableHeader><TableRow><TableHead>Course</TableHead><TableHead>Category</TableHead><TableHead>Amount</TableHead><TableHead>Progress</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Course</TableHead><TableHead>Category</TableHead><TableHead>Amount</TableHead><TableHead>Progress</TableHead><TableHead>Paid Status</TableHead><TableHead>Payment ID</TableHead><TableHead>Enrolled</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {learnerEnrollments.map((e) => {
                     const course = courses.find((c) => c.id === e.course_id);
@@ -220,7 +258,18 @@ const AdminLearners = () => {
                             <span className="text-xs text-muted-foreground">{e.progress_percent || 0}%</span>
                           </div>
                         </TableCell>
-                        <TableCell><span className={`rounded-full px-2 py-0.5 text-xs ${e.payment_status === "paid" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>{e.payment_status}</span></TableCell>
+                        <TableCell>
+                          <Select value={e.payment_status} onValueChange={(val) => changePaymentStatus(e, val)} disabled={updatingStatus === e.id}>
+                            <SelectTrigger className={`w-24 h-7 text-xs border-0 ${e.payment_status === "paid" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="paid">Paid</SelectItem>
+                              <SelectItem value="pending">Unpaid</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-xs">{e.payment_id || "—"}</TableCell>
                         <TableCell className="text-muted-foreground">{new Date(e.enrolled_at).toLocaleDateString()}</TableCell>
                       </TableRow>
                     );
