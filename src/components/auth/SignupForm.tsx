@@ -12,6 +12,8 @@ const SignupForm = () => {
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
   const [role, setRole] = useState<"learner" | "coach">("learner");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -37,6 +39,8 @@ const SignupForm = () => {
           full_name: fullName,
           role,
           mobile,
+          city,
+          country,
           ...(role === "coach" ? { company_name: companyName } : {}),
         },
       },
@@ -158,6 +162,29 @@ const SignupForm = () => {
           />
         </div>
       )}
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="city" className="text-foreground">City</Label>
+          <Input
+            id="city"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="Your city"
+            className="bg-secondary border-border"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="country" className="text-foreground">Country</Label>
+          <Input
+            id="country"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            placeholder="Your country"
+            className="bg-secondary border-border"
+          />
+        </div>
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="password" className="text-foreground">Password</Label>
