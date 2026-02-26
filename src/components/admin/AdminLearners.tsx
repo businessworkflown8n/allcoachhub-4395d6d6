@@ -9,6 +9,9 @@ import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
+
 
 const TAG_OPTIONS = ["High Intent", "High Spend", "Inactive 30 Days", "New Learner", "Repeat Buyer", "VIP"];
 
@@ -171,6 +174,24 @@ const AdminLearners = () => {
   const completedEnrollments = enrollments.filter(e => e.completed_at).length;
   const avgSpend = learners.length > 0 ? totalSpend / learners.length : 0;
 
+  const enrollmentTrend = useMemo(() => {
+    const monthMap: Record<string, { enrollments: number; revenue: number }> = {};
+    enrollments.forEach(e => {
+      const d = new Date(e.enrolled_at);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      if (!monthMap[key]) monthMap[key] = { enrollments: 0, revenue: 0 };
+      monthMap[key].enrollments += 1;
+      monthMap[key].revenue += Number(e.amount_paid || 0);
+    });
+    return Object.entries(monthMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-12)
+      .map(([month, data]) => ({
+        month: new Date(month + "-01").toLocaleDateString("en-US", { month: "short", year: "2-digit" }),
+        ...data,
+      }));
+  }, [enrollments]);
+
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
   // ─── Detail view ───
@@ -313,7 +334,34 @@ const AdminLearners = () => {
         <div className="rounded-xl border border-border bg-card p-4"><Filter className="h-5 w-5 text-orange-400 mb-2" /><p className="text-2xl font-bold text-foreground">{[...new Set(learners.map(l => l.country).filter(Boolean))].length}</p><p className="text-xs text-muted-foreground">Countries</p></div>
       </div>
 
-      {/* Header + Filters */}
+      {/* Enrollment Trend Chart */}
+      {enrollmentTrend.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-4">Enrollment Trends (Last 12 Months)</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <AreaChart data={enrollmentTrend}>
+              <defs>
+                <linearGradient id="enrollGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <YAxis yAxisId="left" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
+              <Area yAxisId="left" type="monotone" dataKey="enrollments" stroke="hsl(var(--primary))" fill="url(#enrollGrad)" strokeWidth={2} name="Enrollments" />
+              <Area yAxisId="right" type="monotone" dataKey="revenue" stroke="#22c55e" fill="url(#revenueGrad)" strokeWidth={2} name="Revenue ($)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-xl font-bold text-foreground">Learner Management</h2>
