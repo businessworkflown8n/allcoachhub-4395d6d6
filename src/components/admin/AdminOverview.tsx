@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart3, Users, GraduationCap, DollarSign, TrendingUp, BookOpen, Activity, CheckCircle, XCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { BarChart3, Users, GraduationCap, DollarSign, TrendingUp, BookOpen, Activity, CheckCircle, XCircle, ChevronDown, ChevronUp, Download } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
 import { useCurrency } from "@/hooks/useCurrency";
 
@@ -23,15 +23,15 @@ const AdminOverview = () => {
         supabase.from("enrollments").select("*, courses(title, price_usd, price_inr, coach_id)").order("enrolled_at", { ascending: false }),
         supabase.from("courses").select("*"),
         supabase.from("reviews").select("id", { count: "exact" }),
-        supabase.from("profiles").select("user_id, full_name"),
+        supabase.from("profiles").select("user_id, full_name, contact_number"),
       ]);
 
       const payData = payments.data || [];
       const enrollData = enrollments.data || [];
       const courseData = courses.data || [];
       const profileData = profiles.data || [];
-      const profileMap: Record<string, string> = {};
-      profileData.forEach((p: any) => { if (p.user_id && p.full_name) profileMap[p.user_id] = p.full_name; });
+      const profileMap: Record<string, { name: string; phone: string }> = {};
+      profileData.forEach((p: any) => { if (p.user_id) profileMap[p.user_id] = { name: p.full_name || "Unknown", phone: p.contact_number || "N/A" }; });
 
       const paidEnrollments = enrollData.filter((e: any) => e.payment_status === "paid").length;
       const unpaidEnrollments = enrollData.filter((e: any) => e.payment_status !== "paid").length;
@@ -75,13 +75,16 @@ const AdminOverview = () => {
       const activities: any[] = [];
       enrollData.slice(0, 10).forEach((e: any) => {
         const course = e.courses;
-        const coachName = course?.coach_id ? (profileMap[course.coach_id] || "Unknown Coach") : "Unknown Coach";
+        const coachProfile = course?.coach_id ? profileMap[course.coach_id] : null;
+        const coachName = coachProfile?.name || "Unknown Coach";
+        const coachPhone = coachProfile?.phone || "N/A";
         activities.push({
           type: "enrollment",
           name: e.full_name,
           detail: `enrolled in a course`,
           courseName: course?.title || "Unknown Course",
           coachName,
+          coachPhone,
           fee: course ? `${symbol}${Number(course[priceKey] || course.price_usd)}` : "N/A",
           paymentStatus: e.payment_status,
           time: e.enrolled_at,
@@ -97,6 +100,21 @@ const AdminOverview = () => {
     };
     fetchAll();
   }, []);
+
+  const exportActivityCSV = () => {
+    const enrollmentActivities = recentActivity.filter(a => a.type === "enrollment");
+    if (!enrollmentActivities.length) return;
+    const headers = ["Learner Name", "Course", "Coach", "Coach Phone", "Fee", "Payment Status", "Date"];
+    const rows = enrollmentActivities.map(a => [
+      a.name, a.courseName, a.coachName, a.coachPhone, a.fee, a.paymentStatus, new Date(a.time).toLocaleDateString()
+    ]);
+    const csv = [headers, ...rows].map(r => r.map((v: string) => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "recent_activity.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
@@ -183,7 +201,12 @@ const AdminOverview = () => {
         </div>
 
         <div className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
-          <h3 className="text-sm font-semibold text-foreground mb-4">Recent Activity</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-foreground">Recent Activity</h3>
+            <button onClick={exportActivityCSV} className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary transition-colors">
+              <Download className="h-3.5 w-3.5" /> Export CSV
+            </button>
+          </div>
           {recentActivity.length > 0 ? (
             <div className="space-y-1">
               {recentActivity.map((a, i) => (
@@ -219,6 +242,10 @@ const AdminOverview = () => {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Coach</span>
                         <span className="text-foreground font-medium">{a.coachName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Coach Phone</span>
+                        <span className="text-foreground font-medium">{a.coachPhone}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Fee</span>
