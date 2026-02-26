@@ -1,30 +1,37 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart3, Users, GraduationCap, DollarSign, TrendingUp, BookOpen, Activity, CheckCircle, XCircle } from "lucide-react";
+import { BarChart3, Users, GraduationCap, DollarSign, TrendingUp, BookOpen, Activity, CheckCircle, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const AdminOverview = () => {
+  const { symbol, priceKey } = useCurrency();
   const [stats, setStats] = useState({ coaches: 0, learners: 0, revenue: 0, enrollments: 0, courses: 0, reviews: 0, pendingApprovals: 0, paidEnrollments: 0, unpaidEnrollments: 0 });
   const [enrollmentsByMonth, setEnrollmentsByMonth] = useState<any[]>([]);
   const [revenueByMonth, setRevenueByMonth] = useState<any[]>([]);
   const [coursesByCategory, setCoursesByCategory] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [expandedActivity, setExpandedActivity] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [coaches, learners, payments, enrollments, courses, reviews] = await Promise.all([
+      const [coaches, learners, payments, enrollments, courses, reviews, profiles] = await Promise.all([
         supabase.from("user_roles").select("id", { count: "exact" }).eq("role", "coach"),
         supabase.from("user_roles").select("id", { count: "exact" }).eq("role", "learner"),
         supabase.from("payments").select("*").eq("status", "paid"),
-        supabase.from("enrollments").select("*").order("enrolled_at", { ascending: false }),
+        supabase.from("enrollments").select("*, courses(title, price_usd, price_inr, coach_id)").order("enrolled_at", { ascending: false }),
         supabase.from("courses").select("*"),
         supabase.from("reviews").select("id", { count: "exact" }),
+        supabase.from("profiles").select("user_id, full_name"),
       ]);
 
       const payData = payments.data || [];
       const enrollData = enrollments.data || [];
       const courseData = courses.data || [];
+      const profileData = profiles.data || [];
+      const profileMap: Record<string, string> = {};
+      profileData.forEach((p: any) => { if (p.user_id && p.full_name) profileMap[p.user_id] = p.full_name; });
 
       const paidEnrollments = enrollData.filter((e: any) => e.payment_status === "paid").length;
       const unpaidEnrollments = enrollData.filter((e: any) => e.payment_status !== "paid").length;
@@ -66,8 +73,19 @@ const AdminOverview = () => {
 
       // Recent activity feed
       const activities: any[] = [];
-      enrollData.slice(0, 10).forEach((e) => {
-        activities.push({ type: "enrollment", name: e.full_name, detail: `enrolled in a course`, time: e.enrolled_at });
+      enrollData.slice(0, 10).forEach((e: any) => {
+        const course = e.courses;
+        const coachName = course?.coach_id ? (profileMap[course.coach_id] || "Unknown Coach") : "Unknown Coach";
+        activities.push({
+          type: "enrollment",
+          name: e.full_name,
+          detail: `enrolled in a course`,
+          courseName: course?.title || "Unknown Course",
+          coachName,
+          fee: course ? `${symbol}${Number(course[priceKey] || course.price_usd)}` : "N/A",
+          paymentStatus: e.payment_status,
+          time: e.enrolled_at,
+        });
       });
       payData.slice(0, 5).forEach((p) => {
         activities.push({ type: "payment", name: `$${Number(p.amount).toFixed(2)}`, detail: `payment received`, time: p.created_at });
@@ -167,17 +185,53 @@ const AdminOverview = () => {
         <div className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
           <h3 className="text-sm font-semibold text-foreground mb-4">Recent Activity</h3>
           {recentActivity.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-1">
               {recentActivity.map((a, i) => (
-                <div key={i} className="flex items-center justify-between border-b border-border pb-2 last:border-0">
-                  <div className="flex items-center gap-3">
-                    <div className={`h-2 w-2 rounded-full ${a.type === "enrollment" ? "bg-blue-400" : "bg-green-400"}`} />
-                    <div>
-                      <p className="text-sm text-foreground font-medium">{a.name}</p>
-                      <p className="text-xs text-muted-foreground">{a.detail}</p>
+                <div key={i} className="border-b border-border last:border-0">
+                  <button
+                    onClick={() => a.type === "enrollment" ? setExpandedActivity(expandedActivity === i ? null : i) : null}
+                    className={`flex w-full items-center justify-between py-3 px-1 text-left ${a.type === "enrollment" ? "cursor-pointer hover:bg-secondary/50 rounded-lg transition-colors" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`h-2 w-2 rounded-full ${a.type === "enrollment" ? "bg-blue-400" : "bg-green-400"}`} />
+                      <div>
+                        <p className="text-sm text-foreground font-medium">{a.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {a.type === "enrollment" ? (
+                            <span className="text-primary underline underline-offset-2">enrolled in a course</span>
+                          ) : a.detail}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground">{new Date(a.time).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">{new Date(a.time).toLocaleDateString()}</span>
+                      {a.type === "enrollment" && (
+                        expandedActivity === i ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                    </div>
+                  </button>
+                  {a.type === "enrollment" && expandedActivity === i && (
+                    <div className="ml-8 mb-3 rounded-lg bg-secondary/30 p-3 text-xs space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Course</span>
+                        <span className="text-foreground font-medium">{a.courseName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Coach</span>
+                        <span className="text-foreground font-medium">{a.coachName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Fee</span>
+                        <span className="text-foreground font-medium">{a.fee}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Payment</span>
+                        <span className={`font-medium ${a.paymentStatus === "paid" ? "text-green-400" : "text-yellow-400"}`}>
+                          {a.paymentStatus?.charAt(0).toUpperCase() + a.paymentStatus?.slice(1)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
