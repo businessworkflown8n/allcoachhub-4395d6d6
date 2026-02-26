@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart3, Users, GraduationCap, DollarSign, TrendingUp, BookOpen, Activity } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from "recharts";
+import { BarChart3, Users, GraduationCap, DollarSign, TrendingUp, BookOpen, Activity, CheckCircle, XCircle } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
 
 const AdminOverview = () => {
-  const [stats, setStats] = useState({ coaches: 0, learners: 0, revenue: 0, enrollments: 0, courses: 0, reviews: 0, pendingApprovals: 0 });
+  const [stats, setStats] = useState({ coaches: 0, learners: 0, revenue: 0, enrollments: 0, courses: 0, reviews: 0, pendingApprovals: 0, paidEnrollments: 0, unpaidEnrollments: 0 });
   const [enrollmentsByMonth, setEnrollmentsByMonth] = useState<any[]>([]);
   const [revenueByMonth, setRevenueByMonth] = useState<any[]>([]);
   const [coursesByCategory, setCoursesByCategory] = useState<any[]>([]);
@@ -26,14 +26,21 @@ const AdminOverview = () => {
       const enrollData = enrollments.data || [];
       const courseData = courses.data || [];
 
+      const paidEnrollments = enrollData.filter((e: any) => e.payment_status === "paid").length;
+      const unpaidEnrollments = enrollData.filter((e: any) => e.payment_status !== "paid").length;
+      // Revenue only from paid enrollments
+      const paidRevenue = enrollData.filter((e: any) => e.payment_status === "paid").reduce((s: number, e: any) => s + Number(e.amount_paid || 0), 0);
+
       setStats({
         coaches: coaches.count || 0,
         learners: learners.count || 0,
-        revenue: payData.reduce((s, p) => s + Number(p.amount), 0),
-        enrollments: enrollments.count || 0,
+        revenue: paidRevenue,
+        enrollments: enrollData.length,
         courses: courseData.length,
         reviews: reviews.count || 0,
         pendingApprovals: courseData.filter((c: any) => c.approval_status === "pending").length,
+        paidEnrollments,
+        unpaidEnrollments,
       });
 
       // Enrollments by month
@@ -44,11 +51,11 @@ const AdminOverview = () => {
       });
       setEnrollmentsByMonth(Object.entries(monthMap).slice(-6).map(([month, count]) => ({ month, count })));
 
-      // Revenue by month
+      // Revenue by month (only paid enrollments)
       const revMap: Record<string, number> = {};
-      payData.forEach((p) => {
-        const m = new Date(p.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short" });
-        revMap[m] = (revMap[m] || 0) + Number(p.amount);
+      enrollData.filter((e: any) => e.payment_status === "paid").forEach((e: any) => {
+        const m = new Date(e.enrolled_at).toLocaleDateString("en-US", { year: "numeric", month: "short" });
+        revMap[m] = (revMap[m] || 0) + Number(e.amount_paid || 0);
       });
       setRevenueByMonth(Object.entries(revMap).slice(-6).map(([month, revenue]) => ({ month, revenue })));
 
@@ -80,8 +87,10 @@ const AdminOverview = () => {
   const statCards = [
     { label: "Total Coaches", value: stats.coaches, icon: Users, color: "text-primary" },
     { label: "Total Learners", value: stats.learners, icon: GraduationCap, color: "text-blue-400" },
-    { label: "Total Revenue", value: `$${stats.revenue.toFixed(2)}`, icon: DollarSign, color: "text-green-400" },
+    { label: "Total Revenue (Paid)", value: `$${stats.revenue.toFixed(2)}`, icon: DollarSign, color: "text-green-400" },
     { label: "Total Enrollments", value: stats.enrollments, icon: TrendingUp, color: "text-purple-400" },
+    { label: "Paid Enrollments", value: stats.paidEnrollments, icon: CheckCircle, color: "text-green-400" },
+    { label: "Unpaid Enrollments", value: stats.unpaidEnrollments, icon: XCircle, color: "text-yellow-400" },
     { label: "Total Courses", value: stats.courses, icon: BookOpen, color: "text-orange-400" },
     { label: "Pending Approvals", value: stats.pendingApprovals, icon: Activity, color: "text-yellow-400" },
   ];
@@ -91,7 +100,7 @@ const AdminOverview = () => {
       <h2 className="text-xl font-bold text-foreground">Platform Analytics</h2>
 
       {/* Stat cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
         {statCards.map((s) => (
           <div key={s.label} className="rounded-xl border border-border bg-card p-4">
             <s.icon className={`h-5 w-5 ${s.color} mb-2`} />
@@ -103,9 +112,8 @@ const AdminOverview = () => {
 
       {/* Charts row */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Revenue trend */}
         <div className="rounded-xl border border-border bg-card p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-4">Revenue Trend</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-4">Revenue Trend (Paid Only)</h3>
           {revenueByMonth.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={revenueByMonth}>
@@ -125,7 +133,6 @@ const AdminOverview = () => {
           ) : <p className="text-sm text-muted-foreground text-center py-8">No revenue data yet</p>}
         </div>
 
-        {/* Enrollments trend */}
         <div className="rounded-xl border border-border bg-card p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4">Enrollments Trend</h3>
           {enrollmentsByMonth.length > 0 ? (
@@ -143,7 +150,6 @@ const AdminOverview = () => {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Courses by category */}
         <div className="rounded-xl border border-border bg-card p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4">Courses by Category</h3>
           {coursesByCategory.length > 0 ? (
@@ -158,7 +164,6 @@ const AdminOverview = () => {
           ) : <p className="text-sm text-muted-foreground text-center py-8">No courses yet</p>}
         </div>
 
-        {/* Recent Activity */}
         <div className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
           <h3 className="text-sm font-semibold text-foreground mb-4">Recent Activity</h3>
           {recentActivity.length > 0 ? (

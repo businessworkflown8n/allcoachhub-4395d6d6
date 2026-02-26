@@ -175,6 +175,36 @@ export type Database = {
           },
         ]
       }
+      payment_status_audit: {
+        Row: {
+          changed_at: string
+          changed_by: string
+          enrollment_id: string
+          id: string
+          new_status: string
+          notes: string | null
+          old_status: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by: string
+          enrollment_id: string
+          id?: string
+          new_status: string
+          notes?: string | null
+          old_status: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string
+          enrollment_id?: string
+          id?: string
+          new_status?: string
+          notes?: string | null
+          old_status?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
