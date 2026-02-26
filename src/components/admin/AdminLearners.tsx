@@ -159,6 +159,17 @@ const AdminLearners = () => {
 
   const totalSpend = learners.reduce((s, l) => s + getLearnerStats(l.user_id).totalSpent, 0);
   const totalEnrolled = enrollments.length;
+  const paidEnrollments = enrollments.filter(e => e.payment_status === "paid").length;
+  const unpaidEnrollments = enrollments.filter(e => e.payment_status !== "paid").length;
+  const activeLearners = learners.filter(l => {
+    const lastActive = l.last_active_at ? new Date(l.last_active_at) : null;
+    if (!lastActive) return false;
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return lastActive >= thirtyDaysAgo;
+  }).length;
+  const completedEnrollments = enrollments.filter(e => e.completed_at).length;
+  const avgSpend = learners.length > 0 ? totalSpend / learners.length : 0;
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
@@ -289,9 +300,17 @@ const AdminLearners = () => {
       {/* Summary cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-border bg-card p-4"><GraduationCap className="h-5 w-5 text-blue-400 mb-2" /><p className="text-2xl font-bold text-foreground">{learners.length}</p><p className="text-xs text-muted-foreground">Total Learners</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{activeLearners}</p><p className="text-xs text-muted-foreground">Active (30 days)</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{totalEnrolled}</p><p className="text-xs text-muted-foreground">Total Enrollments</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-green-400 mb-2" /><p className="text-2xl font-bold text-foreground">${totalSpend.toFixed(2)}</p><p className="text-xs text-muted-foreground">Total Spend</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><GraduationCap className="h-5 w-5 text-emerald-400 mb-2" /><p className="text-2xl font-bold text-foreground">{completedEnrollments}</p><p className="text-xs text-muted-foreground">Completed Courses</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-green-400 mb-2" /><p className="text-2xl font-bold text-foreground">${totalSpend.toFixed(2)}</p><p className="text-xs text-muted-foreground">Total Revenue</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-teal-400 mb-2" /><p className="text-2xl font-bold text-foreground">${avgSpend.toFixed(2)}</p><p className="text-xs text-muted-foreground">Avg Spend / Learner</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-green-500 mb-2" /><p className="text-2xl font-bold text-foreground">{paidEnrollments}</p><p className="text-xs text-muted-foreground">Paid Enrollments</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-yellow-400 mb-2" /><p className="text-2xl font-bold text-foreground">{unpaidEnrollments}</p><p className="text-xs text-muted-foreground">Unpaid Enrollments</p></div>
+      </div>
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-purple-400 mb-2" /><p className="text-2xl font-bold text-foreground">{learners.filter(l => l.marketing_consent).length}</p><p className="text-xs text-muted-foreground">Marketing Opted In</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><Filter className="h-5 w-5 text-orange-400 mb-2" /><p className="text-2xl font-bold text-foreground">{[...new Set(learners.map(l => l.country).filter(Boolean))].length}</p><p className="text-xs text-muted-foreground">Countries</p></div>
       </div>
 
       {/* Header + Filters */}
