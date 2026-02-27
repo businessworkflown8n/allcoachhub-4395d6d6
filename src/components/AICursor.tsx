@@ -48,15 +48,14 @@ const AICursor = () => {
           strokeWidth="2"
           strokeLinejoin="round"
         />
-        {/* AI text centered inside the arrow body */}
         <text
-          x="8.5"
-          y="24"
+          x="7"
+          y="26"
           fill="hsl(var(--primary-foreground))"
-          fontSize="11"
+          fontSize="9.5"
           fontWeight="900"
           fontFamily="Inter, system-ui, sans-serif"
-          letterSpacing="0.3"
+          letterSpacing="-0.3"
         >
           AI
         </text>
