@@ -30,28 +30,28 @@ const AICursor = () => {
           transform: `scale(${clicking ? 0.9 : 1})`,
           filter: "drop-shadow(0 2px 6px hsl(var(--primary) / 0.6))",
         }}
-        width="44"
-        height="58"
-        viewBox="0 0 44 58"
+        width="40"
+        height="54"
+        viewBox="0 0 40 54"
         fill="none"
       >
-        {/* classic arrow cursor shape */}
+        {/* arrow cursor */}
         <path
-          d="M3 3L3 46L13 36L21 54L27 51L19 33L32 33L3 3Z"
+          d="M3 3L3 44L12 35L19 50L25 47L18 32L30 32L3 3Z"
           fill="hsl(var(--primary))"
           stroke="hsl(var(--primary-foreground))"
           strokeWidth="2"
           strokeLinejoin="round"
         />
-        {/* AI label */}
+        {/* AI text centered inside the arrow body */}
         <text
-          x="9"
-          y="28"
+          x="8.5"
+          y="24"
           fill="hsl(var(--primary-foreground))"
-          fontSize="14"
+          fontSize="11"
           fontWeight="900"
           fontFamily="Inter, system-ui, sans-serif"
-          letterSpacing="0.5"
+          letterSpacing="0.3"
         >
           AI
         </text>
