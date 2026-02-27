@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const AICursor = () => {
+  const isMobile = useIsMobile();
   const [pos, setPos] = useState({ x: -100, y: -100 });
   const [clicking, setClicking] = useState(false);
 
   useEffect(() => {
+    if (isMobile) return;
     const move = (e: MouseEvent) => setPos({ x: e.clientX, y: e.clientY });
     const down = () => setClicking(true);
     const up = () => setClicking(false);
@@ -18,7 +21,9 @@ const AICursor = () => {
       document.removeEventListener("mousedown", down);
       document.removeEventListener("mouseup", up);
     };
-  }, []);
+  }, [isMobile]);
+
+  if (isMobile) return null;
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[9999]" aria-hidden="true">
