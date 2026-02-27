@@ -19,6 +19,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ResetPassword from "./pages/ResetPassword";
 import AIBlogs from "./pages/AIBlogs";
 import NotFound from "./pages/NotFound";
+import AICursor from "./components/AICursor";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <FloatingButtons />
+          <AICursor />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
