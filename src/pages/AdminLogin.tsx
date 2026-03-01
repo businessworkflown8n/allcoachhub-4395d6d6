@@ -107,9 +107,14 @@ const AdminLogin = () => {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Not an admin? <a href="/auth" className="text-primary hover:underline">Go to regular login</a>
-        </p>
+        <div className="mt-6 space-y-2 text-center text-xs text-muted-foreground">
+          <p>
+            Login via OTP? <a href="/admin/otp-login" className="text-primary hover:underline">Admin OTP Login</a>
+          </p>
+          <p>
+            Not an admin? <a href="/auth" className="text-primary hover:underline">Go to regular login</a>
+          </p>
+        </div>
       </div>
     </div>
   );

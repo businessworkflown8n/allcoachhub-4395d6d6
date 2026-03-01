@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import AdminLogin from "./pages/AdminLogin";
+import AdminOTPLogin from "./pages/AdminOTPLogin";
 import CourseDetail from "./pages/CourseDetail";
 import Enroll from "./pages/Enroll";
 import LearnerDashboard from "./pages/LearnerDashboard";
@@ -80,6 +81,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/otp-login" element={<AdminOTPLogin />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/ai-blogs" element={<AIBlogs />} />
             <Route path="/course/:id" element={<CourseDetail />} />
