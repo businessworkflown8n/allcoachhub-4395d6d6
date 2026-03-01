@@ -21,6 +21,8 @@ const CoachEarnings = () => {
   const { user } = useAuth();
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [payouts, setPayouts] = useState<any[]>([]);
+  const [commissionPercent, setCommissionPercent] = useState<number | null>(null);
+  const [defaultCommission, setDefaultCommission] = useState<number>(20);
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
   const { rate: usdToInr } = useExchangeRate();
@@ -30,12 +32,18 @@ const CoachEarnings = () => {
     Promise.all([
       supabase.from("enrollments").select("*, courses(title, price_usd, price_inr)").eq("coach_id", user.id),
       supabase.from("payouts").select("*").eq("coach_id", user.id).order("requested_at", { ascending: false }),
-    ]).then(([e, po]) => {
+      supabase.from("coach_commissions").select("commission_percent").eq("coach_id", user.id).maybeSingle(),
+      supabase.from("platform_settings").select("value").eq("key", "commission_percent").single(),
+    ]).then(([e, po, cc, ps]) => {
       setEnrollments(e.data || []);
       setPayouts(po.data || []);
+      if (cc.data) setCommissionPercent(cc.data.commission_percent);
+      if (ps.data) setDefaultCommission(Number(ps.data.value) || 20);
       setLoading(false);
     });
   }, [user]);
+
+  const activeCommission = commissionPercent ?? defaultCommission;
 
   const paidEnrollments = enrollments.filter((e) => e.payment_status === "paid");
 
@@ -100,6 +108,20 @@ const CoachEarnings = () => {
           <RefreshCw className="h-5 w-5 text-muted-foreground mb-2" />
           <p className="text-lg font-bold text-foreground">1 USD = ₹{usdToInr.toFixed(2)}</p>
           <p className="text-xs text-muted-foreground">Live Exchange Rate</p>
+        </div>
+      </div>
+
+      {/* Commission Info */}
+      <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+          <TrendingUp className="h-5 w-5 text-primary" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            Platform Commission: {activeCommission}%
+            {commissionPercent !== null ? " (Custom)" : " (Default)"}
+          </p>
+          <p className="text-xs text-muted-foreground">This percentage is deducted from each payment by the platform</p>
         </div>
       </div>
 
