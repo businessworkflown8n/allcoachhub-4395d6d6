@@ -1,6 +1,6 @@
 import { Menu, X } from "lucide-react";
 import logo from "@/assets/logo.png";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
@@ -10,8 +10,19 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const { role } = useUserRole();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const dashboardPath = role === "admin" ? "/admin" : role === "coach" ? "/coach" : "/learner";
+
+  const handleSectionClick = (hash: string) => {
+    if (location.pathname !== "/") {
+      navigate("/" + hash);
+    } else {
+      const el = document.querySelector(hash);
+      el?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -22,9 +33,9 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          <a href="#coaches" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Browse Coaches</a>
-          <a href="#courses" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Courses</a>
-          <a href="#how-it-works" className="text-sm text-muted-foreground transition-colors hover:text-foreground">How It Works</a>
+          <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">Browse Coaches</button>
+          <button onClick={() => handleSectionClick("#courses")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">Courses</button>
+          <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">How It Works</button>
           <Link to="/ai-blogs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">AI Blogs</Link>
         </div>
 
@@ -64,9 +75,9 @@ const Navbar = () => {
       {mobileOpen && (
         <div className="border-t border-border bg-background px-4 pb-4 md:hidden">
           <div className="flex flex-col gap-3 pt-3">
-            <a href="#coaches" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Browse Coaches</a>
-            <a href="#courses" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Courses</a>
-            <a href="#how-it-works" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">How It Works</a>
+            <button onClick={() => { setMobileOpen(false); handleSectionClick("#coaches"); }} className="text-sm text-muted-foreground text-left">Browse Coaches</button>
+            <button onClick={() => { setMobileOpen(false); handleSectionClick("#courses"); }} className="text-sm text-muted-foreground text-left">Courses</button>
+            <button onClick={() => { setMobileOpen(false); handleSectionClick("#how-it-works"); }} className="text-sm text-muted-foreground text-left">How It Works</button>
             <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">AI Blogs</Link>
             {user && (
               <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Dashboard</Link>
