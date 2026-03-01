@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { LogOut, Menu, X } from "lucide-react";
-import logo from "@/assets/logo.gif";
+import logo from "@/assets/logo.png";
 import { useState } from "react";
 
 interface NavItem {
