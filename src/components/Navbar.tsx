@@ -1,5 +1,5 @@
 import { Menu, X } from "lucide-react";
-import logo from "@/assets/logo.gif";
+import logo from "@/assets/logo.png";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";

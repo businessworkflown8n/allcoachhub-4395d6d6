@@ -8,17 +8,37 @@ import TestimonialsSection from "@/components/TestimonialsSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  "name": "AI Coach Portal",
+  "url": "https://allcoachhub.lovable.app",
+  "description": "Master AI skills with 50+ expert coaches. Courses in prompt engineering, AI agents, automation & more.",
+  "sameAs": [
+    "https://x.com/Aicoachportal",
+    "https://www.linkedin.com/company/aicoachportal/",
+    "https://www.instagram.com/aicoachportal/",
+    "https://www.facebook.com/people/Aicoachportal/61588588206814/",
+    "https://www.youtube.com/@AicoachPortal"
+  ]
+};
+
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
-      <HeroSection />
-      <CategoriesSection />
-      <CoachesSection />
-      <CoursesSection />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <CTASection />
+      <header>
+        <HeroSection />
+      </header>
+      <main>
+        <CategoriesSection />
+        <CoachesSection />
+        <CoursesSection />
+        <HowItWorksSection />
+        <TestimonialsSection />
+        <CTASection />
+      </main>
       <Footer />
     </div>
   );
