@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      coach_commissions: {
+        Row: {
+          coach_id: string
+          commission_percent: number
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          commission_percent?: number
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          commission_percent?: number
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       courses: {
         Row: {
           approval_status: string
