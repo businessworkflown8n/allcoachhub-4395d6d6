@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Search, Calendar, Clock, ArrowRight, Sparkles, RefreshCw, MapPin, Building2, Briefcase, ExternalLink, BadgeIndianRupee, DollarSign } from "lucide-react";
@@ -96,8 +98,10 @@ const AIBlogs = () => {
               <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />{format(new Date(selectedPost.published_at), "MMM dd, yyyy")}</span>
               <span className="flex items-center gap-1"><Clock className="h-4 w-4" />{selectedPost.read_time}</span>
             </div>
-            <div className="prose prose-lg dark:prose-invert mt-8 max-w-none whitespace-pre-wrap text-foreground">
-              {selectedPost.content || selectedPost.excerpt}
+            <div className="prose prose-lg dark:prose-invert mt-8 max-w-none text-foreground prose-a:text-primary prose-a:underline hover:prose-a:text-primary/80 prose-headings:text-foreground prose-strong:text-foreground">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {selectedPost.content || selectedPost.excerpt}
+              </ReactMarkdown>
             </div>
           </article>
         </main>
