@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       ai_blogs: {
         Row: {
+          blog_type: string
           category: string
           content: string | null
           created_at: string
@@ -23,11 +24,13 @@ export type Database = {
           id: string
           image_url: string | null
           is_published: boolean
+          job_data: Json | null
           published_at: string
           read_time: string
           title: string
         }
         Insert: {
+          blog_type?: string
           category?: string
           content?: string | null
           created_at?: string
@@ -35,11 +38,13 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_published?: boolean
+          job_data?: Json | null
           published_at?: string
           read_time?: string
           title: string
         }
         Update: {
+          blog_type?: string
           category?: string
           content?: string | null
           created_at?: string
@@ -47,6 +52,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_published?: boolean
+          job_data?: Json | null
           published_at?: string
           read_time?: string
           title?: string
