@@ -74,8 +74,8 @@ const AdminOTPLogin = () => {
           <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
             <Shield className="h-7 w-7 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Admin Magic Link Login</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Secure access via email verification link</p>
+          <h1 className="text-2xl font-bold text-foreground">Admin Dashboard Login</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Click the link in your email to login to Admin Dashboard</p>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6">
@@ -87,7 +87,7 @@ const AdminOTPLogin = () => {
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-foreground">{ADMIN_EMAIL}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">A secure login link will be sent to this email</p>
+                <p className="text-xs text-muted-foreground">Click below to receive a link — click it to login to Admin Dashboard</p>
               </div>
 
               <button
@@ -95,7 +95,7 @@ const AdminOTPLogin = () => {
                 disabled={loading}
                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-semibold text-primary-foreground transition-all hover:brightness-110 disabled:opacity-50"
               >
-                {loading ? "Sending..." : "Send Login Link"}
+                {loading ? "Sending..." : "Click And Login in Admin Dashboard"}
                 {!loading && <ArrowRight className="h-4 w-4" />}
               </button>
             </form>
@@ -107,9 +107,9 @@ const AdminOTPLogin = () => {
               <div>
                 <h3 className="text-lg font-semibold text-foreground">Check Your Email</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  A login link has been sent to <span className="font-medium text-foreground">{ADMIN_EMAIL}</span>
+                   A login link has been sent to <span className="font-medium text-foreground">{ADMIN_EMAIL}</span>
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">Click the link in the email to sign in automatically.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Click the link in the email to login to Admin Dashboard.</p>
               </div>
 
               <button
