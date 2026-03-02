@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Video, Plus, Edit, Trash2, Users, Calendar, Clock, X } from "lucide-react";
+import { Video, Plus, Edit, Trash2, Users, Calendar, Clock, X, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -142,7 +142,7 @@ const CoachWebinars = () => {
     if (data && data.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, full_name, email")
+        .select("user_id, full_name, email, contact_number")
         .in("user_id", data.map((r: any) => r.learner_id));
 
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
@@ -153,6 +153,27 @@ const CoachWebinars = () => {
     } else {
       setRegistrants([]);
     }
+  };
+
+  const downloadCSV = () => {
+    const webinar = webinars.find((w) => w.id === showRegistrants);
+    const rows = [["Name", "Email", "Phone", "Registered At"]];
+    registrants.forEach((r) => {
+      rows.push([
+        r.profiles?.full_name || "Unknown",
+        r.profiles?.email || "—",
+        (r.profiles as any)?.contact_number || "—",
+        format(new Date(r.registered_at), "yyyy-MM-dd HH:mm"),
+      ]);
+    });
+    const csv = rows.map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${webinar?.title || "webinar"}-registrants.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
@@ -195,7 +216,14 @@ const CoachWebinars = () => {
       <Dialog open={!!showRegistrants} onOpenChange={(o) => { if (!o) setShowRegistrants(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Registered Learners ({registrants.length})</DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>Registered Learners ({registrants.length})</DialogTitle>
+              {registrants.length > 0 && (
+                <Button size="sm" variant="outline" onClick={downloadCSV} className="gap-1.5">
+                  <Download className="h-3.5 w-3.5" /> Download CSV
+                </Button>
+              )}
+            </div>
           </DialogHeader>
           {registrants.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">No registrations yet</p>

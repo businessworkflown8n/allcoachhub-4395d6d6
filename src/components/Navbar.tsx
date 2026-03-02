@@ -36,6 +36,7 @@ const Navbar = () => {
           <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">Browse Coaches</button>
           <Link to="/courses" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Courses</Link>
           <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">How It Works</button>
+          <Link to="/webinars" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Webinars</Link>
           <Link to="/ai-blogs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">AI Blogs</Link>
         </div>
 
@@ -78,7 +79,8 @@ const Navbar = () => {
             <button onClick={() => { setMobileOpen(false); handleSectionClick("#coaches"); }} className="text-sm text-muted-foreground text-left">Browse Coaches</button>
             <Link to="/courses" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Courses</Link>
             <button onClick={() => { setMobileOpen(false); handleSectionClick("#how-it-works"); }} className="text-sm text-muted-foreground text-left">How It Works</button>
-            <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">AI Blogs</Link>
+          <Link to="/webinars" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Webinars</Link>
+          <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">AI Blogs</Link>
             {user && (
               <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Dashboard</Link>
             )}
