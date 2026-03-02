@@ -6,7 +6,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 
 const AdminOverview = () => {
   const { symbol, priceKey } = useCurrency();
-  const [stats, setStats] = useState({ coaches: 0, learners: 0, revenue: 0, enrollments: 0, courses: 0, reviews: 0, pendingApprovals: 0, paidEnrollments: 0, unpaidEnrollments: 0 });
+  const [stats, setStats] = useState({ coaches: 0, learners: 0, revenue: 0, enrollments: 0, courses: 0, reviews: 0, pendingApprovals: 0, paidEnrollments: 0, unpaidEnrollments: 0, webinars: 0, webinarRegs: 0 });
   const [enrollmentsByMonth, setEnrollmentsByMonth] = useState<any[]>([]);
   const [revenueByMonth, setRevenueByMonth] = useState<any[]>([]);
   const [coursesByCategory, setCoursesByCategory] = useState<any[]>([]);
@@ -16,7 +16,7 @@ const AdminOverview = () => {
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [coaches, learners, payments, enrollments, courses, reviews, profiles] = await Promise.all([
+      const [coaches, learners, payments, enrollments, courses, reviews, profiles, webinarsRes, webinarRegsRes] = await Promise.all([
         supabase.from("user_roles").select("id", { count: "exact" }).eq("role", "coach"),
         supabase.from("user_roles").select("id", { count: "exact" }).eq("role", "learner"),
         supabase.from("payments").select("*").eq("status", "paid"),
@@ -24,6 +24,8 @@ const AdminOverview = () => {
         supabase.from("courses").select("*"),
         supabase.from("reviews").select("id", { count: "exact" }),
         supabase.from("profiles").select("user_id, full_name, contact_number"),
+        supabase.from("webinars").select("id", { count: "exact" }),
+        supabase.from("webinar_registrations").select("id", { count: "exact" }),
       ]);
 
       const payData = payments.data || [];
@@ -48,6 +50,8 @@ const AdminOverview = () => {
         pendingApprovals: courseData.filter((c: any) => c.approval_status === "pending").length,
         paidEnrollments,
         unpaidEnrollments,
+        webinars: webinarsRes.count || 0,
+        webinarRegs: webinarRegsRes.count || 0,
       });
 
       // Enrollments by month
@@ -128,6 +132,8 @@ const AdminOverview = () => {
     { label: "Paid Enrollments", value: stats.paidEnrollments, icon: CheckCircle, color: "text-green-400" },
     { label: "Unpaid Enrollments", value: stats.unpaidEnrollments, icon: XCircle, color: "text-yellow-400" },
     { label: "Total Courses", value: stats.courses, icon: BookOpen, color: "text-orange-400" },
+    { label: "Total Webinars", value: stats.webinars, icon: Activity, color: "text-cyan-400" },
+    { label: "Webinar Registrations", value: stats.webinarRegs, icon: Activity, color: "text-teal-400" },
     { label: "Pending Approvals", value: stats.pendingApprovals, icon: Activity, color: "text-yellow-400" },
   ];
 
