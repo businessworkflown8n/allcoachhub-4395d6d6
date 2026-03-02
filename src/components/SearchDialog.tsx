@@ -32,7 +32,7 @@ const SearchDialog = () => {
     const fetchCourses = async () => {
       const { data } = await supabase
         .from("courses")
-        .select("id, title, category")
+        .select("id, title, category, slug")
         .eq("is_published", true)
         .eq("approval_status", "approved")
         .limit(50);
@@ -64,7 +64,7 @@ const SearchDialog = () => {
               <CommandItem
                 key={course.id}
                 onSelect={() => {
-                  navigate(`/course/${course.id}`);
+                  navigate(`/course/${(course as any).slug || course.id}`);
                   setOpen(false);
                 }}
               >

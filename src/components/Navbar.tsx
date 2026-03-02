@@ -34,7 +34,7 @@ const Navbar = () => {
 
         <div className="hidden items-center gap-8 md:flex">
           <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">Browse Coaches</button>
-          <button onClick={() => handleSectionClick("#courses")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">Courses</button>
+          <Link to="/courses" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Courses</Link>
           <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">How It Works</button>
           <Link to="/ai-blogs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">AI Blogs</Link>
         </div>
@@ -76,7 +76,7 @@ const Navbar = () => {
         <div className="border-t border-border bg-background px-4 pb-4 md:hidden">
           <div className="flex flex-col gap-3 pt-3">
             <button onClick={() => { setMobileOpen(false); handleSectionClick("#coaches"); }} className="text-sm text-muted-foreground text-left">Browse Coaches</button>
-            <button onClick={() => { setMobileOpen(false); handleSectionClick("#courses"); }} className="text-sm text-muted-foreground text-left">Courses</button>
+            <Link to="/courses" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Courses</Link>
             <button onClick={() => { setMobileOpen(false); handleSectionClick("#how-it-works"); }} className="text-sm text-muted-foreground text-left">How It Works</button>
             <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">AI Blogs</Link>
             {user && (
