@@ -9,7 +9,9 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
+import RoleSelect from "./pages/RoleSelect";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import AdminLogin from "./pages/AdminLogin";
 import AdminOTPLogin from "./pages/AdminOTPLogin";
 import CourseDetail from "./pages/CourseDetail";
@@ -37,7 +39,7 @@ const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode; 
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/auth?mode=login" replace />;
   if (role !== allowedRole && allowedRole !== "any") return <Navigate to="/" replace />;
 
   return <>{children}</>;
@@ -80,7 +82,9 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth" element={<RoleSelect />} />
+            <Route path="/login/:role" element={<Login />} />
+            <Route path="/signup/:role" element={<Signup />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/otp-login" element={<AdminOTPLogin />} />
             <Route path="/reset-password" element={<ResetPassword />} />

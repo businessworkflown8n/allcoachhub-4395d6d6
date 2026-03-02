@@ -55,11 +55,11 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link to="/auth" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <Link to="/auth?mode=login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                 Sign In
               </Link>
               <Link
-                to="/auth"
+                to="/auth?mode=signup"
                 className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
               >
                 Get Started

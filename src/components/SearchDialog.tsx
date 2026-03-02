@@ -80,7 +80,7 @@ const SearchDialog = () => {
             <CommandItem onSelect={() => { navigate("/ai-blogs"); setOpen(false); }}>
               AI Blogs
             </CommandItem>
-            <CommandItem onSelect={() => { navigate("/auth"); setOpen(false); }}>
+            <CommandItem onSelect={() => { navigate("/auth?mode=login"); setOpen(false); }}>
               Sign In
             </CommandItem>
           </CommandGroup>
