@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen } from "lucide-react";
+import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp } from "lucide-react";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminCoaches from "@/components/admin/AdminCoaches";
 import AdminLearners from "@/components/admin/AdminLearners";
@@ -8,12 +8,18 @@ import AdminCourses from "@/components/admin/AdminCourses";
 import AdminRevenue from "@/components/admin/AdminRevenue";
 import AdminReviews from "@/components/admin/AdminReviews";
 import AdminSettings from "@/components/admin/AdminSettings";
+import AdminWebinars from "@/components/admin/AdminWebinars";
+import AdminEnrollments from "@/components/admin/AdminEnrollments";
+import AdminCoachPerformance from "@/components/admin/AdminCoachPerformance";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
   { label: "Coaches", path: "/admin/coaches", icon: <Shield className="h-4 w-4" /> },
   { label: "Learners", path: "/admin/learners", icon: <GraduationCap className="h-4 w-4" /> },
   { label: "Courses", path: "/admin/courses", icon: <BookOpen className="h-4 w-4" /> },
+  { label: "Webinars", path: "/admin/webinars", icon: <Video className="h-4 w-4" /> },
+  { label: "Enrollments", path: "/admin/enrollments", icon: <ClipboardList className="h-4 w-4" /> },
+  { label: "Coach Performance", path: "/admin/performance", icon: <TrendingUp className="h-4 w-4" /> },
   { label: "Revenue", path: "/admin/revenue", icon: <DollarSign className="h-4 w-4" /> },
   { label: "Reviews", path: "/admin/reviews", icon: <Star className="h-4 w-4" /> },
   { label: "Settings", path: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
@@ -27,6 +33,9 @@ const AdminDashboard = () => {
         <Route path="coaches" element={<AdminCoaches />} />
         <Route path="learners" element={<AdminLearners />} />
         <Route path="courses" element={<AdminCourses />} />
+        <Route path="webinars" element={<AdminWebinars />} />
+        <Route path="enrollments" element={<AdminEnrollments />} />
+        <Route path="performance" element={<AdminCoachPerformance />} />
         <Route path="revenue" element={<AdminRevenue />} />
         <Route path="reviews" element={<AdminReviews />} />
         <Route path="settings" element={<AdminSettings />} />
