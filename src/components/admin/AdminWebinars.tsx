@@ -48,6 +48,12 @@ const AdminWebinars = () => {
     });
   }, [webinars, search, coachFilter, dateFrom, dateTo, profiles]);
 
+  const updateLinkStatus = async (webinarId: string, status: string) => {
+    const { error } = await supabase.from("webinars").update({ webinar_link_status: status } as any).eq("id", webinarId);
+    if (error) return;
+    setWebinars(prev => prev.map(w => w.id === webinarId ? { ...w, webinar_link_status: status } : w));
+  };
+
   const viewRegistrants = async (webinar: any) => {
     setSelectedWebinar(webinar);
     const regs = registrations.filter(r => r.webinar_id === webinar.id);
@@ -180,6 +186,7 @@ const AdminWebinars = () => {
                 <TableHead>Duration</TableHead>
                 <TableHead>Registrations</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Link Approval</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -196,6 +203,23 @@ const AdminWebinars = () => {
                     <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${new Date(`${w.webinar_date}T${w.webinar_time}`) > new Date() ? "bg-green-500/20 text-green-400" : "bg-muted text-muted-foreground"}`}>
                       {new Date(`${w.webinar_date}T${w.webinar_time}`) > new Date() ? "Upcoming" : "Past"}
                     </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      {w.webinar_link_status === "approved" ? (
+                        <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-500/20 text-green-400">Approved</span>
+                      ) : w.webinar_link_status === "rejected" ? (
+                        <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-destructive/20 text-destructive">Rejected</span>
+                      ) : (
+                        <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-yellow-500/20 text-yellow-400">Pending</span>
+                      )}
+                      {w.webinar_link_status !== "approved" && (
+                        <button onClick={() => updateLinkStatus(w.id, "approved")} className="rounded p-1 text-green-400 hover:bg-green-500/10 text-xs font-medium" title="Approve">✓</button>
+                      )}
+                      {w.webinar_link_status !== "rejected" && (
+                        <button onClick={() => updateLinkStatus(w.id, "rejected")} className="rounded p-1 text-destructive hover:bg-destructive/10 text-xs font-medium" title="Reject">✗</button>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <button onClick={() => viewRegistrants(w)} className="rounded p-1 text-primary hover:bg-primary/10"><Eye className="h-4 w-4" /></button>

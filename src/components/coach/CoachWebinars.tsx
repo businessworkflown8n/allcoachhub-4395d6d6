@@ -18,6 +18,7 @@ interface Webinar {
   webinar_time: string;
   duration_minutes: number;
   webinar_link: string;
+  webinar_link_status: string;
   is_published: boolean;
   created_at: string;
 }
@@ -259,6 +260,13 @@ const CoachWebinars = () => {
                 <div className="flex items-center justify-between">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${isPast ? "bg-muted text-muted-foreground" : "bg-primary/20 text-primary"}`}>
                     {isPast ? "Past" : "Upcoming"}
+                  </span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    w.webinar_link_status === "approved" ? "bg-green-500/20 text-green-400" :
+                    w.webinar_link_status === "rejected" ? "bg-destructive/20 text-destructive" :
+                    "bg-yellow-500/20 text-yellow-400"
+                  }`}>
+                    Link: {w.webinar_link_status === "approved" ? "Approved" : w.webinar_link_status === "rejected" ? "Rejected" : "Pending"}
                   </span>
                   <button onClick={() => viewRegistrants(w.id)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                     <Users className="h-3 w-3" /> {regCounts[w.id] || 0}

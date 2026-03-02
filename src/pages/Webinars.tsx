@@ -18,6 +18,7 @@ interface WebinarWithCoach {
   webinar_time: string;
   duration_minutes: number;
   webinar_link: string;
+  webinar_link_status: string;
   coach_id: string;
   coach_name?: string;
 }
@@ -166,10 +167,12 @@ const Webinars = () => {
                   </div>
                   <div className="pt-3 border-t border-border mt-auto">
                     {registered ? (
-                      live ? (
+                      live && w.webinar_link_status === "approved" ? (
                         <a href={w.webinar_link} target="_blank" rel="noopener noreferrer">
                           <Button size="sm" className="w-full">Join Now</Button>
                         </a>
+                      ) : live && w.webinar_link_status !== "approved" ? (
+                        <p className="text-sm text-yellow-400">Webinar link is under admin approval. Please wait.</p>
                       ) : (
                         <span className="text-sm text-primary font-medium">✓ Registered</span>
                       )
