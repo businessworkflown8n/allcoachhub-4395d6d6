@@ -613,6 +613,7 @@ export type Database = {
           updated_at: string
           webinar_date: string
           webinar_link: string
+          webinar_link_status: string
           webinar_time: string
         }
         Insert: {
@@ -626,6 +627,7 @@ export type Database = {
           updated_at?: string
           webinar_date: string
           webinar_link: string
+          webinar_link_status?: string
           webinar_time: string
         }
         Update: {
@@ -639,6 +641,7 @@ export type Database = {
           updated_at?: string
           webinar_date?: string
           webinar_link?: string
+          webinar_link_status?: string
           webinar_time?: string
         }
         Relationships: []
