@@ -569,6 +569,80 @@ export type Database = {
         }
         Relationships: []
       }
+      webinar_registrations: {
+        Row: {
+          email_sent: boolean
+          id: string
+          learner_id: string
+          registered_at: string
+          webinar_id: string
+        }
+        Insert: {
+          email_sent?: boolean
+          id?: string
+          learner_id: string
+          registered_at?: string
+          webinar_id: string
+        }
+        Update: {
+          email_sent?: boolean
+          id?: string
+          learner_id?: string
+          registered_at?: string
+          webinar_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webinar_registrations_webinar_id_fkey"
+            columns: ["webinar_id"]
+            isOneToOne: false
+            referencedRelation: "webinars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webinars: {
+        Row: {
+          coach_id: string
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          is_published: boolean
+          title: string
+          updated_at: string
+          webinar_date: string
+          webinar_link: string
+          webinar_time: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_published?: boolean
+          title: string
+          updated_at?: string
+          webinar_date: string
+          webinar_link: string
+          webinar_time: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_published?: boolean
+          title?: string
+          updated_at?: string
+          webinar_date?: string
+          webinar_link?: string
+          webinar_time?: string
+        }
+        Relationships: []
+      }
       wishlists: {
         Row: {
           course_id: string
