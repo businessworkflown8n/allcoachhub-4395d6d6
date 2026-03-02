@@ -14,7 +14,15 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    if (!resendApiKey) {
+      return new Response(JSON.stringify({ error: "RESEND_API_KEY is not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Validate JWT token
     const authHeader = req.headers.get("Authorization");
@@ -46,7 +54,7 @@ Deno.serve(async (req) => {
     // Fetch enrollment details with course title
     const { data: enrollment, error: fetchError } = await supabase
       .from("enrollments")
-      .select("*, courses(title)")
+      .select("*, courses(title, coach_id)")
       .eq("id", enrollmentId)
       .single();
 
@@ -57,8 +65,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Verify user is the learner, coach, or admin for this enrollment
-    const isLearner = enrollment.learner_id === user.id;
+    // Verify user is the coach or admin for this enrollment
     const isCoach = enrollment.coach_id === user.id;
     const { data: roles } = await supabase
       .from("user_roles")
@@ -67,38 +74,47 @@ Deno.serve(async (req) => {
       .single();
     const isAdmin = roles?.role === "admin";
 
-    if (!isLearner && !isCoach && !isAdmin) {
+    if (!isCoach && !isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Fetch coach profile to get coach name and email
+    const coachId = enrollment.coach_id;
+    const { data: coachProfile } = await supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("user_id", coachId)
+      .single();
+
+    const coachName = coachProfile?.full_name || "Your Coach";
+    const coachEmail = coachProfile?.email || "noreply@allcoachhub.lovable.app";
     const courseTitle = (enrollment.courses as any)?.title || "your course";
     const learnerName = enrollment.full_name || "Learner";
     const learnerEmail = enrollment.email;
 
     const emailHtml = `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #ffffff; border-radius: 12px; overflow: hidden;">
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; color: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb;">
         <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px; text-align: center;">
-          <h1 style="margin: 0; font-size: 28px; color: #ffffff;">🎉 Payment Confirmed!</h1>
+          <h1 style="margin: 0; font-size: 28px; color: #ffffff;">🎉 Thank You for Your Payment!</h1>
         </div>
         <div style="padding: 32px;">
-          <p style="font-size: 18px; margin-bottom: 8px;">Hi <strong>${learnerName}</strong>,</p>
-          <p style="color: #a1a1aa; font-size: 15px; line-height: 1.6;">
-            Thank you for your payment! We're thrilled to confirm that your enrollment for 
-            <strong style="color: #8b5cf6;">${courseTitle}</strong> has been successfully processed.
+          <p style="font-size: 18px; margin-bottom: 8px; color: #1a1a1a;">Hi <strong>${learnerName}</strong>,</p>
+          <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">
+            Thank you for your payment! We will send you all the details soon.
           </p>
-          <div style="background: #1a1a2e; border-radius: 8px; padding: 20px; margin: 24px 0; border-left: 4px solid #6366f1;">
-            <p style="margin: 0; color: #c4b5fd; font-size: 16px; font-weight: 600;">
-              🎓 Congratulations on showing interest in learning AI!
+          <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; margin: 24px 0; border-left: 4px solid #6366f1;">
+            <p style="margin: 0; color: #4f46e5; font-size: 16px; font-weight: 600;">
+              🎓 Thank you for choosing the course: ${courseTitle}
             </p>
-            <p style="margin: 8px 0 0; color: #a1a1aa; font-size: 14px;">
-              You're now part of an exciting journey toward mastering AI skills. We can't wait to see what you achieve!
+            <p style="margin: 8px 0 0; color: #6b7280; font-size: 14px;">
+              We truly appreciate your trust in us. Your learning journey is about to begin!
             </p>
           </div>
-          <p style="color: #a1a1aa; font-size: 14px; line-height: 1.6;">
-            Your course materials are now available in your dashboard. Log in to start learning right away!
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+            Your course materials will be shared with you shortly. Stay tuned!
           </p>
           <div style="text-align: center; margin-top: 28px;">
             <a href="https://allcoachhub.lovable.app/learner/courses" 
@@ -106,16 +122,44 @@ Deno.serve(async (req) => {
               Go to My Courses →
             </a>
           </div>
-          <p style="color: #71717a; font-size: 13px; margin-top: 32px; text-align: center;">
-            If you have any questions, feel free to reach out to your coach.<br/>
-            — AI Coach Portal Team
+          <p style="color: #9ca3af; font-size: 13px; margin-top: 32px; text-align: center;">
+            Warm regards,<br/>
+            <strong>${coachName}</strong><br/>
+            AI Coach Portal
           </p>
         </div>
       </div>
     `;
 
-    console.log(`Payment confirmation email prepared for ${learnerEmail}`);
-    console.log(`Course: ${courseTitle}, Learner: ${learnerName}`);
+    // Send email via Resend
+    const resendResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `${coachName} <${coachEmail}>`,
+        to: [learnerEmail],
+        subject: `Thank you for your payment – ${courseTitle}`,
+        html: emailHtml,
+      }),
+    });
+
+    const resendData = await resendResponse.json();
+
+    if (!resendResponse.ok) {
+      console.error("Resend API error:", resendData);
+      return new Response(
+        JSON.stringify({ error: "Failed to send email", details: resendData }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    console.log(`Payment confirmation email sent to ${learnerEmail} from ${coachEmail}`);
 
     return new Response(
       JSON.stringify({
