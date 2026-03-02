@@ -22,6 +22,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ResetPassword from "./pages/ResetPassword";
 import AIBlogs from "./pages/AIBlogs";
 import Courses from "./pages/Courses";
+import Webinars from "./pages/Webinars";
 import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 
@@ -90,6 +91,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/ai-blogs" element={<AIBlogs />} />
             <Route path="/courses" element={<Courses />} />
+            <Route path="/webinars" element={<Webinars />} />
             <Route path="/course/:slug" element={<CourseDetail />} />
             <Route path="/enroll/:courseId" element={
               <ProtectedRoute allowedRole="learner">

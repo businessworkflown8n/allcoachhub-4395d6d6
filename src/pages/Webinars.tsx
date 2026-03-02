@@ -1,0 +1,193 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Video, Calendar, Clock, User, Search } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { useNavigate } from "react-router-dom";
+
+interface WebinarWithCoach {
+  id: string;
+  title: string;
+  description: string | null;
+  webinar_date: string;
+  webinar_time: string;
+  duration_minutes: number;
+  webinar_link: string;
+  coach_id: string;
+  coach_name?: string;
+}
+
+const Webinars = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [webinars, setWebinars] = useState<WebinarWithCoach[]>([]);
+  const [registeredIds, setRegisteredIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [registering, setRegistering] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: webinarData } = await supabase
+        .from("webinars")
+        .select("*")
+        .eq("is_published", true)
+        .order("webinar_date", { ascending: true });
+
+      const coachIds = [...new Set((webinarData || []).map((w: any) => w.coach_id))];
+      let coachMap = new Map<string, string>();
+      if (coachIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", coachIds);
+        (profiles || []).forEach((p: any) => coachMap.set(p.user_id, p.full_name || "Coach"));
+      }
+
+      setWebinars((webinarData || []).map((w: any) => ({
+        ...w,
+        coach_name: coachMap.get(w.coach_id) || "Coach",
+      })));
+
+      if (user) {
+        const { data: regs } = await supabase
+          .from("webinar_registrations")
+          .select("webinar_id")
+          .eq("learner_id", user.id);
+        setRegisteredIds(new Set((regs || []).map((r: any) => r.webinar_id)));
+      }
+
+      setLoading(false);
+    };
+    fetchData();
+  }, [user]);
+
+  const registerForWebinar = async (webinar: WebinarWithCoach) => {
+    if (!user) {
+      navigate("/auth?mode=login");
+      return;
+    }
+    setRegistering(webinar.id);
+
+    const { error } = await supabase.from("webinar_registrations").insert({
+      webinar_id: webinar.id,
+      learner_id: user.id,
+    });
+
+    if (error) {
+      toast({ title: "Registration failed", description: error.message, variant: "destructive" });
+      setRegistering(null);
+      return;
+    }
+
+    try {
+      await supabase.functions.invoke("send-webinar-confirmation", {
+        body: { webinar_id: webinar.id, learner_id: user.id },
+      });
+    } catch {}
+
+    setRegisteredIds(new Set([...registeredIds, webinar.id]));
+    toast({ title: "Registered!", description: `You're registered for "${webinar.title}"` });
+    setRegistering(null);
+  };
+
+  const now = new Date();
+  const getEndTime = (w: WebinarWithCoach) => {
+    const start = new Date(`${w.webinar_date}T${w.webinar_time}`);
+    return new Date(start.getTime() + w.duration_minutes * 60000);
+  };
+  const isLive = (w: WebinarWithCoach) => {
+    const start = new Date(`${w.webinar_date}T${w.webinar_time}`);
+    return now >= start && now <= getEndTime(w);
+  };
+
+  const upcoming = webinars.filter((w) => getEndTime(w) >= now);
+  const filtered = upcoming.filter((w) =>
+    !search || w.title.toLowerCase().includes(search.toLowerCase()) || w.coach_name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main className="container mx-auto px-4 pt-24 pb-16">
+        <div className="mx-auto max-w-4xl text-center mb-10">
+          <h1 className="text-3xl font-bold text-foreground sm:text-4xl">Upcoming Webinars</h1>
+          <p className="mt-3 text-muted-foreground">Join live sessions from top coaches — free and open for everyone.</p>
+        </div>
+
+        <div className="mx-auto max-w-md mb-8">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search webinars or coaches..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16">
+            <Video className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground">No upcoming webinars</h3>
+            <p className="text-sm text-muted-foreground">Check back later for new sessions</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((w) => {
+              const live = isLive(w);
+              const registered = registeredIds.has(w.id);
+              return (
+                <div key={w.id} className="rounded-xl border border-border bg-card p-5 space-y-3 flex flex-col">
+                  <div className="flex items-center justify-between">
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${live ? "bg-green-500/20 text-green-400" : "bg-primary/20 text-primary"}`}>
+                      {live ? "🔴 Live Now" : "Upcoming"}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-foreground">{w.title}</h3>
+                  {w.description && <p className="text-sm text-muted-foreground line-clamp-3">{w.description}</p>}
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <User className="h-3.5 w-3.5" /> {w.coach_name}
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{format(new Date(w.webinar_date), "MMM d, yyyy")}</span>
+                    <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{w.webinar_time.slice(0, 5)}</span>
+                    <span>{w.duration_minutes} min</span>
+                  </div>
+                  <div className="pt-3 border-t border-border mt-auto">
+                    {registered ? (
+                      live ? (
+                        <a href={w.webinar_link} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" className="w-full">Join Now</Button>
+                        </a>
+                      ) : (
+                        <span className="text-sm text-primary font-medium">✓ Registered</span>
+                      )
+                    ) : (
+                      <Button size="sm" className="w-full" onClick={() => registerForWebinar(w)} disabled={registering === w.id}>
+                        {registering === w.id ? "Registering..." : user ? "Register Now" : "Sign in to Register"}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default Webinars;
