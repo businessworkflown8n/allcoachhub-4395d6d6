@@ -13,22 +13,22 @@ const CoursesSection = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const getRefLink = (courseId: string) => {
-    const base = `${window.location.origin}/course/${courseId}`;
+  const getRefLink = (course: any) => {
+    const base = `${window.location.origin}/course/${course.slug || course.id}`;
     return user ? `${base}?ref=${user.id}` : base;
   };
 
-  const handleCopy = (courseId: string, e: React.MouseEvent) => {
+  const handleCopy = (course: any, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    navigator.clipboard.writeText(getRefLink(courseId));
+    navigator.clipboard.writeText(getRefLink(course));
     toast({ title: "Link copied!" });
   };
 
   const handleWhatsApp = (course: any, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const msg = encodeURIComponent(`Check out "${course.title}" on AllCoachHub! ${getRefLink(course.id)}`);
+    const msg = encodeURIComponent(`Check out "${course.title}" on AllCoachHub! ${getRefLink(course)}`);
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   };
 
@@ -36,7 +36,7 @@ const CoursesSection = () => {
     e.preventDefault();
     e.stopPropagation();
     const subject = encodeURIComponent(`Check out: ${course.title}`);
-    const body = encodeURIComponent(`I found this great course on AllCoachHub!\n\n${course.title}\n\n${getRefLink(course.id)}`);
+    const body = encodeURIComponent(`I found this great course on AllCoachHub!\n\n${course.title}\n\n${getRefLink(course)}`);
     window.open(`mailto:?subject=${subject}&body=${body}`);
   };
 
@@ -75,7 +75,7 @@ const CoursesSection = () => {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {displayCourses.map((course) => (
               <Link
-                to={course.id?.startsWith("static") ? "#" : `/course/${course.id}`}
+                to={course.id?.startsWith("static") ? "#" : `/course/${course.slug || course.id}`}
                 key={course.id || course.title}
                 className="group flex flex-col rounded-xl border border-border bg-card transition-all hover:border-primary/20"
               >
@@ -121,7 +121,7 @@ const CoursesSection = () => {
                         <PopoverContent className="w-48 p-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                           <p className="mb-2 text-xs font-semibold text-foreground">Share & Earn 10%</p>
                           <div className="flex flex-col gap-1">
-                            <button onClick={(e) => handleCopy(course.id, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Link</button>
+                            <button onClick={(e) => handleCopy(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Link</button>
                             <button onClick={(e) => handleWhatsApp(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 WhatsApp</button>
                             <button onClick={(e) => handleEmail(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 Email</button>
                           </div>

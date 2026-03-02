@@ -7,7 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const CourseDetail = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [course, setCourse] = useState<any>(null);
@@ -18,43 +18,53 @@ const CourseDetail = () => {
 
   useEffect(() => {
     const fetchCourse = async () => {
-      const { data } = await supabase.from("courses").select("*").eq("id", id).single();
+      // Try slug first, fallback to id for backward compatibility
+      let query = supabase.from("courses").select("*");
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug || "");
+      if (isUUID) {
+        query = query.eq("id", slug);
+      } else {
+        query = query.eq("slug", slug);
+      }
+      const { data } = await query.single();
       if (data) {
         setCourse(data);
         const { data: coachProfile } = await supabase.from("profiles").select("*").eq("user_id", data.coach_id).single();
         setCoach(coachProfile);
-      }
 
-      const { data: reviewData } = await supabase.from("reviews").select("*").eq("course_id", id).eq("is_approved", true);
-      setReviews(reviewData || []);
+        const { data: reviewData } = await supabase.from("reviews").select("*").eq("course_id", data.id).eq("is_approved", true);
+        setReviews(reviewData || []);
 
-      if (user) {
-        const { data: wl } = await supabase.from("wishlists").select("id").eq("course_id", id).eq("learner_id", user.id).single();
-        setWishlisted(!!wl);
+        if (user) {
+          const { data: wl } = await supabase.from("wishlists").select("id").eq("course_id", data.id).eq("learner_id", user.id).single();
+          setWishlisted(!!wl);
+        }
       }
 
       setLoading(false);
     };
 
-    if (id) fetchCourse();
-  }, [id, user]);
+    if (slug) fetchCourse();
+  }, [slug, user]);
+
+  const courseId = course?.id;
 
   const handleEnroll = () => {
     if (!user) {
-      navigate(`/auth?redirect=/enroll/${id}`);
+      navigate(`/auth?redirect=/enroll/${courseId}`);
     } else {
-      navigate(`/enroll/${id}`);
+      navigate(`/enroll/${courseId}`);
     }
   };
 
   const toggleWishlist = async () => {
     if (!user) return navigate("/auth");
     if (wishlisted) {
-      await supabase.from("wishlists").delete().eq("course_id", id).eq("learner_id", user.id);
+      await supabase.from("wishlists").delete().eq("course_id", courseId).eq("learner_id", user.id);
       setWishlisted(false);
       toast({ title: "Removed from wishlist" });
     } else {
-      await supabase.from("wishlists").insert({ course_id: id, learner_id: user.id });
+      await supabase.from("wishlists").insert({ course_id: courseId, learner_id: user.id });
       setWishlisted(true);
       toast({ title: "Added to wishlist" });
     }
@@ -175,9 +185,9 @@ const CourseDetail = () => {
                 <PopoverContent className="w-56 p-3">
                   <p className="mb-2 text-xs font-semibold text-foreground">Share this course & earn 10% commission!</p>
                   <div className="flex flex-col gap-1">
-                    <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/course/${id}${user ? `?ref=${user.id}` : ""}`); toast({ title: "Link copied!" }); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Link</button>
-                    <button onClick={() => { const msg = encodeURIComponent(`Check out "${course.title}"! ${window.location.origin}/course/${id}${user ? `?ref=${user.id}` : ""}`); window.open(`https://wa.me/?text=${msg}`, "_blank"); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 WhatsApp</button>
-                    <button onClick={() => { const s = encodeURIComponent(`Check out: ${course.title}`); const b = encodeURIComponent(`${course.title}\n\n${window.location.origin}/course/${id}${user ? `?ref=${user.id}` : ""}`); window.open(`mailto:?subject=${s}&body=${b}`); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 Email</button>
+                    <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/course/${course.slug || courseId}${user ? `?ref=${user.id}` : ""}`); toast({ title: "Link copied!" }); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Link</button>
+                    <button onClick={() => { const msg = encodeURIComponent(`Check out "${course.title}"! ${window.location.origin}/course/${course.slug || courseId}${user ? `?ref=${user.id}` : ""}`); window.open(`https://wa.me/?text=${msg}`, "_blank"); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 WhatsApp</button>
+                    <button onClick={() => { const s = encodeURIComponent(`Check out: ${course.title}`); const b = encodeURIComponent(`${course.title}\n\n${window.location.origin}/course/${course.slug || courseId}${user ? `?ref=${user.id}` : ""}`); window.open(`mailto:?subject=${s}&body=${b}`); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 Email</button>
                   </div>
                 </PopoverContent>
               </Popover>

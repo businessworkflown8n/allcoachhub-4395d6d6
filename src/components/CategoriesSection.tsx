@@ -124,7 +124,7 @@ const CategoriesSection = () => {
                     const originalPrice = Number(course[originalPriceKey] || course.original_price_usd || 0);
                     return (
                       <Link
-                        to={isStatic ? "#" : `/course/${course.id}`}
+                        to={isStatic ? "#" : `/course/${course.slug || course.id}`}
                         key={course.id}
                         className="group/card flex flex-col rounded-lg border border-border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-md"
                       >

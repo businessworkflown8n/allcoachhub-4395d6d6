@@ -43,7 +43,7 @@ const LearnerWishlist = () => {
               <h3 className="text-sm font-bold text-foreground">{(item.courses as any)?.title}</h3>
               <p className="text-lg font-bold text-foreground">${Number((item.courses as any)?.price_usd)}</p>
               <div className="flex gap-2">
-                <Link to={`/course/${(item.courses as any)?.id}`} className="flex-1 rounded-lg bg-primary py-2 text-center text-xs font-semibold text-primary-foreground hover:brightness-110">
+                <Link to={`/course/${(item.courses as any)?.slug || (item.courses as any)?.id}`} className="flex-1 rounded-lg bg-primary py-2 text-center text-xs font-semibold text-primary-foreground hover:brightness-110">
                   View Course
                 </Link>
                 <button onClick={() => remove(item.id)} className="rounded-lg border border-border px-3 py-2 text-muted-foreground hover:text-destructive">

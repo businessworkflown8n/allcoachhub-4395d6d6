@@ -100,6 +100,7 @@ export type Database = {
           price_inr: number
           price_usd: number
           rejection_reason: string | null
+          slug: string | null
           thumbnail_url: string | null
           title: string
           updated_at: string
@@ -123,6 +124,7 @@ export type Database = {
           price_inr?: number
           price_usd?: number
           rejection_reason?: string | null
+          slug?: string | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string
@@ -146,6 +148,7 @@ export type Database = {
           price_inr?: number
           price_usd?: number
           rejection_reason?: string | null
+          slug?: string | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
