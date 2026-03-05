@@ -44,6 +44,8 @@ const LocationSelector = () => {
     setSearch("");
   };
 
+  if (!visible) return null;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
