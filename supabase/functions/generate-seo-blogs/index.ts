@@ -184,16 +184,173 @@ Requirements:
   },
 ];
 
-function safeJsonParse(raw: string): any {
-  let content = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-  try { return JSON.parse(content); } catch {}
-  const start = content.indexOf('{');
-  const end = content.lastIndexOf('}');
-  if (start !== -1 && end !== -1) {
-    try { return JSON.parse(content.substring(start, end + 1)); } catch {}
+// Auto-generation topic pool for weekly cron
+const AUTO_TOPIC_CATEGORIES = [
+  { category: 'AI Trends', keywords: ['AI trends', 'artificial intelligence trends', 'AI innovations'] },
+  { category: 'AI Tools', keywords: ['AI tools', 'AI software', 'AI applications'] },
+  { category: 'AI Careers', keywords: ['AI jobs', 'AI career', 'AI salary'] },
+  { category: 'AI in Education', keywords: ['AI learning', 'AI courses', 'AI training'] },
+  { category: 'Prompt Engineering', keywords: ['prompt engineering', 'AI prompts', 'ChatGPT prompts'] },
+  { category: 'AI Automation', keywords: ['AI automation', 'AI workflow', 'AI productivity'] },
+];
+
+const UNSPLASH_IMAGES = [
+  'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&h=630&fit=crop',
+  'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&h=630&fit=crop',
+  'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&h=630&fit=crop',
+  'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=630&fit=crop',
+  'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200&h=630&fit=crop',
+  'https://images.unsplash.com/photo-1531746790095-e5981e8e4993?w=1200&h=630&fit=crop',
+  'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1200&h=630&fit=crop',
+  'https://images.unsplash.com/photo-1555255707-c07966088b7b?w=1200&h=630&fit=crop',
+];
+
+async function generateAutoTopics(supabase: any, apiKey: string, count: number): Promise<number> {
+  // Get existing blog titles to avoid duplicates
+  const { data: existingBlogs } = await supabase
+    .from('ai_blogs')
+    .select('title, slug')
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  const existingTitles = (existingBlogs || []).map((b: any) => b.title).join('\n- ');
+
+  const topicResponse = await fetch(AI_URL, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'google/gemini-2.5-flash',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an SEO strategist for an AI education platform called AICoachPortal. Generate unique blog topic ideas that target high-intent search keywords. Respond ONLY with a JSON array.',
+        },
+        {
+          role: 'user',
+          content: `Generate exactly ${count} unique SEO blog article topics about AI, AI learning, AI tools, AI careers, prompt engineering, or AI automation.
+
+These titles already exist, DO NOT repeat them:
+- ${existingTitles}
+
+For each topic, return a JSON array with objects containing:
+- "title": SEO-optimized title (include year 2026 where relevant)
+- "meta_title": Title with "| AI Coach Portal" suffix, under 60 chars
+- "meta_description": Under 160 chars, compelling description with target keyword
+- "category": One of: "AI Trends", "AI Tools", "AI Careers", "AI in Education", "Prompt Engineering", "AI Automation"
+- "target_keywords": comma-separated list of 3-5 target keywords
+
+Return ONLY the JSON array, no other text.`,
+        },
+      ],
+      temperature: 0.9,
+      max_tokens: 2000,
+    }),
+  });
+
+  if (!topicResponse.ok) {
+    console.error('Failed to generate topics:', await topicResponse.text());
+    return 0;
   }
-  // If it's not JSON, it's raw markdown content
-  return null;
+
+  const topicData = await topicResponse.json();
+  let topicsRaw = topicData.choices?.[0]?.message?.content || '';
+  topicsRaw = topicsRaw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  
+  let topics: any[];
+  try {
+    topics = JSON.parse(topicsRaw);
+  } catch {
+    console.error('Failed to parse topics JSON:', topicsRaw);
+    return 0;
+  }
+
+  let generated = 0;
+
+  for (const topic of topics) {
+    try {
+      console.log(`Auto-generating: ${topic.title}`);
+
+      const articleResponse = await fetch(AI_URL, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert SEO content writer for AICoachPortal.com, an AI education platform. Write directly in markdown. Minimum 2000 words. Do NOT wrap in JSON.',
+            },
+            {
+              role: 'user',
+              content: `Write a comprehensive 2200-word SEO blog article titled "${topic.title}".
+
+Target keywords: ${topic.target_keywords}
+
+Requirements:
+- Start with an H1 title
+- Use H2 and H3 headings for clear structure (at least 6 H2 sections)
+- Use bullet lists extensively
+- Include a FAQ section with 5 questions and detailed answers
+- Include internal links as markdown throughout:
+  - [Explore AI Courses](/courses)
+  - [Join as AI Coach](/auth?mode=signup)
+  - [Browse AI Blogs](/ai-blogs)
+  - [Start Learning AI](/courses)
+  - [Meet Our Coaches](/)
+- End with a strong CTA paragraph encouraging readers to learn AI on AICoachPortal
+- Mention AICoachPortal.com naturally 2-3 times
+- Write in an authoritative yet accessible tone
+- Include statistics and data points where relevant
+- Each H2 section should have 200-300 words`,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 8000,
+        }),
+      });
+
+      if (!articleResponse.ok) {
+        console.error(`AI error for ${topic.title}: ${await articleResponse.text()}`);
+        continue;
+      }
+
+      const articleData = await articleResponse.json();
+      let content = articleData.choices?.[0]?.message?.content || '';
+      content = content.replace(/^```markdown\n?/g, '').replace(/```$/g, '').trim();
+
+      const titleMatch = content.match(/^#\s+(.+)/m);
+      const title = titleMatch ? titleMatch[1].trim() : topic.title;
+      const wordCount = content.split(/\s+/).length;
+      const readTime = `${Math.ceil(wordCount / 200)} min read`;
+      const imageUrl = UNSPLASH_IMAGES[Math.floor(Math.random() * UNSPLASH_IMAGES.length)];
+
+      const { error: insertError } = await supabase.from('ai_blogs').insert({
+        title,
+        excerpt: topic.meta_description,
+        content,
+        category: topic.category,
+        read_time: readTime,
+        image_url: imageUrl,
+        is_published: true,
+        published_at: new Date().toISOString(),
+        blog_type: 'article',
+        meta_title: topic.meta_title,
+        meta_description: topic.meta_description,
+        author: 'AI Coach Portal',
+      });
+
+      if (insertError) {
+        console.error(`DB error for ${topic.title}: ${insertError.message}`);
+      } else {
+        generated++;
+        console.log(`Auto-generated: ${title} (${wordCount} words)`);
+      }
+    } catch (err) {
+      console.error(`Error generating ${topic.title}:`, err);
+    }
+  }
+
+  return generated;
 }
 
 Deno.serve(async (req) => {
@@ -206,7 +363,19 @@ Deno.serve(async (req) => {
 
     let body: any = {};
     try { body = await req.json(); } catch {}
-    const articleIndex = body.index ?? -1; // -1 means generate all
+    
+    const mode = body.mode ?? 'seed'; // 'seed' for predefined articles, 'auto' for AI-generated topics
+    const count = body.count ?? 3; // number of articles for auto mode
+
+    if (mode === 'auto') {
+      const generated = await generateAutoTopics(supabase, LOVABLE_API_KEY, count);
+      return new Response(JSON.stringify({ success: true, mode: 'auto', generated }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Seed mode - generate predefined articles
+    const articleIndex = body.index ?? -1;
     const articles = articleIndex >= 0 ? [SEO_ARTICLES[articleIndex]] : SEO_ARTICLES;
     
     let generated = 0;
@@ -214,7 +383,6 @@ Deno.serve(async (req) => {
     for (const article of articles) {
       if (!article) continue;
 
-      // Check if slug already exists
       const { data: existing } = await supabase
         .from('ai_blogs')
         .select('id')
@@ -250,14 +418,10 @@ Deno.serve(async (req) => {
 
       const data = await response.json();
       let content = data.choices?.[0]?.message?.content || '';
-      
-      // Clean up - remove any markdown code block wrapping
       content = content.replace(/^```markdown\n?/g, '').replace(/```$/g, '').trim();
 
-      // Extract title from first H1
       const titleMatch = content.match(/^#\s+(.+)/m);
       const title = titleMatch ? titleMatch[1].trim() : article.meta_title.split('|')[0].trim();
-
       const wordCount = content.split(/\s+/).length;
       const readTime = `${Math.ceil(wordCount / 200)} min read`;
 
@@ -285,7 +449,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ success: true, generated }), {
+    return new Response(JSON.stringify({ success: true, mode: 'seed', generated }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
