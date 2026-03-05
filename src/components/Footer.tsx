@@ -1,4 +1,5 @@
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+import { useTranslation } from "@/i18n/TranslationProvider";
 
 const socials = [
   { name: "X", href: "https://x.com/Aicoachportal", icon: () => (
@@ -11,6 +12,7 @@ const socials = [
 ];
 
 const Footer = () => {
+  const { t } = useTranslation();
   return (
     <footer className="border-t border-border bg-card py-10">
       <div className="container mx-auto flex flex-col items-center gap-4 px-4">
@@ -28,7 +30,7 @@ const Footer = () => {
             </a>
           ))}
         </div>
-        <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} AI Coach Portal. All rights reserved.</p>
+        <p className="text-sm text-muted-foreground">{t("footer.copyright", { year: new Date().getFullYear().toString() })}</p>
       </div>
     </footer>
   );

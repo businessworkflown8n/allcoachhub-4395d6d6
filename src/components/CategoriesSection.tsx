@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { X, Clock } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/i18n/TranslationProvider";
 
 const categories = [
   { emoji: "✨", name: "Prompt Engineering", count: 42 },
@@ -56,6 +57,7 @@ const CategoriesSection = () => {
   const [dbCourses, setDbCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { symbol, priceKey, originalPriceKey } = useCurrency();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!activeCategory) return;
@@ -77,8 +79,8 @@ const CategoriesSection = () => {
     <section className="py-12 sm:py-24">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
-          <h2 className="mb-3 text-3xl font-bold text-foreground">Explore AI Categories</h2>
-          <p className="text-muted-foreground">Find the perfect AI skill to level up your career</p>
+          <h2 className="mb-3 text-3xl font-bold text-foreground">{t("categories.title")}</h2>
+          <p className="text-muted-foreground">{t("categories.subtitle")}</p>
         </div>
 
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-4 md:grid-cols-4">
@@ -92,7 +94,7 @@ const CategoriesSection = () => {
             >
               <div className="mb-2 text-2xl sm:mb-3 sm:text-3xl">{cat.emoji}</div>
               <h3 className="mb-1 text-xs font-semibold text-foreground sm:text-sm">{cat.name}</h3>
-              <p className="text-xs text-muted-foreground">{cat.count} courses</p>
+              <p className="text-xs text-muted-foreground">{cat.count} {t("categories.courses")}</p>
             </button>
           ))}
         </div>
@@ -103,7 +105,7 @@ const CategoriesSection = () => {
               <div className="mb-5 flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-foreground">{activeCategory}</h3>
-                  <p className="text-xs text-muted-foreground">{displayCourses.length} course{displayCourses.length !== 1 ? "s" : ""} available</p>
+                  <p className="text-xs text-muted-foreground">{displayCourses.length} {t("categories.courses")} {t("categories.available")}</p>
                 </div>
                 <button onClick={() => setActiveCategory(null)} className="rounded-full p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground">
                   <X className="h-5 w-5" />
@@ -115,7 +117,7 @@ const CategoriesSection = () => {
                   <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
               ) : displayCourses.length === 0 ? (
-                <p className="py-8 text-center text-sm text-muted-foreground">No courses in this category yet. Check back soon!</p>
+                <p className="py-8 text-center text-sm text-muted-foreground">{t("categories.noCourses")}</p>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {displayCourses.map((course) => {
@@ -131,7 +133,7 @@ const CategoriesSection = () => {
                         <div className="mb-2 flex items-center gap-2">
                           <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs text-muted-foreground">{course.level}</span>
                           {Number(course.discount_percent) > 0 && (
-                            <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-semibold text-primary">{Number(course.discount_percent)}% OFF</span>
+                            <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-semibold text-primary">{Number(course.discount_percent)}% {t("common.off")}</span>
                           )}
                         </div>
                         <h4 className="mb-3 text-sm font-bold leading-snug text-foreground">{course.title}</h4>

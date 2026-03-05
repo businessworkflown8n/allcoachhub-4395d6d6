@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Star, SlidersHorizontal } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTranslation } from "@/i18n/TranslationProvider";
 
 const coaches = [
   {
@@ -34,6 +35,7 @@ const CoachesSection = () => {
   const { symbol, currency } = useCurrency();
   const [ratingFilter, setRatingFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
+  const { t } = useTranslation();
 
   const filtered = coaches
     .filter((c) => {
@@ -54,10 +56,10 @@ const CoachesSection = () => {
       <div className="container mx-auto px-4">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="mb-3 text-3xl font-bold text-foreground">Featured AI Coaches</h2>
-            <p className="text-muted-foreground">Learn from industry-leading AI experts</p>
+            <h2 className="mb-3 text-3xl font-bold text-foreground">{t("coaches.title")}</h2>
+            <p className="text-muted-foreground">{t("coaches.subtitle")}</p>
           </div>
-          <button className="text-sm font-medium text-primary transition-colors hover:underline">View All →</button>
+          <button className="text-sm font-medium text-primary transition-colors hover:underline">{t("coaches.viewAll")}</button>
         </div>
 
         <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -67,7 +69,7 @@ const CoachesSection = () => {
               <SelectValue placeholder="Rating" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border z-50">
-              <SelectItem value="all">All Ratings</SelectItem>
+              <SelectItem value="all">{t("coaches.allRatings")}</SelectItem>
               <SelectItem value="4.9">4.9+ ★</SelectItem>
               <SelectItem value="4.8">4.8+ ★</SelectItem>
               <SelectItem value="4.5">4.5+ ★</SelectItem>
@@ -78,16 +80,16 @@ const CoachesSection = () => {
               <SelectValue placeholder="Price" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border z-50">
-              <SelectItem value="all">Default Order</SelectItem>
-              <SelectItem value="low">Price: Low → High</SelectItem>
-              <SelectItem value="high">Price: High → Low</SelectItem>
+              <SelectItem value="all">{t("coaches.defaultOrder")}</SelectItem>
+              <SelectItem value="low">{t("coaches.priceLowHigh")}</SelectItem>
+              <SelectItem value="high">{t("coaches.priceHighLow")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           {filtered.length === 0 && (
-            <div className="col-span-2 py-12 text-center text-muted-foreground">No coaches match the selected filters.</div>
+            <div className="col-span-2 py-12 text-center text-muted-foreground">{t("coaches.noMatch")}</div>
           )}
           {filtered.map((coach) => (
             <div
@@ -118,8 +120,8 @@ const CoachesSection = () => {
               <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{coach.bio}</p>
 
               <div className="flex items-center justify-between border-t border-border pt-4">
-                <span className="text-sm text-muted-foreground">{coach.students} students</span>
-                <span className="text-sm font-semibold text-foreground">From {symbol}{currency === "INR" ? coach.price_inr : coach.price_usd}</span>
+                <span className="text-sm text-muted-foreground">{coach.students} {t("coaches.students")}</span>
+                <span className="text-sm font-semibold text-foreground">{t("coaches.from")} {symbol}{currency === "INR" ? coach.price_inr : coach.price_usd}</span>
               </div>
             </div>
           ))}

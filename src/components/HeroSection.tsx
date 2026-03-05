@@ -2,11 +2,12 @@ import { ArrowRight, Users, BookOpen, Shield, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import heroBg from "@/assets/hero-bg.jpg";
+import { useTranslation } from "@/i18n/TranslationProvider";
 
 const stats = [
-  { icon: Users, value: "6,000+", label: "Students", key: "students" },
-  { icon: BookOpen, value: "200+", label: "Courses", key: "courses" },
-  { icon: Shield, value: "50+", label: "Expert Coaches", key: "coaches" },
+  { icon: Users, value: "6,000+", labelKey: "hero.students", key: "students" },
+  { icon: BookOpen, value: "200+", labelKey: "hero.coursesLabel", key: "courses" },
+  { icon: Shield, value: "50+", labelKey: "hero.expertCoaches", key: "coaches" },
 ];
 
 const dummyStudents = [
@@ -45,11 +46,12 @@ const dummyCoaches = [
 const HeroSection = () => {
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const renderModal = () => {
     if (!activeModal) return null;
 
-    const titles: Record<string, string> = { students: "6,000+ Students Enrolled", courses: "200+ Courses Available", coaches: "50+ Expert Coaches" };
+    const titles: Record<string, string> = { students: "6,000+ " + t("hero.students") + " Enrolled", courses: "200+ " + t("hero.coursesLabel") + " Available", coaches: "50+ " + t("hero.expertCoaches") };
     
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm" onClick={() => setActiveModal(null)}>
@@ -58,7 +60,7 @@ const HeroSection = () => {
             <X className="h-5 w-5" />
           </button>
           <h3 className="mb-1 text-lg font-bold text-foreground">{titles[activeModal]}</h3>
-          <p className="mb-4 text-xs text-muted-foreground">Some details are hidden for privacy</p>
+          <p className="mb-4 text-xs text-muted-foreground">{t("hero.privacyNote")}</p>
 
           {activeModal === "students" && (
             <div className="space-y-2">
@@ -71,7 +73,7 @@ const HeroSection = () => {
                   <span className="text-xs text-primary">{s.expert}</span>
                 </div>
               ))}
-              <p className="pt-2 text-center text-xs text-muted-foreground">...and 5,992+ more students</p>
+              <p className="pt-2 text-center text-xs text-muted-foreground">{t("hero.moreStudents")}</p>
             </div>
           )}
 
@@ -86,7 +88,7 @@ const HeroSection = () => {
                   <span className="text-xs text-primary">{c.expert}</span>
                 </div>
               ))}
-              <p className="pt-2 text-center text-xs text-muted-foreground">...and 192+ more courses</p>
+              <p className="pt-2 text-center text-xs text-muted-foreground">{t("hero.moreCourses")}</p>
             </div>
           )}
 
@@ -98,10 +100,10 @@ const HeroSection = () => {
                     <p className="text-sm font-medium text-foreground">{c.name}</p>
                     <p className="text-xs text-muted-foreground">{c.specialty}</p>
                   </div>
-                  <span className="text-xs text-primary">{c.students} students</span>
+                  <span className="text-xs text-primary">{c.students} {t("hero.students").toLowerCase()}</span>
                 </div>
               ))}
-              <p className="pt-2 text-center text-xs text-muted-foreground">...and 42+ more coaches</p>
+              <p className="pt-2 text-center text-xs text-muted-foreground">{t("hero.moreCoaches")}</p>
             </div>
           )}
         </div>
@@ -120,37 +122,37 @@ const HeroSection = () => {
       <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-4 py-1.5">
           <span className="text-primary">✦</span>
-          <span className="text-sm text-muted-foreground">The #1 Marketplace for AI Education</span>
+          <span className="text-sm text-muted-foreground">{t("hero.badge")}</span>
         </div>
 
         <h1 className="mb-4 text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-5xl md:text-7xl">
-          Learn AI from the{" "}
-          <span className="text-gradient-lime">World's Best</span> Coaches
+          {t("hero.titleStart")}{" "}
+          <span className="text-gradient-lime">{t("hero.titleHighlight")}</span> {t("hero.titleEnd")}
         </h1>
 
         <p className="mx-auto mb-8 max-w-2xl text-sm text-muted-foreground sm:text-base md:text-lg">
-          Master prompt engineering, AI agents, automation, and more. Book 1:1 sessions with expert coaches or enroll in structured courses.
+          {t("hero.subtitle")}
         </p>
 
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
           <button onClick={() => navigate("/auth?mode=signup")} className="glow-lime inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-3.5 font-semibold text-primary-foreground transition-all hover:brightness-110">
-            Get Started Free <ArrowRight className="h-4 w-4" />
+            {t("hero.ctaPrimary")} <ArrowRight className="h-4 w-4" />
           </button>
           <button onClick={() => document.getElementById("coaches")?.scrollIntoView({ behavior: "smooth" })} className="rounded-lg border border-border bg-secondary px-8 py-3.5 font-semibold text-foreground transition-colors hover:bg-border">
-            Browse Coaches
+            {t("hero.ctaSecondary")}
           </button>
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:mt-16 sm:gap-10 md:gap-16">
           {stats.map((stat) => (
             <button
-              key={stat.label}
+              key={stat.labelKey}
               onClick={() => setActiveModal(stat.key)}
               className="flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-all hover:bg-secondary/80 hover:scale-105 cursor-pointer sm:flex-row sm:gap-2"
             >
               <stat.icon className="h-5 w-5 text-muted-foreground" />
               <span className="text-lg font-bold text-foreground sm:text-xl">{stat.value}</span>
-              <span className="text-xs text-muted-foreground sm:text-sm">{stat.label}</span>
+              <span className="text-xs text-muted-foreground sm:text-sm">{t(stat.labelKey)}</span>
             </button>
           ))}
         </div>

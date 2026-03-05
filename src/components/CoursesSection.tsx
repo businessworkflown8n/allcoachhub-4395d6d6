@@ -6,12 +6,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "@/hooks/use-toast";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/i18n/TranslationProvider";
 
 const CoursesSection = () => {
   const { user } = useAuth();
   const { symbol, priceKey, originalPriceKey } = useCurrency();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   const getRefLink = (course: any) => {
     const base = `${window.location.origin}/course/${course.slug || course.id}`;
@@ -22,7 +24,7 @@ const CoursesSection = () => {
     e.preventDefault();
     e.stopPropagation();
     navigator.clipboard.writeText(getRefLink(course));
-    toast({ title: "Link copied!" });
+    toast({ title: t("courses.linkCopied") });
   };
 
   const handleWhatsApp = (course: any, e: React.MouseEvent) => {
@@ -47,7 +49,6 @@ const CoursesSection = () => {
     });
   }, []);
 
-  // Fallback static courses if no DB courses exist
   const staticCourses = [
     { id: "static-1", category: "Prompt Engineering", title: "Master Prompt Engineering: From Zero to Expert", duration_hours: 8, level: "Beginner", price_usd: 49, price_inr: 3999, original_price_usd: 99, original_price_inr: 7999, discount_percent: 51 },
     { id: "static-2", category: "AI Agents", title: "Build AI Agents with No Code", duration_hours: 12, level: "Intermediate", price_usd: 69, price_inr: 5699, original_price_usd: 129, original_price_inr: 10699, discount_percent: 47 },
@@ -62,8 +63,8 @@ const CoursesSection = () => {
       <div className="container mx-auto px-4">
         <div className="mb-8 flex flex-col gap-2 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="mb-3 text-3xl font-bold text-foreground">Popular Courses</h2>
-            <p className="text-muted-foreground">Top-rated courses chosen by thousands of students</p>
+            <h2 className="mb-3 text-3xl font-bold text-foreground">{t("courses.title")}</h2>
+            <p className="text-muted-foreground">{t("courses.subtitle")}</p>
           </div>
         </div>
 
@@ -84,7 +85,7 @@ const CoursesSection = () => {
                     <span className="text-2xl">🎓</span>
                     <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs text-muted-foreground">{course.level}</span>
                     {Number(course.discount_percent) > 0 && (
-                      <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-semibold text-primary">{Number(course.discount_percent)}% OFF</span>
+                      <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-semibold text-primary">{Number(course.discount_percent)}% {t("common.off")}</span>
                     )}
                   </div>
                   <p className="mb-1 text-xs text-primary">{course.category}</p>
@@ -93,7 +94,7 @@ const CoursesSection = () => {
 
                 <div className="flex flex-1 flex-col justify-between p-5">
                   <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {Number(course.duration_hours)} hours</span>
+                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {Number(course.duration_hours)} {t("courses.hours")}</span>
                   </div>
 
                   <div className="flex items-center justify-between border-t border-border pt-4">
@@ -113,22 +114,22 @@ const CoursesSection = () => {
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                             className="rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-                            title="Share & Earn"
+                            title={t("courses.shareEarn")}
                           >
                             <Share2 className="h-4 w-4" />
                           </button>
                         </PopoverTrigger>
                         <PopoverContent className="w-48 p-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
-                          <p className="mb-2 text-xs font-semibold text-foreground">Share & Earn 10%</p>
+                          <p className="mb-2 text-xs font-semibold text-foreground">{t("courses.shareEarn")}</p>
                           <div className="flex flex-col gap-1">
-                            <button onClick={(e) => handleCopy(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Link</button>
-                            <button onClick={(e) => handleWhatsApp(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 WhatsApp</button>
-                            <button onClick={(e) => handleEmail(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 Email</button>
+                            <button onClick={(e) => handleCopy(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 {t("courses.copyLink")}</button>
+                            <button onClick={(e) => handleWhatsApp(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 {t("courses.whatsapp")}</button>
+                            <button onClick={(e) => handleEmail(course, e)} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 {t("courses.email")}</button>
                           </div>
                         </PopoverContent>
                       </Popover>
                       <span className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-all group-hover:brightness-110">
-                        Enroll
+                        {t("courses.enroll")}
                       </span>
                     </div>
                   </div>
