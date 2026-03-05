@@ -1,23 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://allcoachhub.lovable.app/</loc>
+    <loc>https://www.aicoachportal.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://allcoachhub.lovable.app/auth</loc>
+    <loc>https://www.aicoachportal.com/auth</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://allcoachhub.lovable.app/courses</loc>
+    <loc>https://www.aicoachportal.com/courses</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://allcoachhub.lovable.app/ai-blogs</loc>
+    <loc>https://www.aicoachportal.com/ai-blogs</loc>
     <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.aicoachportal.com/ai-blogs/how-to-learn-ai-in-2026-complete-beginner-guide</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.aicoachportal.com/ai-blogs/best-ai-tools-everyone-should-learn-2026</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.aicoachportal.com/ai-blogs/how-to-become-ai-coach-earn-money-online</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.aicoachportal.com/ai-blogs/top-ai-skills-in-demand-2026</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.aicoachportal.com/ai-blogs/best-ai-courses-learn-artificial-intelligence-online</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.aicoachportal.com/ai-blogs/how-ai-is-changing-jobs-and-careers</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.aicoachportal.com/webinars</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>
