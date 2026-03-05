@@ -26,8 +26,6 @@ const LocationSelector = () => {
       });
   }, []);
 
-  if (!visible) return null;
-
   const filtered = useMemo(() => {
     if (!search) return ALL_COUNTRIES;
     const q = search.toLowerCase();
