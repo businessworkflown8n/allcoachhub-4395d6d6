@@ -2,3 +2,6 @@ project_id = "iipxwwrzkdkestikxcpg"
 
 [functions.translate]
 verify_jwt = false
+
+[functions.generate-seo-blogs]
+verify_jwt = false

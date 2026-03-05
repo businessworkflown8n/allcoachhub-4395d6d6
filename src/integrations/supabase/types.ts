@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       ai_blogs: {
         Row: {
+          author: string | null
           blog_type: string
           category: string
           content: string | null
@@ -25,11 +26,15 @@ export type Database = {
           image_url: string | null
           is_published: boolean
           job_data: Json | null
+          meta_description: string | null
+          meta_title: string | null
           published_at: string
           read_time: string
+          slug: string | null
           title: string
         }
         Insert: {
+          author?: string | null
           blog_type?: string
           category?: string
           content?: string | null
@@ -39,11 +44,15 @@ export type Database = {
           image_url?: string | null
           is_published?: boolean
           job_data?: Json | null
+          meta_description?: string | null
+          meta_title?: string | null
           published_at?: string
           read_time?: string
+          slug?: string | null
           title: string
         }
         Update: {
+          author?: string | null
           blog_type?: string
           category?: string
           content?: string | null
@@ -53,8 +62,11 @@ export type Database = {
           image_url?: string | null
           is_published?: boolean
           job_data?: Json | null
+          meta_description?: string | null
+          meta_title?: string | null
           published_at?: string
           read_time?: string
+          slug?: string | null
           title?: string
         }
         Relationships: []

@@ -18,4 +18,4 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-Sitemap: https://allcoachhub.lovable.app/sitemap.xml
+Sitemap: https://www.aicoachportal.com/sitemap.xml
