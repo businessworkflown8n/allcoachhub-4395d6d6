@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Globe, ChevronDown, Search, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
@@ -6,12 +6,25 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ALL_COUNTRIES, CountryLocale } from "@/data/countries";
 import { useLocale } from "@/hooks/useLocale";
 import { useTranslation } from "@/i18n/TranslationProvider";
+import { supabase } from "@/integrations/supabase/client";
 
 const LocationSelector = () => {
   const { locale, setLocale } = useLocale();
   const { t, isTranslating } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    supabase
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "locale_selector_enabled")
+      .single()
+      .then(({ data }) => {
+        if (data?.value === "false") setVisible(false);
+      });
+  }, []);
 
   const filtered = useMemo(() => {
     if (!search) return ALL_COUNTRIES;
@@ -30,6 +43,8 @@ const LocationSelector = () => {
     setOpen(false);
     setSearch("");
   };
+
+  if (!visible) return null;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
