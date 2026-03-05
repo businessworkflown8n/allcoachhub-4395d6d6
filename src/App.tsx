@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
+import { LocaleProvider } from "@/hooks/useLocale";
 import Index from "./pages/Index";
 import RoleSelect from "./pages/RoleSelect";
 import Login from "./pages/Login";
@@ -77,6 +78,7 @@ const FloatingButtons = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <LocaleProvider>
       <AuthProvider>
         <Toaster />
         <Sonner />
@@ -119,6 +121,7 @@ const App = () => (
           <AICursor />
         </BrowserRouter>
       </AuthProvider>
+      </LocaleProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

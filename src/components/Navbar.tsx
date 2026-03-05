@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
 import SearchDialog from "@/components/SearchDialog";
+import LocationSelector from "@/components/LocationSelector";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -40,7 +41,8 @@ const Navbar = () => {
           <Link to="/ai-blogs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">AI Blogs</Link>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <LocationSelector />
           <SearchDialog />
           {user ? (
             <>
