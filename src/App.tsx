@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
 import { LocaleProvider } from "@/hooks/useLocale";
+import { TranslationProvider } from "@/i18n/TranslationProvider";
 import Index from "./pages/Index";
 import RoleSelect from "./pages/RoleSelect";
 import Login from "./pages/Login";
@@ -79,6 +80,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <LocaleProvider>
+      <TranslationProvider>
       <AuthProvider>
         <Toaster />
         <Sonner />
@@ -121,6 +123,7 @@ const App = () => (
           <AICursor />
         </BrowserRouter>
       </AuthProvider>
+      </TranslationProvider>
       </LocaleProvider>
     </TooltipProvider>
   </QueryClientProvider>

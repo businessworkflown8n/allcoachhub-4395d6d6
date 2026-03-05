@@ -6,6 +6,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
 import SearchDialog from "@/components/SearchDialog";
 import LocationSelector from "@/components/LocationSelector";
+import { useTranslation } from "@/i18n/TranslationProvider";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -13,6 +14,7 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const dashboardPath = role === "admin" ? "/admin" : role === "coach" ? "/coach" : "/learner";
 
@@ -34,11 +36,11 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">Browse Coaches</button>
-          <Link to="/courses" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Courses</Link>
-          <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">How It Works</button>
-          <Link to="/webinars" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Webinars</Link>
-          <Link to="/ai-blogs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">AI Blogs</Link>
+          <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.browseCoaches")}</button>
+          <Link to="/courses" className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.courses")}</Link>
+          <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.howItWorks")}</button>
+          <Link to="/webinars" className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.webinars")}</Link>
+          <Link to="/ai-blogs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.aiBlogs")}</Link>
         </div>
 
         <div className="flex items-center gap-3">
@@ -47,25 +49,25 @@ const Navbar = () => {
           {user ? (
             <>
               <Link to={dashboardPath} className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground md:block">
-                Dashboard
+                {t("nav.dashboard")}
               </Link>
               <button
                 onClick={signOut}
                 className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
               >
-                Sign Out
+                {t("nav.signOut")}
               </button>
             </>
           ) : (
             <>
               <Link to="/auth?mode=login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                Sign In
+                {t("nav.signIn")}
               </Link>
               <Link
                 to="/auth?mode=signup"
                 className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
               >
-                Get Started
+                {t("nav.getStarted")}
               </Link>
             </>
           )}
@@ -78,13 +80,13 @@ const Navbar = () => {
       {mobileOpen && (
         <div className="border-t border-border bg-background px-4 pb-4 md:hidden">
           <div className="flex flex-col gap-3 pt-3">
-            <button onClick={() => { setMobileOpen(false); handleSectionClick("#coaches"); }} className="text-sm text-muted-foreground text-left">Browse Coaches</button>
-            <Link to="/courses" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Courses</Link>
-            <button onClick={() => { setMobileOpen(false); handleSectionClick("#how-it-works"); }} className="text-sm text-muted-foreground text-left">How It Works</button>
-          <Link to="/webinars" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Webinars</Link>
-          <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">AI Blogs</Link>
+            <button onClick={() => { setMobileOpen(false); handleSectionClick("#coaches"); }} className="text-sm text-muted-foreground text-left">{t("nav.browseCoaches")}</button>
+            <Link to="/courses" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">{t("nav.courses")}</Link>
+            <button onClick={() => { setMobileOpen(false); handleSectionClick("#how-it-works"); }} className="text-sm text-muted-foreground text-left">{t("nav.howItWorks")}</button>
+          <Link to="/webinars" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">{t("nav.webinars")}</Link>
+          <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">{t("nav.aiBlogs")}</Link>
             {user && (
-              <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">Dashboard</Link>
+              <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">{t("nav.dashboard")}</Link>
             )}
           </div>
         </div>

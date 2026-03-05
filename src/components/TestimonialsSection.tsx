@@ -19,26 +19,29 @@ const testimonials = [
   },
 ];
 
+import { useTranslation } from "@/i18n/TranslationProvider";
+
 const TestimonialsSection = () => {
+  const { t } = useTranslation();
   return (
     <section className="py-12 sm:py-24">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
-          <h2 className="mb-3 text-3xl font-bold text-foreground">What Students Say</h2>
-          <p className="text-muted-foreground">Real feedback from our learning community</p>
+          <h2 className="mb-3 text-3xl font-bold text-foreground">{t("testimonials.title")}</h2>
+          <p className="text-muted-foreground">{t("testimonials.subtitle")}</p>
         </div>
 
         <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
-          {testimonials.map((t) => (
-            <div key={t.name} className="rounded-xl border border-border bg-card p-6">
-              <p className="mb-6 text-sm italic leading-relaxed text-muted-foreground">"{t.quote}"</p>
+          {testimonials.map((tst) => (
+            <div key={tst.name} className="rounded-xl border border-border bg-card p-6">
+              <p className="mb-6 text-sm italic leading-relaxed text-muted-foreground">"{tst.quote}"</p>
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                  {t.initials}
+                  {tst.initials}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.date}</p>
+                  <p className="text-sm font-semibold text-foreground">{tst.name}</p>
+                  <p className="text-xs text-muted-foreground">{tst.date}</p>
                 </div>
               </div>
             </div>

@@ -10,11 +10,13 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
+import { useTranslation } from "@/i18n/TranslationProvider";
 
 const SearchDialog = () => {
   const [open, setOpen] = useState(false);
   const [courses, setCourses] = useState<{ id: string; title: string; category: string }[]>([]);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -49,17 +51,17 @@ const SearchDialog = () => {
         aria-label="Search"
       >
         <Search className="h-4 w-4" />
-        <span className="hidden sm:inline">Search...</span>
+        <span className="hidden sm:inline">{t("search.placeholder")}</span>
         <kbd className="pointer-events-none hidden select-none rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
           ⌘K
         </kbd>
       </button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Search courses, categories..." />
+        <CommandInput placeholder={t("search.inputPlaceholder")} />
         <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Courses">
+          <CommandEmpty>{t("search.noResults")}</CommandEmpty>
+          <CommandGroup heading={t("search.courses")}>
             {courses.map((course) => (
               <CommandItem
                 key={course.id}
@@ -76,12 +78,12 @@ const SearchDialog = () => {
               </CommandItem>
             ))}
           </CommandGroup>
-          <CommandGroup heading="Quick Links">
+          <CommandGroup heading={t("search.quickLinks")}>
             <CommandItem onSelect={() => { navigate("/ai-blogs"); setOpen(false); }}>
-              AI Blogs
+              {t("nav.aiBlogs")}
             </CommandItem>
             <CommandItem onSelect={() => { navigate("/auth?mode=login"); setOpen(false); }}>
-              Sign In
+              {t("nav.signIn")}
             </CommandItem>
           </CommandGroup>
         </CommandList>

@@ -1,13 +1,15 @@
 import { useState, useMemo } from "react";
-import { Globe, ChevronDown, Search } from "lucide-react";
+import { Globe, ChevronDown, Search, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ALL_COUNTRIES, CountryLocale } from "@/data/countries";
 import { useLocale } from "@/hooks/useLocale";
+import { useTranslation } from "@/i18n/TranslationProvider";
 
 const LocationSelector = () => {
   const { locale, setLocale } = useLocale();
+  const { t, isTranslating } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -33,6 +35,7 @@ const LocationSelector = () => {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary/50 px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground hover:border-primary">
+          {isTranslating && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
           <span className="text-sm">{locale.flag}</span>
           <span className="hidden sm:inline">{locale.name}</span>
           <span className="font-medium text-foreground">{locale.currencySymbol} {locale.currency}</span>
@@ -44,7 +47,7 @@ const LocationSelector = () => {
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search country, language, currency..."
+              placeholder={t("location.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="h-8 pl-8 text-xs bg-secondary border-border"
@@ -73,7 +76,7 @@ const LocationSelector = () => {
               </button>
             ))}
             {filtered.length === 0 && (
-              <p className="py-4 text-center text-xs text-muted-foreground">No results found</p>
+              <p className="py-4 text-center text-xs text-muted-foreground">{t("location.noResults")}</p>
             )}
           </div>
         </ScrollArea>

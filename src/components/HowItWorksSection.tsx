@@ -5,6 +5,7 @@ import {
   Users, DollarSign, GraduationCap, Briefcase,
   BookOpen, Star, ChevronRight
 } from "lucide-react";
+import { useTranslation } from "@/i18n/TranslationProvider";
 
 /* ── animated counter ── */
 const AnimCounter = ({ end, prefix = "" }: { end: number; prefix?: string }) => {
@@ -60,19 +61,21 @@ const StepCard = ({
 );
 
 /* ── mini dashboards ── */
-const LearnerDashboardPreview = () => (
+const LearnerDashboardPreview = () => {
+  const { t } = useTranslation();
+  return (
   <div className="rounded-2xl border border-border bg-card p-5 shadow-md">
-    <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Referral Dashboard Preview</p>
+    <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("howItWorks.referralDashboard")}</p>
     <div className="grid grid-cols-3 gap-3 mb-4">
       {[
-        { label: "Total Referred", value: 48, icon: Users, prefix: "" },
-        { label: "Total Enrolled", value: 32, icon: GraduationCap, prefix: "" },
-        { label: "Commission Earned", value: 1250, icon: DollarSign, prefix: "$" },
+        { labelKey: "howItWorks.totalReferred", value: 48, icon: Users, prefix: "" },
+        { labelKey: "howItWorks.totalEnrolled", value: 32, icon: GraduationCap, prefix: "" },
+        { labelKey: "howItWorks.commissionEarned", value: 1250, icon: DollarSign, prefix: "$" },
       ].map((s) => (
-        <div key={s.label} className="rounded-xl border border-border bg-secondary/50 p-3 text-center">
+        <div key={s.labelKey} className="rounded-xl border border-border bg-secondary/50 p-3 text-center">
           <s.icon className="mx-auto mb-1.5 h-4 w-4 text-primary" />
           <p className="text-lg font-bold text-foreground"><AnimCounter end={s.value} prefix={s.prefix} /></p>
-          <p className="text-[10px] text-muted-foreground">{s.label}</p>
+          <p className="text-[10px] text-muted-foreground">{t(s.labelKey)}</p>
         </div>
       ))}
     </div>
@@ -81,27 +84,30 @@ const LearnerDashboardPreview = () => (
         <div key={i} className="flex-1 rounded-t-sm bg-primary/60 transition-all duration-500" style={{ height: `${h}%`, opacity: 0.5 + h / 200 }} />
       ))}
     </div>
-    <p className="mt-2 text-[10px] text-muted-foreground text-center">Monthly Referral Earnings</p>
+    <p className="mt-2 text-[10px] text-muted-foreground text-center">{t("howItWorks.monthlyReferral")}</p>
   </div>
-);
+  );
+};
 
-const CoachDashboardPreview = () => (
+const CoachDashboardPreview = () => {
+  const { t } = useTranslation();
+  return (
   <div className="rounded-2xl border border-border bg-card p-5 shadow-md">
-    <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Coach Dashboard Preview</p>
+    <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("howItWorks.coachDashboard")}</p>
     <div className="grid grid-cols-2 gap-3 mb-4">
       {[
-        { label: "Total Enrollments", value: 214, icon: Users, prefix: "" },
-        { label: "Revenue Generated", value: 8420, icon: DollarSign, prefix: "$" },
-        { label: "Courses Published", value: 6, icon: BookOpen, prefix: "" },
-        { label: "Avg Rating", value: 4.8, icon: Star, prefix: "", fixed: true },
+        { labelKey: "howItWorks.totalEnrollments", value: 214, icon: Users, prefix: "" },
+        { labelKey: "howItWorks.revenueGenerated", value: 8420, icon: DollarSign, prefix: "$" },
+        { labelKey: "howItWorks.coursesPublished", value: 6, icon: BookOpen, prefix: "" },
+        { labelKey: "howItWorks.avgRating", value: 4.8, icon: Star, prefix: "", fixed: true },
       ].map((s) => (
-        <div key={s.label} className="rounded-xl border border-border bg-secondary/50 p-3">
+        <div key={s.labelKey} className="rounded-xl border border-border bg-secondary/50 p-3">
           <div className="flex items-center gap-2 mb-1">
             <s.icon className="h-4 w-4 text-primary" />
-            <span className="text-[10px] text-muted-foreground">{s.label}</span>
+            <span className="text-[10px] text-muted-foreground">{t(s.labelKey)}</span>
           </div>
           <p className="text-lg font-bold text-foreground">
-            {s.fixed ? s.value : <AnimCounter end={s.value as number} prefix={s.prefix} />}
+            {(s as any).fixed ? (s as any).value : <AnimCounter end={s.value as number} prefix={s.prefix} />}
           </p>
         </div>
       ))}
@@ -116,9 +122,10 @@ const CoachDashboardPreview = () => (
       <path d="M0,50 Q20,45 40,40 T80,30 T120,25 T160,15 T200,10 V60 H0 Z" fill="url(#coachGrad)" />
       <path d="M0,50 Q20,45 40,40 T80,30 T120,25 T160,15 T200,10" fill="none" stroke="hsl(72,100%,50%)" strokeWidth="2" />
     </svg>
-    <p className="mt-1 text-[10px] text-muted-foreground text-center">Revenue Growth Trend</p>
+    <p className="mt-1 text-[10px] text-muted-foreground text-center">{t("howItWorks.revenueGrowth")}</p>
   </div>
-);
+  );
+};
 
 /* ── 3D button ── */
 const Toggle3DButton = ({
@@ -157,19 +164,20 @@ const Toggle3DButton = ({
 /* ── main section ── */
 const HowItWorksSection = () => {
   const [activeTab, setActiveTab] = useState<"learner" | "coach" | null>(null);
+  const { t } = useTranslation();
 
   const learnerSteps = [
-    { icon: UserPlus, title: "Sign Up", bullets: ["Create free account", "Simple registration process", "Email verification"] },
-    { icon: Search, title: "Browse & Select Courses", bullets: ["Explore AI, Business, Marketing & more", "Filter by category, price, rating", "View course details & coach profile"] },
-    { icon: CreditCard, title: "Enroll in Course", bullets: ["Secure payment system", "Instant access to course dashboard", "Lifetime / duration-based access"] },
-    { icon: Share2, title: "Earn Referral Income", bullets: ["Get unique referral link", "Share with friends & colleagues", "Earn min 10% commission per enrollment"] },
+    { icon: UserPlus, title: t("howItWorks.learner.step1.title"), bullets: [t("howItWorks.learner.step1.b1"), t("howItWorks.learner.step1.b2"), t("howItWorks.learner.step1.b3")] },
+    { icon: Search, title: t("howItWorks.learner.step2.title"), bullets: [t("howItWorks.learner.step2.b1"), t("howItWorks.learner.step2.b2"), t("howItWorks.learner.step2.b3")] },
+    { icon: CreditCard, title: t("howItWorks.learner.step3.title"), bullets: [t("howItWorks.learner.step3.b1"), t("howItWorks.learner.step3.b2"), t("howItWorks.learner.step3.b3")] },
+    { icon: Share2, title: t("howItWorks.learner.step4.title"), bullets: [t("howItWorks.learner.step4.b1"), t("howItWorks.learner.step4.b2"), t("howItWorks.learner.step4.b3")] },
   ];
 
   const coachSteps = [
-    { icon: Briefcase, title: "Register as a Coach", bullets: ["Create coach profile", "Add bio, expertise & experience", "Upload profile photo"] },
-    { icon: Upload, title: "Add Your Course", bullets: ["Set title, description & price (INR/USD)", "Upload video, PDF or live sessions", "Structured curriculum builder"] },
-    { icon: Globe, title: "Publish & Start Selling", bullets: ["Course goes live globally", "Learners can enroll instantly", "Automated payment processing"] },
-    { icon: BarChart3, title: "Track Growth in Dashboard", bullets: ["Monitor enrollments & revenue", "Course-wise performance analytics", "Student insights & ratings"] },
+    { icon: Briefcase, title: t("howItWorks.coach.step1.title"), bullets: [t("howItWorks.coach.step1.b1"), t("howItWorks.coach.step1.b2"), t("howItWorks.coach.step1.b3")] },
+    { icon: Upload, title: t("howItWorks.coach.step2.title"), bullets: [t("howItWorks.coach.step2.b1"), t("howItWorks.coach.step2.b2"), t("howItWorks.coach.step2.b3")] },
+    { icon: Globe, title: t("howItWorks.coach.step3.title"), bullets: [t("howItWorks.coach.step3.b1"), t("howItWorks.coach.step3.b2"), t("howItWorks.coach.step3.b3")] },
+    { icon: BarChart3, title: t("howItWorks.coach.step4.title"), bullets: [t("howItWorks.coach.step4.b1"), t("howItWorks.coach.step4.b2"), t("howItWorks.coach.step4.b3")] },
   ];
 
   const toggle = (tab: "learner" | "coach") =>
@@ -181,13 +189,13 @@ const HowItWorksSection = () => {
         {/* header */}
         <div className="mb-14 text-center">
           <span className="mb-3 inline-block rounded-full border border-border bg-secondary px-4 py-1 text-xs font-medium text-muted-foreground">
-            Simple &amp; Transparent Process
+            {t("howItWorks.badge")}
           </span>
           <h2 className="mb-3 text-3xl font-extrabold text-foreground sm:text-4xl">
-            How It <span className="text-gradient-lime">Works</span>
+            {t("howItWorks.title")} <span className="text-gradient-lime">{t("howItWorks.titleHighlight")}</span>
           </h2>
           <p className="mx-auto max-w-xl text-muted-foreground">
-            Whether you want to learn new skills or share your expertise — get started in minutes.
+            {t("howItWorks.subtitle")}
           </p>
         </div>
 
@@ -195,15 +203,15 @@ const HowItWorksSection = () => {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-10">
           <Toggle3DButton
             icon={GraduationCap}
-            label="For Learners"
-            subtitle="Start learning in 4 steps"
+            label={t("howItWorks.forLearners")}
+            subtitle={t("howItWorks.forLearnersSubtitle")}
             active={activeTab === "learner"}
             onClick={() => toggle("learner")}
           />
           <Toggle3DButton
             icon={Briefcase}
-            label="For Coaches"
-            subtitle="Start teaching in 4 steps"
+            label={t("howItWorks.forCoaches")}
+            subtitle={t("howItWorks.forCoachesSubtitle")}
             active={activeTab === "coach"}
             onClick={() => toggle("coach")}
           />
