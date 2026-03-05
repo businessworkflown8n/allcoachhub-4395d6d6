@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 const SETTING_KEYS = {
   enabledCountries: "enabled_countries", // comma-separated codes or "all"
   defaultCountry: "default_country",     // country code
+  localeSelectorEnabled: "locale_selector_enabled", // "true" or "false"
 };
 
 const AdminLocaleSettings = () => {
@@ -21,6 +22,7 @@ const AdminLocaleSettings = () => {
   const [enabledCodes, setEnabledCodes] = useState<Set<string>>(new Set(ALL_COUNTRIES.map((c) => c.code)));
   const [allEnabled, setAllEnabled] = useState(true);
   const [defaultCountry, setDefaultCountry] = useState("US");
+  const [selectorEnabled, setSelectorEnabled] = useState(true);
 
   useEffect(() => {
     loadSettings();
@@ -31,7 +33,7 @@ const AdminLocaleSettings = () => {
     const { data } = await supabase
       .from("platform_settings")
       .select("key, value")
-      .in("key", [SETTING_KEYS.enabledCountries, SETTING_KEYS.defaultCountry]);
+      .in("key", [SETTING_KEYS.enabledCountries, SETTING_KEYS.defaultCountry, SETTING_KEYS.localeSelectorEnabled]);
 
     const settings: Record<string, string> = {};
     (data || []).forEach((r: any) => { settings[r.key] = r.value; });
@@ -47,6 +49,9 @@ const AdminLocaleSettings = () => {
 
     if (settings[SETTING_KEYS.defaultCountry]) {
       setDefaultCountry(settings[SETTING_KEYS.defaultCountry]);
+    }
+    if (settings[SETTING_KEYS.localeSelectorEnabled] !== undefined) {
+      setSelectorEnabled(settings[SETTING_KEYS.localeSelectorEnabled] !== "false");
     }
     setLoading(false);
   };
@@ -75,10 +80,11 @@ const AdminLocaleSettings = () => {
     setSaving(true);
     const countryVal = allEnabled ? "all" : Array.from(enabledCodes).join(",");
 
-    // Upsert both settings
+    // Upsert all settings
     for (const [key, value] of [
       [SETTING_KEYS.enabledCountries, countryVal],
       [SETTING_KEYS.defaultCountry, defaultCountry],
+      [SETTING_KEYS.localeSelectorEnabled, selectorEnabled ? "true" : "false"],
     ]) {
       const { data: existing } = await supabase.from("platform_settings").select("id").eq("key", key).single();
       if (existing) {
@@ -107,6 +113,22 @@ const AdminLocaleSettings = () => {
       <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
         <Globe className="h-5 w-5 text-primary" /> Locale & Currency Settings
       </h2>
+
+      {/* Master toggle */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-foreground">Location & Currency Selector</h3>
+            <p className="text-xs text-muted-foreground">Show or hide the country/currency selector on the website for all visitors.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`text-xs font-semibold ${selectorEnabled ? "text-green-500" : "text-red-500"}`}>
+              {selectorEnabled ? "ON" : "OFF"}
+            </span>
+            <Switch checked={selectorEnabled} onCheckedChange={setSelectorEnabled} />
+          </div>
+        </div>
+      </div>
 
       {/* Default country */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
