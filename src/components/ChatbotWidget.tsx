@@ -220,16 +220,6 @@ const ChatbotWidget = () => {
                     🏆 AI Coach
                   </button>
                 </div>
-                {/* Chat with Agent */}
-                <a
-                  href={WHATSAPP_AGENT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-lg border border-[hsl(142,70%,45%)] bg-[hsl(142,70%,45%)]/10 px-3 py-2.5 font-medium text-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,45%)]/20 transition-colors active:scale-95 touch-manipulation"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  Chat with Live Agent on WhatsApp
-                </a>
               </div>
             )}
 
