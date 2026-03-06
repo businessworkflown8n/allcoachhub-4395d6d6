@@ -71,6 +71,45 @@ export type Database = {
         }
         Relationships: []
       }
+      chatbot_leads: {
+        Row: {
+          company: string | null
+          country: string | null
+          created_at: string
+          email: string
+          experience: string | null
+          id: string
+          industry: string | null
+          name: string
+          user_type: string
+          whatsapp: string
+        }
+        Insert: {
+          company?: string | null
+          country?: string | null
+          created_at?: string
+          email: string
+          experience?: string | null
+          id?: string
+          industry?: string | null
+          name: string
+          user_type: string
+          whatsapp: string
+        }
+        Update: {
+          company?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string
+          experience?: string | null
+          id?: string
+          industry?: string | null
+          name?: string
+          user_type?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       coach_commissions: {
         Row: {
           coach_id: string
@@ -89,6 +128,27 @@ export type Database = {
           commission_percent?: number
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      communication_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: string
         }
         Relationships: []
       }
