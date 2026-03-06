@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { ALL_COUNTRIES, CountryLocale, DEFAULT_LOCALE, findCountryByCode } from "@/data/countries";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LocaleContextValue {
   locale: CountryLocale;
@@ -17,42 +18,46 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   const [locale, setLocaleState] = useState<CountryLocale>(DEFAULT_LOCALE);
 
   useEffect(() => {
-    // 1. Check sessionStorage
+    // 1. Check sessionStorage (user already chose)
     const cached = sessionStorage.getItem(STORAGE_KEY);
     if (cached) {
       const found = findCountryByCode(cached);
       if (found) { setLocaleState(found); return; }
     }
 
-    // 2. Try browser locale
-    const browserLang = navigator.language || "";
-    const regionMatch = browserLang.match(/-([A-Z]{2})$/);
-    if (regionMatch) {
-      const found = findCountryByCode(regionMatch[1]);
-      if (found) {
-        setLocaleState(found);
-        sessionStorage.setItem(STORAGE_KEY, found.code);
-        return;
-      }
-    }
-
-    // 3. Geo-IP fallback
-    fetch("https://ipapi.co/json/")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.country_code) {
-          const found = findCountryByCode(data.country_code);
-          if (found) {
-            setLocaleState(found);
-            sessionStorage.setItem(STORAGE_KEY, found.code);
-            return;
-          }
+    // 2. Fetch the admin-configured default country from DB
+    const init = async () => {
+      let dbDefault: CountryLocale | undefined;
+      try {
+        const { data } = await supabase
+          .from("platform_settings")
+          .select("value")
+          .eq("key", "default_country")
+          .single();
+        if (data?.value) {
+          dbDefault = findCountryByCode(data.value);
         }
-        sessionStorage.setItem(STORAGE_KEY, DEFAULT_LOCALE.code);
-      })
-      .catch(() => {
-        sessionStorage.setItem(STORAGE_KEY, DEFAULT_LOCALE.code);
-      });
+      } catch {}
+
+      // 3. Try browser locale
+      const browserLang = navigator.language || "";
+      const regionMatch = browserLang.match(/-([A-Z]{2})$/);
+      if (regionMatch) {
+        const found = findCountryByCode(regionMatch[1]);
+        if (found) {
+          setLocaleState(found);
+          sessionStorage.setItem(STORAGE_KEY, found.code);
+          return;
+        }
+      }
+
+      // 4. Use the DB default (admin-configured), fall back to code default
+      const fallback = dbDefault || DEFAULT_LOCALE;
+      setLocaleState(fallback);
+      sessionStorage.setItem(STORAGE_KEY, fallback.code);
+    };
+
+    init();
   }, []);
 
   const setLocale = useCallback((country: CountryLocale) => {
