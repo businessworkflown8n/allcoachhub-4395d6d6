@@ -53,7 +53,9 @@ const LocationSelector = () => {
           {isTranslating && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
           <span className="text-sm">{locale.flag}</span>
           <span className="hidden sm:inline">{locale.name}</span>
-          <span className="font-medium text-foreground">{locale.currencySymbol} {locale.currency}</span>
+          <span className="font-medium text-foreground">
+            {locale.currency === "INR" ? "₹ INR" : "$ USD"}
+          </span>
           <ChevronDown className="h-3 w-3" />
         </button>
       </PopoverTrigger>
