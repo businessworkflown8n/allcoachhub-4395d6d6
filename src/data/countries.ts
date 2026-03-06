@@ -8,8 +8,8 @@ export interface CountryLocale {
 }
 
 export const ALL_COUNTRIES: CountryLocale[] = [
-  { code: "US", name: "United States", language: "English", currency: "USD", currencySymbol: "$", flag: "🇺🇸" },
   { code: "IN", name: "India", language: "English", currency: "INR", currencySymbol: "₹", flag: "🇮🇳" },
+  { code: "US", name: "United States", language: "English", currency: "USD", currencySymbol: "$", flag: "🇺🇸" },
   { code: "GB", name: "United Kingdom", language: "English", currency: "GBP", currencySymbol: "£", flag: "🇬🇧" },
   { code: "CA", name: "Canada", language: "English", currency: "CAD", currencySymbol: "C$", flag: "🇨🇦" },
   { code: "AU", name: "Australia", language: "English", currency: "AUD", currencySymbol: "A$", flag: "🇦🇺" },
