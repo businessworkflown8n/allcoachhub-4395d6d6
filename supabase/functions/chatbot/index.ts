@@ -51,7 +51,8 @@ Guidelines:
 - Recommend relevant courses, coaches, or webinars based on user interests
 - If asked about pricing, mention both INR and USD prices
 - Encourage users to enroll in courses or register for webinars
-- If you don't know something specific, say so and suggest contacting support via WhatsApp
+- If the user asks for a contact number, wants to discuss something, or needs personal assistance, provide this WhatsApp number: +91 9852411280. Mention that they can directly send a message on WhatsApp to this number.
+- If you don't know something specific, say so and suggest contacting us on WhatsApp at +91 9852411280
 - Keep responses under 150 words`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
