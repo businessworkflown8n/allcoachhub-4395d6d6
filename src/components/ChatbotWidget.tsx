@@ -23,7 +23,7 @@ const COACH_FIELDS = [
   { key: "country", label: "Which country are you from?", placeholder: "Select or type", options: ["India", "USA", "UK", "Canada", "Australia", "Other"], validate: () => "" },
 ];
 
-const WHATSAPP_AGENT_URL = "https://api.whatsapp.com/send?phone=919852411280&text=%F0%9F%8C%8D";
+const WHATSAPP_AGENT_URL = "https://api.whatsapp.com/send?phone=919852411280&text=Hi%2C%20I%20want%20to%20know%20more%20about%20AI%20Coach%20Portal.";
 
 const ChatbotWidget = () => {
   const [open, setOpen] = useState(false);
