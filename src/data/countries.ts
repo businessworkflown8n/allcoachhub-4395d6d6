@@ -120,7 +120,7 @@ export const ALL_COUNTRIES: CountryLocale[] = [
   { code: "AF", name: "Afghanistan", language: "Dari", currency: "AFN", currencySymbol: "؋", flag: "🇦🇫" },
 ];
 
-export const DEFAULT_LOCALE = ALL_COUNTRIES[0]; // US
+export const DEFAULT_LOCALE = ALL_COUNTRIES[0]; // India (INR)
 
 export const findCountryByCode = (code: string): CountryLocale | undefined =>
   ALL_COUNTRIES.find((c) => c.code === code);
