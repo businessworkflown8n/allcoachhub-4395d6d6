@@ -25,7 +25,7 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
       if (found) { setLocaleState(found); return; }
     }
 
-    // 2. Fetch the admin-configured default country from DB
+    // 2. Fetch the admin-configured default country from DB and use it
     const init = async () => {
       let dbDefault: CountryLocale | undefined;
       try {
@@ -39,19 +39,7 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch {}
 
-      // 3. Try browser locale
-      const browserLang = navigator.language || "";
-      const regionMatch = browserLang.match(/-([A-Z]{2})$/);
-      if (regionMatch) {
-        const found = findCountryByCode(regionMatch[1]);
-        if (found) {
-          setLocaleState(found);
-          sessionStorage.setItem(STORAGE_KEY, found.code);
-          return;
-        }
-      }
-
-      // 4. Use the DB default (admin-configured), fall back to code default
+      // Use the DB default (admin-configured) as the primary fallback
       const fallback = dbDefault || DEFAULT_LOCALE;
       setLocaleState(fallback);
       sessionStorage.setItem(STORAGE_KEY, fallback.code);
