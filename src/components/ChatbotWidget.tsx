@@ -23,7 +23,7 @@ const COACH_FIELDS = [
   { key: "country", label: "Which country are you from?", placeholder: "Select or type", options: ["India", "USA", "UK", "Canada", "Australia", "Other"], validate: () => "" },
 ];
 
-const WHATSAPP_AGENT_URL = "https://api.whatsapp.com/send?phone=919852411280&text=%F0%9F%8C%8D";
+const WHATSAPP_AGENT_URL = "https://api.whatsapp.com/send?phone=919852411280&text=Hi%2C%20I%20want%20to%20know%20more%20about%20AI%20Coach%20Portal.";
 
 const ChatbotWidget = () => {
   const [open, setOpen] = useState(false);
@@ -220,16 +220,6 @@ const ChatbotWidget = () => {
                     🏆 AI Coach
                   </button>
                 </div>
-                {/* Chat with Agent */}
-                <a
-                  href={WHATSAPP_AGENT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-lg border border-[hsl(142,70%,45%)] bg-[hsl(142,70%,45%)]/10 px-3 py-2.5 font-medium text-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,45%)]/20 transition-colors active:scale-95 touch-manipulation"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  Chat with Live Agent on WhatsApp
-                </a>
               </div>
             )}
 
