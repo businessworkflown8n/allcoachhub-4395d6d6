@@ -79,9 +79,10 @@ export const useLocale = () => {
 /** Backwards-compatible hook for existing components using useCurrency */
 export const useCurrencyFromLocale = () => {
   const { locale, priceKey, originalPriceKey } = useLocale();
+  const isIndia = locale.currency === "INR";
   return {
-    currency: locale.currency as "INR" | "USD",
-    symbol: locale.currencySymbol,
+    currency: isIndia ? "INR" as const : "USD" as const,
+    symbol: isIndia ? "₹" : "$",
     priceKey,
     originalPriceKey,
   };
