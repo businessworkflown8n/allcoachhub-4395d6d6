@@ -21,7 +21,7 @@ const AdminLocaleSettings = () => {
   const [search, setSearch] = useState("");
   const [enabledCodes, setEnabledCodes] = useState<Set<string>>(new Set(ALL_COUNTRIES.map((c) => c.code)));
   const [allEnabled, setAllEnabled] = useState(true);
-  const [defaultCountry, setDefaultCountry] = useState("US");
+  const [defaultCountry, setDefaultCountry] = useState("IN");
   const [selectorEnabled, setSelectorEnabled] = useState(true);
 
   useEffect(() => {
