@@ -187,6 +187,7 @@ const ChatbotWidget = () => {
   const [leadId, setLeadId] = useState<string | null>(null);
   const [leadName, setLeadName] = useState<string>("");
   const [isListening, setIsListening] = useState(false);
+  const [voiceModeActive, setVoiceModeActive] = useState(false);
   const [detectedLang, setDetectedLang] = useState<string>("en");
   const [detectedGender, setDetectedGender] = useState<DetectedGender>("unknown");
   const [speakingMsgIndex, setSpeakingMsgIndex] = useState<number | null>(null);
@@ -194,6 +195,17 @@ const ChatbotWidget = () => {
   const initializedRef = useRef(false);
   const recognitionRef = useRef<any>(null);
   const voiceStreamRef = useRef<MediaStream | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const voiceModeActiveRef = useRef(false);
+  const messagesRef = useRef<Msg[]>([]);
+  const leadIdRef = useRef<string | null>(null);
+  const leadNameRef = useRef<string>("");
+
+  // Keep refs in sync
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
+  useEffect(() => { leadIdRef.current = leadId; }, [leadId]);
+  useEffect(() => { leadNameRef.current = leadName; }, [leadName]);
+  useEffect(() => { voiceModeActiveRef.current = voiceModeActive; }, [voiceModeActive]);
 
   // Preload voices
   useEffect(() => {
