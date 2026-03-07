@@ -288,6 +288,151 @@ const ChatbotWidget = () => {
     setIsStreaming(false);
   };
 
+  const speakText = useCallback((text: string, lang: string) => {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const cleanText = text.replace(/[#*_~`>\[\]()!]/g, '').replace(/\n+/g, '. ');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    // Map detected language to BCP-47
+    const langMap: Record<string, string> = { hi: "hi-IN", en: "en-US", ta: "ta-IN", te: "te-IN", bn: "bn-IN", mr: "mr-IN", gu: "gu-IN", kn: "kn-IN", ml: "ml-IN", pa: "pa-IN", es: "es-ES", fr: "fr-FR", de: "de-DE", ja: "ja-JP", zh: "zh-CN", ar: "ar-SA", pt: "pt-BR", ko: "ko-KR", ru: "ru-RU", it: "it-IT" };
+    utterance.lang = langMap[lang] || lang || "en-US";
+    utterance.rate = 0.95;
+    window.speechSynthesis.speak(utterance);
+  }, []);
+
+  const handlePlayVoice = (msgIndex: number, content: string) => {
+    if (speakingMsgIndex === msgIndex) {
+      window.speechSynthesis.cancel();
+      setSpeakingMsgIndex(null);
+      return;
+    }
+    setSpeakingMsgIndex(msgIndex);
+    const cleanText = content.replace(/[#*_~`>\[\]()!]/g, '').replace(/\n+/g, '. ');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    const langMap: Record<string, string> = { hi: "hi-IN", en: "en-US", ta: "ta-IN", te: "te-IN", bn: "bn-IN", es: "es-ES", fr: "fr-FR", de: "de-DE", ja: "ja-JP", zh: "zh-CN", ar: "ar-SA" };
+    utterance.lang = langMap[detectedLang] || detectedLang || "en-US";
+    utterance.rate = 0.95;
+    utterance.onend = () => setSpeakingMsgIndex(null);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in your browser. Please use Chrome.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    // Let the browser auto-detect language
+    recognition.lang = "";
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      const resultLang = event.results[0][0].lang || recognition.lang || "en";
+      // Extract base language code
+      const baseLang = resultLang.split("-")[0] || "en";
+      setDetectedLang(baseLang);
+      setIsListening(false);
+
+      // Submit the voice message as a chat message
+      if (step === "chat") {
+        const userMsg: Msg = { role: "user", content: transcript };
+        setMessages(prev => {
+          const updated = [...prev, userMsg];
+          if (leadId) saveChatMessages(leadId, [userMsg]);
+          streamChatWithVoice(updated, baseLang);
+          return updated;
+        });
+      } else if (step === "collecting") {
+        setInput(transcript);
+      }
+    };
+
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    setIsListening(true);
+    recognition.start();
+  };
+
+  const stopListening = () => {
+    recognitionRef.current?.stop();
+    setIsListening(false);
+  };
+
+  const streamChatWithVoice = async (allMessages: Msg[], lang: string) => {
+    setIsStreaming(true);
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chatbot`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ messages: allMessages }),
+        }
+      );
+
+      if (!resp.ok || !resp.body) {
+        const errMsg: Msg = { role: "assistant", content: "Sorry, I'm having trouble right now. Please try again!" };
+        setMessages(prev => [...prev, errMsg]);
+        if (leadId) await saveChatMessages(leadId, [errMsg]);
+        setIsStreaming(false);
+        return;
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let assistantText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantText += content;
+              setMessages(prev => {
+                const last = prev[prev.length - 1];
+                if (last?.role === "assistant" && prev.length > allMessages.length) {
+                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantText } : m);
+                }
+                return [...prev, { role: "assistant", content: assistantText }];
+              });
+            }
+          } catch { /* partial JSON */ }
+        }
+      }
+
+      if (assistantText) {
+        if (leadId) await saveChatMessages(leadId, [{ role: "assistant", content: assistantText }]);
+        // Auto-play voice response in detected language
+        speakText(assistantText, lang);
+      }
+    } catch {
+      const errMsg: Msg = { role: "assistant", content: "Connection error. Please try again." };
+      setMessages(prev => [...prev, errMsg]);
+      if (leadId) await saveChatMessages(leadId, [errMsg]);
+    }
+    setIsStreaming(false);
+  };
+
   const handleChatSubmit = async () => {
     if (!input.trim() || isStreaming) return;
     const userMsg: Msg = { role: "user", content: input.trim() };
