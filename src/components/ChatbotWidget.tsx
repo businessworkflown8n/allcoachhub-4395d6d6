@@ -567,6 +567,16 @@ const ChatbotWidget = () => {
                           <ReactMarkdown>{m.content}</ReactMarkdown>
                         </div>
                       ) : m.content}
+                      {m.role === "assistant" && m.content && (
+                        <button
+                          onClick={() => handlePlayVoice(i, m.content)}
+                          className="mt-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                          title={speakingMsgIndex === i ? "Stop voice" : "Play voice"}
+                        >
+                          <Volume2 className={`h-3.5 w-3.5 ${speakingMsgIndex === i ? "text-primary animate-pulse" : ""}`} />
+                          {speakingMsgIndex === i ? "Stop" : "Listen"}
+                        </button>
+                      )}
                     </div>
                     {m.role === "user" && <User className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />}
                   </div>
