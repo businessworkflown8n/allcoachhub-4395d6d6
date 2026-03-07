@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
-import { X, Send, Bot, User, MessageSquare } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { X, Send, Bot, User, MessageSquare, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 
-type Step = "welcome" | "collecting" | "chat";
+type Step = "loading" | "welcome" | "collecting" | "chat";
 type UserType = "learner" | "coach";
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -24,10 +24,11 @@ const COACH_FIELDS = [
 ];
 
 const WHATSAPP_AGENT_URL = "https://api.whatsapp.com/send?phone=919852411280&text=Hi%2C%20I%20want%20to%20know%20more%20about%20AI%20Coach%20Portal.";
+const STORAGE_KEY = "chatbot_lead_id";
 
 const ChatbotWidget = () => {
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState<Step>("welcome");
+  const [step, setStep] = useState<Step>("loading");
   const [userType, setUserType] = useState<UserType | null>(null);
   const [fieldIndex, setFieldIndex] = useState(0);
   const [formData, setFormData] = useState<Record<string, string>>({});
@@ -35,11 +36,69 @@ const ChatbotWidget = () => {
   const [error, setError] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [leadId, setLeadId] = useState<string | null>(null);
+  const [leadName, setLeadName] = useState<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, step, fieldIndex]);
+
+  // Check for returning user when chatbot opens
+  const initializeChat = useCallback(async () => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    const storedLeadId = localStorage.getItem(STORAGE_KEY);
+
+    if (storedLeadId) {
+      // Verify lead exists in DB
+      const { data: lead } = await supabase
+        .from("chatbot_leads")
+        .select("id, name, user_type")
+        .eq("id", storedLeadId)
+        .maybeSingle();
+
+      if (lead) {
+        setLeadId(lead.id);
+        setLeadName(lead.name);
+        setUserType(lead.user_type === "AI Coach" ? "coach" : "learner");
+
+        // Load chat history
+        const { data: history } = await supabase
+          .from("chat_history" as any)
+          .select("role, content")
+          .eq("lead_id", lead.id)
+          .order("created_at", { ascending: true });
+
+        const prevMessages: Msg[] = (history as any[])?.map((h: any) => ({
+          role: h.role as "user" | "assistant",
+          content: h.content,
+        })) || [];
+
+        if (prevMessages.length > 0) {
+          setMessages(prevMessages);
+        } else {
+          setMessages([
+            { role: "assistant", content: `Welcome back, ${lead.name}! 🎉 How can I help you today?\n\nYou can also **chat with a live agent** anytime using the button below.` },
+          ]);
+        }
+        setStep("chat");
+        return;
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
+    setStep("welcome");
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      initializeChat();
+    }
+  }, [open, initializeChat]);
 
   const fields = userType === "learner" ? LEARNER_FIELDS : COACH_FIELDS;
 
@@ -53,8 +112,17 @@ const ChatbotWidget = () => {
 
   const selectOption = (value: string) => {
     setInput(value);
-    // Auto-submit after a brief moment
     setTimeout(() => submitField(value), 100);
+  };
+
+  const saveChatMessages = async (currentLeadId: string, msgs: Msg[]) => {
+    // Save only new messages (batch insert)
+    const rows = msgs.map(m => ({
+      lead_id: currentLeadId,
+      role: m.role,
+      content: m.content,
+    }));
+    await supabase.from("chat_history" as any).insert(rows as any);
   };
 
   const submitField = async (value?: string) => {
@@ -76,25 +144,71 @@ const ChatbotWidget = () => {
     if (fieldIndex < fields.length - 1) {
       setFieldIndex(fieldIndex + 1);
     } else {
-      const lead: Record<string, string> = {
-        user_type: userType === "learner" ? "AI Learner" : "AI Coach",
-        name: updated.name || "",
-        whatsapp: updated.whatsapp || "",
-        email: updated.email || "",
-      };
-      if (userType === "learner") {
-        lead.experience = updated.experience || "";
-        lead.industry = updated.industry || "";
+      // Check if user already exists by email or whatsapp
+      const { data: existingLead } = await supabase
+        .from("chatbot_leads")
+        .select("id, name")
+        .or(`email.eq.${updated.email},whatsapp.eq.${updated.whatsapp?.replace(/\s/g, "")}`)
+        .maybeSingle();
+
+      let currentLeadId: string;
+      let currentName: string;
+
+      if (existingLead) {
+        currentLeadId = existingLead.id;
+        currentName = existingLead.name;
       } else {
-        lead.company = updated.company || "";
-        lead.country = updated.country || "";
+        const lead: Record<string, string> = {
+          user_type: userType === "learner" ? "AI Learner" : "AI Coach",
+          name: updated.name || "",
+          whatsapp: updated.whatsapp || "",
+          email: updated.email || "",
+        };
+        if (userType === "learner") {
+          lead.experience = updated.experience || "";
+          lead.industry = updated.industry || "";
+        } else {
+          lead.company = updated.company || "";
+          lead.country = updated.country || "";
+        }
+        const { data: newLead } = await supabase
+          .from("chatbot_leads" as any)
+          .insert(lead as any)
+          .select("id")
+          .single();
+
+        currentLeadId = (newLead as any)?.id;
+        currentName = updated.name || "";
       }
-      await supabase.from("chatbot_leads" as any).insert(lead as any);
+
+      localStorage.setItem(STORAGE_KEY, currentLeadId);
+      setLeadId(currentLeadId);
+      setLeadName(currentName);
+
+      // Load any existing chat history
+      const { data: history } = await supabase
+        .from("chat_history" as any)
+        .select("role, content")
+        .eq("lead_id", currentLeadId)
+        .order("created_at", { ascending: true });
+
+      const prevMessages: Msg[] = (history as any[])?.map((h: any) => ({
+        role: h.role as "user" | "assistant",
+        content: h.content,
+      })) || [];
+
+      if (prevMessages.length > 0) {
+        setMessages(prevMessages);
+      } else {
+        const welcomeMsg: Msg = {
+          role: "assistant",
+          content: `Thanks ${currentName}! 🎉 I'm your AI Coach Portal assistant. Ask me anything about our courses, coaches, webinars, or blogs!\n\nYou can also **chat with a live agent** anytime using the button below.`,
+        };
+        setMessages([welcomeMsg]);
+        await saveChatMessages(currentLeadId, [welcomeMsg]);
+      }
 
       setStep("chat");
-      setMessages([
-        { role: "assistant", content: `Thanks ${updated.name}! 🎉 I'm your AI Coach Portal assistant. Ask me anything about our courses, coaches, webinars, or blogs!\n\nYou can also **chat with a live agent** anytime using the button below.` },
-      ]);
     }
   };
 
@@ -116,7 +230,9 @@ const ChatbotWidget = () => {
       );
 
       if (!resp.ok || !resp.body) {
-        setMessages(prev => [...prev, { role: "assistant", content: "Sorry, I'm having trouble right now. Please try again!" }]);
+        const errMsg: Msg = { role: "assistant", content: "Sorry, I'm having trouble right now. Please try again!" };
+        setMessages(prev => [...prev, errMsg]);
+        if (leadId) await saveChatMessages(leadId, [errMsg]);
         setIsStreaming(false);
         return;
       }
@@ -155,18 +271,29 @@ const ChatbotWidget = () => {
           } catch { /* partial JSON */ }
         }
       }
+
+      // Save the completed assistant message
+      if (assistantText && leadId) {
+        await saveChatMessages(leadId, [{ role: "assistant", content: assistantText }]);
+      }
     } catch {
-      setMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please try again." }]);
+      const errMsg: Msg = { role: "assistant", content: "Connection error. Please try again." };
+      setMessages(prev => [...prev, errMsg]);
+      if (leadId) await saveChatMessages(leadId, [errMsg]);
     }
     setIsStreaming(false);
   };
 
-  const handleChatSubmit = () => {
+  const handleChatSubmit = async () => {
     if (!input.trim() || isStreaming) return;
     const userMsg: Msg = { role: "user", content: input.trim() };
     const updated = [...messages, userMsg];
     setMessages(updated);
     setInput("");
+
+    // Save user message
+    if (leadId) await saveChatMessages(leadId, [userMsg]);
+
     streamChat(updated);
   };
 
@@ -175,6 +302,19 @@ const ChatbotWidget = () => {
       e.preventDefault();
       step === "chat" ? handleChatSubmit() : handleFieldSubmit();
     }
+  };
+
+  const handleStartOver = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setLeadId(null);
+    setLeadName("");
+    setMessages([]);
+    setStep("welcome");
+    setUserType(null);
+    setFieldIndex(0);
+    setFormData({});
+    setError("");
+    initializedRef.current = false;
   };
 
   const currentField = step === "collecting" ? fields[fieldIndex] : null;
@@ -199,13 +339,26 @@ const ChatbotWidget = () => {
               <Bot className="h-5 w-5" />
               <span className="font-semibold text-sm">AI Coach Portal Assistant</span>
             </div>
-            <button onClick={() => setOpen(false)} className="rounded p-1 hover:bg-primary-foreground/20">
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              {step === "chat" && (
+                <button onClick={handleStartOver} className="rounded p-1 hover:bg-primary-foreground/20" title="Start over">
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+              )}
+              <button onClick={() => setOpen(false)} className="rounded p-1 hover:bg-primary-foreground/20">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* Body */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
+            {step === "loading" && (
+              <div className="flex items-center justify-center h-full">
+                <span className="animate-pulse text-muted-foreground">Loading...</span>
+              </div>
+            )}
+
             {step === "welcome" && (
               <div className="space-y-3">
                 <div className="rounded-lg bg-muted p-3">
@@ -234,7 +387,6 @@ const ChatbotWidget = () => {
                   </div>
                 ))}
 
-                {/* Tappable options for current field */}
                 {currentField?.options && fieldIndex === fields.indexOf(currentField) && (
                   <div className="flex flex-wrap gap-2">
                     {currentField.options.map(opt => (
@@ -280,7 +432,7 @@ const ChatbotWidget = () => {
             )}
           </div>
 
-          {/* Chat with Agent bar (visible in chat step) */}
+          {/* Chat with Agent bar */}
           {step === "chat" && (
             <div className="px-3 pb-1">
               <a
@@ -296,7 +448,7 @@ const ChatbotWidget = () => {
           )}
 
           {/* Input */}
-          {step !== "welcome" && (
+          {(step === "collecting" || step === "chat") && (
             <div className="border-t border-border p-3">
               <div className="flex gap-2">
                 <input
