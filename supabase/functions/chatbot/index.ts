@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { messages, userName } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -42,12 +42,17 @@ ${blogsRes.data?.map(b => `- ${b.title} (${b.category}): ${b.excerpt?.slice(0, 8
 ${webinarsRes.data?.map(w => `- ${w.title} on ${w.webinar_date} at ${w.webinar_time} (${w.duration_minutes}min) - ${w.description?.slice(0, 80) || ''}`).join('\n') || 'No upcoming webinars'}
 `;
 
+    const nameInstruction = userName
+      ? `- The user's name is "${userName}". Address them by name naturally in your responses (e.g., "Hello ${userName}," or "Thanks for asking, ${userName}!"). Don't overuse it — use it once or twice per response at most.`
+      : "";
+
     const systemPrompt = `You are the AI Coach Portal assistant. You help visitors learn about AI courses, coaches, webinars, and blogs on the platform.
 
 ${knowledgeBase}
 
 Guidelines:
 - Be friendly, concise, and helpful
+${nameInstruction}
 - Recommend relevant courses, coaches, or webinars based on user interests
 - If asked about pricing, mention both INR and USD prices
 - Encourage users to enroll in courses or register for webinars
