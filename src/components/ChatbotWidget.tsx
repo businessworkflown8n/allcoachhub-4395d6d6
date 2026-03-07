@@ -781,7 +781,7 @@ const ChatbotWidget = () => {
                   <RotateCcw className="h-4 w-4" />
                 </button>
               )}
-              <button onClick={() => setOpen(false)} className="rounded p-1 hover:bg-primary-foreground/20">
+              <button onClick={() => { stopVoiceMode(); setOpen(false); }} className="rounded p-1 hover:bg-primary-foreground/20">
                 <X className="h-4 w-4" />
               </button>
             </div>
