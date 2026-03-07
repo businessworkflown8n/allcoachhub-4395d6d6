@@ -894,9 +894,12 @@ const ChatbotWidget = () => {
           {/* Input */}
           {(step === "collecting" || step === "chat") && (
             <div className="border-t border-border p-3">
-              {isListening && (
-                <div className="mb-2 flex items-center justify-center gap-2 text-xs text-destructive font-medium animate-pulse">
-                  <Mic className="h-3.5 w-3.5" /> Listening... Speak now
+              {voiceModeActive && (
+                <div className="mb-2 flex items-center justify-center gap-2 text-xs font-medium animate-pulse">
+                  <Mic className="h-3.5 w-3.5 text-destructive" />
+                  <span className={isListening ? "text-destructive" : "text-muted-foreground"}>
+                    {isListening ? "Listening... Speak now" : "Processing..."}
+                  </span>
                 </div>
               )}
               <div className="flex gap-2">
@@ -910,12 +913,11 @@ const ChatbotWidget = () => {
                 />
                 {step === "chat" && (
                   <button
-                    onClick={isListening ? stopListening : startListening}
-                    disabled={isStreaming}
-                    className={`rounded-lg px-3 py-2 transition-colors ${isListening ? "bg-destructive text-destructive-foreground animate-pulse" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
-                    title={isListening ? "Stop listening" : "Speak"}
+                    onClick={voiceModeActive ? stopVoiceMode : startVoiceMode}
+                    className={`rounded-lg px-3 py-2 transition-colors ${voiceModeActive ? "bg-destructive text-destructive-foreground animate-pulse" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
+                    title={voiceModeActive ? "End voice chat" : "Start voice chat"}
                   >
-                    {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                    {voiceModeActive ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                   </button>
                 )}
                 <button
