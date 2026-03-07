@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 type Step = "loading" | "welcome" | "collecting" | "chat";
 type UserType = "learner" | "coach";
 type Msg = { role: "user" | "assistant"; content: string };
+type DetectedGender = "male" | "female" | "unknown";
 
 const LEARNER_FIELDS = [
   { key: "name", label: "What's your name?", placeholder: "Your full name", validate: (v: string) => v.trim().length >= 2 ? "" : "Please enter at least 2 characters" },
@@ -26,6 +27,153 @@ const COACH_FIELDS = [
 const WHATSAPP_AGENT_URL = "https://api.whatsapp.com/send?phone=919852411280&text=Hi%2C%20I%20want%20to%20know%20more%20about%20AI%20Coach%20Portal.";
 const STORAGE_KEY = "chatbot_lead_id";
 
+const LANG_MAP: Record<string, string> = {
+  hi: "hi-IN", en: "en-US", ta: "ta-IN", te: "te-IN", bn: "bn-IN", mr: "mr-IN",
+  gu: "gu-IN", kn: "kn-IN", ml: "ml-IN", pa: "pa-IN", es: "es-ES", fr: "fr-FR",
+  de: "de-DE", ja: "ja-JP", zh: "zh-CN", ar: "ar-SA", pt: "pt-BR", ko: "ko-KR",
+  ru: "ru-RU", it: "it-IT",
+};
+
+/**
+ * Find the best SpeechSynthesis voice for a given language and gender.
+ * Returns opposite gender voice: if user is male → female voice, and vice versa.
+ * Default to female voice if detection is uncertain.
+ */
+function pickVoice(lang: string, userGender: DetectedGender): SpeechSynthesisVoice | null {
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+
+  const targetGender: "female" | "male" = userGender === "male" ? "female" : "male";
+  const bcp47 = LANG_MAP[lang] || lang || "en-US";
+  const baseLang = bcp47.split("-")[0].toLowerCase();
+
+  // Heuristic: many voice names contain gender hints
+  const femaleHints = ["female", "woman", "zira", "hazel", "susan", "samantha", "karen", "moira", "tessa", "fiona", "alice", "amelie", "anna", "paulina", "lekha", "meijia", "yuna", "joana", "luciana", "milena", "laura", "sara", "jessica", "emily"];
+  const maleHints = ["male", "daniel", "david", "james", "thomas", "rishi", "aaron", "alex", "fred", "jorge", "luca", "diego", "yuri", "oliver", "albert"];
+
+  const isGender = (voice: SpeechSynthesisVoice, gender: "female" | "male"): boolean => {
+    const n = voice.name.toLowerCase();
+    const hints = gender === "female" ? femaleHints : maleHints;
+    return hints.some(h => n.includes(h));
+  };
+
+  // Filter voices matching the language
+  const langVoices = voices.filter(v => {
+    const vLang = v.lang.toLowerCase();
+    return vLang.startsWith(baseLang);
+  });
+
+  // Try to find opposite gender voice in matching language
+  const genderMatch = langVoices.filter(v => isGender(v, targetGender));
+  if (genderMatch.length) return genderMatch[0];
+
+  // Fallback: any voice in matching language
+  if (langVoices.length) return langVoices[0];
+
+  // Fallback: opposite gender in any language
+  const anyGender = voices.filter(v => isGender(v, targetGender));
+  if (anyGender.length) return anyGender[0];
+
+  return voices[0] || null;
+}
+
+/**
+ * Estimate fundamental frequency (pitch) from audio stream to guess gender.
+ * Male: ~85-180 Hz, Female: ~165-255 Hz
+ * Returns a promise that resolves after a short analysis window.
+ */
+function detectGenderFromStream(stream: MediaStream, durationMs = 2000): Promise<DetectedGender> {
+  return new Promise((resolve) => {
+    try {
+      const audioCtx = new AudioContext();
+      const source = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      source.connect(analyser);
+
+      const bufferLength = analyser.fftSize;
+      const buffer = new Float32Array(bufferLength);
+      const pitchSamples: number[] = [];
+
+      const interval = setInterval(() => {
+        analyser.getFloatTimeDomainData(buffer);
+        const pitch = autoCorrelate(buffer, audioCtx.sampleRate);
+        if (pitch > 0) pitchSamples.push(pitch);
+      }, 100);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        source.disconnect();
+        audioCtx.close().catch(() => {});
+
+        if (pitchSamples.length < 3) {
+          resolve("unknown");
+          return;
+        }
+
+        // Median pitch
+        pitchSamples.sort((a, b) => a - b);
+        const median = pitchSamples[Math.floor(pitchSamples.length / 2)];
+
+        // Male < 165 Hz, Female >= 165 Hz
+        if (median < 165) resolve("male");
+        else resolve("female");
+      }, durationMs);
+    } catch {
+      resolve("unknown");
+    }
+  });
+}
+
+/**
+ * Autocorrelation-based pitch detection.
+ */
+function autoCorrelate(buf: Float32Array, sampleRate: number): number {
+  const SIZE = buf.length;
+  let rms = 0;
+  for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+  rms = Math.sqrt(rms / SIZE);
+  if (rms < 0.01) return -1; // too quiet
+
+  // Trim silence
+  let r1 = 0, r2 = SIZE - 1;
+  const threshold = 0.2;
+  for (let i = 0; i < SIZE / 2; i++) {
+    if (Math.abs(buf[i]) < threshold) { r1 = i; break; }
+  }
+  for (let i = 1; i < SIZE / 2; i++) {
+    if (Math.abs(buf[SIZE - i]) < threshold) { r2 = SIZE - i; break; }
+  }
+
+  const trimBuf = buf.slice(r1, r2);
+  const trimSize = trimBuf.length;
+
+  const c = new Float32Array(trimSize);
+  for (let i = 0; i < trimSize; i++) {
+    for (let j = 0; j < trimSize - i; j++) {
+      c[i] += trimBuf[j] * trimBuf[j + i];
+    }
+  }
+
+  let d = 0;
+  while (c[d] > c[d + 1]) d++;
+
+  let maxval = -1, maxpos = -1;
+  for (let i = d; i < trimSize; i++) {
+    if (c[i] > maxval) { maxval = c[i]; maxpos = i; }
+  }
+
+  let T0 = maxpos;
+
+  // Parabolic interpolation
+  const x1 = c[T0 - 1] ?? 0, x2 = c[T0], x3 = c[T0 + 1] ?? 0;
+  const a = (x1 + x3 - 2 * x2) / 2;
+  const b = (x3 - x1) / 2;
+  if (a) T0 = T0 - b / (2 * a);
+
+  return sampleRate / T0;
+}
+
 const ChatbotWidget = () => {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("loading");
@@ -40,16 +188,25 @@ const ChatbotWidget = () => {
   const [leadName, setLeadName] = useState<string>("");
   const [isListening, setIsListening] = useState(false);
   const [detectedLang, setDetectedLang] = useState<string>("en");
+  const [detectedGender, setDetectedGender] = useState<DetectedGender>("unknown");
   const [speakingMsgIndex, setSpeakingMsgIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
   const recognitionRef = useRef<any>(null);
+  const voiceStreamRef = useRef<MediaStream | null>(null);
+
+  // Preload voices
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, step, fieldIndex]);
 
-  // Check for returning user when chatbot opens
   const initializeChat = useCallback(async () => {
     if (initializedRef.current) return;
     initializedRef.current = true;
@@ -57,7 +214,6 @@ const ChatbotWidget = () => {
     const storedLeadId = localStorage.getItem(STORAGE_KEY);
 
     if (storedLeadId) {
-      // Verify lead exists in DB
       const { data: lead } = await supabase
         .from("chatbot_leads")
         .select("id, name, user_type")
@@ -69,7 +225,6 @@ const ChatbotWidget = () => {
         setLeadName(lead.name);
         setUserType(lead.user_type === "AI Coach" ? "coach" : "learner");
 
-        // Load chat history
         const { data: history } = await supabase
           .from("chat_history" as any)
           .select("role, content")
@@ -99,9 +254,7 @@ const ChatbotWidget = () => {
   }, []);
 
   useEffect(() => {
-    if (open) {
-      initializeChat();
-    }
+    if (open) initializeChat();
   }, [open, initializeChat]);
 
   const fields = userType === "learner" ? LEARNER_FIELDS : COACH_FIELDS;
@@ -120,7 +273,6 @@ const ChatbotWidget = () => {
   };
 
   const saveChatMessages = async (currentLeadId: string, msgs: Msg[]) => {
-    // Save only new messages (batch insert)
     const rows = msgs.map(m => ({
       lead_id: currentLeadId,
       role: m.role,
@@ -148,7 +300,6 @@ const ChatbotWidget = () => {
     if (fieldIndex < fields.length - 1) {
       setFieldIndex(fieldIndex + 1);
     } else {
-      // Check if user already exists by email or whatsapp
       const { data: existingLead } = await supabase
         .from("chatbot_leads")
         .select("id, name")
@@ -189,7 +340,6 @@ const ChatbotWidget = () => {
       setLeadId(currentLeadId);
       setLeadName(currentName);
 
-      // Load any existing chat history
       const { data: history } = await supabase
         .from("chat_history" as any)
         .select("role, content")
@@ -229,7 +379,7 @@ const ChatbotWidget = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ messages: allMessages }),
+          body: JSON.stringify({ messages: allMessages, userName: leadName || undefined }),
         }
       );
 
@@ -276,7 +426,6 @@ const ChatbotWidget = () => {
         }
       }
 
-      // Save the completed assistant message
       if (assistantText && leadId) {
         await saveChatMessages(leadId, [{ role: "assistant", content: assistantText }]);
       }
@@ -288,15 +437,22 @@ const ChatbotWidget = () => {
     setIsStreaming(false);
   };
 
-  const speakText = useCallback((text: string, lang: string) => {
+  /**
+   * Speak text using SpeechSynthesis with opposite-gender voice selection.
+   */
+  const speakWithGender = useCallback((text: string, lang: string, gender: DetectedGender) => {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     const cleanText = text.replace(/[#*_~`>\[\]()!]/g, '').replace(/\n+/g, '. ');
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    // Map detected language to BCP-47
-    const langMap: Record<string, string> = { hi: "hi-IN", en: "en-US", ta: "ta-IN", te: "te-IN", bn: "bn-IN", mr: "mr-IN", gu: "gu-IN", kn: "kn-IN", ml: "ml-IN", pa: "pa-IN", es: "es-ES", fr: "fr-FR", de: "de-DE", ja: "ja-JP", zh: "zh-CN", ar: "ar-SA", pt: "pt-BR", ko: "ko-KR", ru: "ru-RU", it: "it-IT" };
-    utterance.lang = langMap[lang] || lang || "en-US";
+    const bcp47 = LANG_MAP[lang] || lang || "en-US";
+    utterance.lang = bcp47;
     utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+
+    const voice = pickVoice(lang, gender);
+    if (voice) utterance.voice = voice;
+
     window.speechSynthesis.speak(utterance);
   }, []);
 
@@ -309,40 +465,64 @@ const ChatbotWidget = () => {
     setSpeakingMsgIndex(msgIndex);
     const cleanText = content.replace(/[#*_~`>\[\]()!]/g, '').replace(/\n+/g, '. ');
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    const langMap: Record<string, string> = { hi: "hi-IN", en: "en-US", ta: "ta-IN", te: "te-IN", bn: "bn-IN", es: "es-ES", fr: "fr-FR", de: "de-DE", ja: "ja-JP", zh: "zh-CN", ar: "ar-SA" };
-    utterance.lang = langMap[detectedLang] || detectedLang || "en-US";
+    const bcp47 = LANG_MAP[detectedLang] || detectedLang || "en-US";
+    utterance.lang = bcp47;
     utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+
+    const voice = pickVoice(detectedLang, detectedGender);
+    if (voice) utterance.voice = voice;
+
     utterance.onend = () => setSpeakingMsgIndex(null);
     window.speechSynthesis.speak(utterance);
   };
 
-  const startListening = () => {
+  const startListening = async () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech recognition is not supported in your browser. Please use Chrome.");
       return;
     }
+
+    // Get mic stream for gender detection
+    let stream: MediaStream | null = null;
+    let genderPromise: Promise<DetectedGender> = Promise.resolve("unknown");
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      voiceStreamRef.current = stream;
+      genderPromise = detectGenderFromStream(stream, 2500);
+    } catch {
+      // Continue without gender detection
+    }
+
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = false;
-    // Let the browser auto-detect language
     recognition.lang = "";
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = async (event: any) => {
       const transcript = event.results[0][0].transcript;
       const resultLang = event.results[0][0].lang || recognition.lang || "en";
-      // Extract base language code
       const baseLang = resultLang.split("-")[0] || "en";
       setDetectedLang(baseLang);
       setIsListening(false);
 
-      // Submit the voice message as a chat message
+      // Wait for gender detection result
+      const gender = await genderPromise;
+      setDetectedGender(gender);
+
+      // Cleanup mic stream
+      if (voiceStreamRef.current) {
+        voiceStreamRef.current.getTracks().forEach(t => t.stop());
+        voiceStreamRef.current = null;
+      }
+
       if (step === "chat") {
         const userMsg: Msg = { role: "user", content: transcript };
         setMessages(prev => {
           const updated = [...prev, userMsg];
           if (leadId) saveChatMessages(leadId, [userMsg]);
-          streamChatWithVoice(updated, baseLang);
+          streamChatWithVoice(updated, baseLang, gender);
           return updated;
         });
       } else if (step === "collecting") {
@@ -350,8 +530,16 @@ const ChatbotWidget = () => {
       }
     };
 
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => {
+      setIsListening(false);
+      if (voiceStreamRef.current) {
+        voiceStreamRef.current.getTracks().forEach(t => t.stop());
+        voiceStreamRef.current = null;
+      }
+    };
+    recognition.onend = () => {
+      setIsListening(false);
+    };
 
     recognitionRef.current = recognition;
     setIsListening(true);
@@ -361,9 +549,13 @@ const ChatbotWidget = () => {
   const stopListening = () => {
     recognitionRef.current?.stop();
     setIsListening(false);
+    if (voiceStreamRef.current) {
+      voiceStreamRef.current.getTracks().forEach(t => t.stop());
+      voiceStreamRef.current = null;
+    }
   };
 
-  const streamChatWithVoice = async (allMessages: Msg[], lang: string) => {
+  const streamChatWithVoice = async (allMessages: Msg[], lang: string, gender: DetectedGender) => {
     setIsStreaming(true);
     try {
       const resp = await fetch(
@@ -374,7 +566,7 @@ const ChatbotWidget = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ messages: allMessages }),
+          body: JSON.stringify({ messages: allMessages, userName: leadName || undefined }),
         }
       );
 
@@ -422,8 +614,8 @@ const ChatbotWidget = () => {
 
       if (assistantText) {
         if (leadId) await saveChatMessages(leadId, [{ role: "assistant", content: assistantText }]);
-        // Auto-play voice response in detected language
-        speakText(assistantText, lang);
+        // Auto-play voice response with opposite-gender voice
+        speakWithGender(assistantText, lang, gender);
       }
     } catch {
       const errMsg: Msg = { role: "assistant", content: "Connection error. Please try again." };
@@ -440,9 +632,7 @@ const ChatbotWidget = () => {
     setMessages(updated);
     setInput("");
 
-    // Save user message
     if (leadId) await saveChatMessages(leadId, [userMsg]);
-
     streamChat(updated);
   };
 
@@ -463,6 +653,8 @@ const ChatbotWidget = () => {
     setFieldIndex(0);
     setFormData({});
     setError("");
+    setDetectedGender("unknown");
+    setDetectedLang("en");
     initializedRef.current = false;
   };
 
