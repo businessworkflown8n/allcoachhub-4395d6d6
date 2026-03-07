@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Send, Bot, User, MessageSquare, RotateCcw } from "lucide-react";
+import { X, Send, Bot, User, MessageSquare, RotateCcw, Mic, MicOff, Volume2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 
@@ -38,8 +38,12 @@ const ChatbotWidget = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [leadId, setLeadId] = useState<string | null>(null);
   const [leadName, setLeadName] = useState<string>("");
+  const [isListening, setIsListening] = useState(false);
+  const [detectedLang, setDetectedLang] = useState<string>("en");
+  const [speakingMsgIndex, setSpeakingMsgIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -284,6 +288,151 @@ const ChatbotWidget = () => {
     setIsStreaming(false);
   };
 
+  const speakText = useCallback((text: string, lang: string) => {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const cleanText = text.replace(/[#*_~`>\[\]()!]/g, '').replace(/\n+/g, '. ');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    // Map detected language to BCP-47
+    const langMap: Record<string, string> = { hi: "hi-IN", en: "en-US", ta: "ta-IN", te: "te-IN", bn: "bn-IN", mr: "mr-IN", gu: "gu-IN", kn: "kn-IN", ml: "ml-IN", pa: "pa-IN", es: "es-ES", fr: "fr-FR", de: "de-DE", ja: "ja-JP", zh: "zh-CN", ar: "ar-SA", pt: "pt-BR", ko: "ko-KR", ru: "ru-RU", it: "it-IT" };
+    utterance.lang = langMap[lang] || lang || "en-US";
+    utterance.rate = 0.95;
+    window.speechSynthesis.speak(utterance);
+  }, []);
+
+  const handlePlayVoice = (msgIndex: number, content: string) => {
+    if (speakingMsgIndex === msgIndex) {
+      window.speechSynthesis.cancel();
+      setSpeakingMsgIndex(null);
+      return;
+    }
+    setSpeakingMsgIndex(msgIndex);
+    const cleanText = content.replace(/[#*_~`>\[\]()!]/g, '').replace(/\n+/g, '. ');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    const langMap: Record<string, string> = { hi: "hi-IN", en: "en-US", ta: "ta-IN", te: "te-IN", bn: "bn-IN", es: "es-ES", fr: "fr-FR", de: "de-DE", ja: "ja-JP", zh: "zh-CN", ar: "ar-SA" };
+    utterance.lang = langMap[detectedLang] || detectedLang || "en-US";
+    utterance.rate = 0.95;
+    utterance.onend = () => setSpeakingMsgIndex(null);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in your browser. Please use Chrome.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    // Let the browser auto-detect language
+    recognition.lang = "";
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      const resultLang = event.results[0][0].lang || recognition.lang || "en";
+      // Extract base language code
+      const baseLang = resultLang.split("-")[0] || "en";
+      setDetectedLang(baseLang);
+      setIsListening(false);
+
+      // Submit the voice message as a chat message
+      if (step === "chat") {
+        const userMsg: Msg = { role: "user", content: transcript };
+        setMessages(prev => {
+          const updated = [...prev, userMsg];
+          if (leadId) saveChatMessages(leadId, [userMsg]);
+          streamChatWithVoice(updated, baseLang);
+          return updated;
+        });
+      } else if (step === "collecting") {
+        setInput(transcript);
+      }
+    };
+
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    setIsListening(true);
+    recognition.start();
+  };
+
+  const stopListening = () => {
+    recognitionRef.current?.stop();
+    setIsListening(false);
+  };
+
+  const streamChatWithVoice = async (allMessages: Msg[], lang: string) => {
+    setIsStreaming(true);
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chatbot`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ messages: allMessages }),
+        }
+      );
+
+      if (!resp.ok || !resp.body) {
+        const errMsg: Msg = { role: "assistant", content: "Sorry, I'm having trouble right now. Please try again!" };
+        setMessages(prev => [...prev, errMsg]);
+        if (leadId) await saveChatMessages(leadId, [errMsg]);
+        setIsStreaming(false);
+        return;
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let assistantText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantText += content;
+              setMessages(prev => {
+                const last = prev[prev.length - 1];
+                if (last?.role === "assistant" && prev.length > allMessages.length) {
+                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantText } : m);
+                }
+                return [...prev, { role: "assistant", content: assistantText }];
+              });
+            }
+          } catch { /* partial JSON */ }
+        }
+      }
+
+      if (assistantText) {
+        if (leadId) await saveChatMessages(leadId, [{ role: "assistant", content: assistantText }]);
+        // Auto-play voice response in detected language
+        speakText(assistantText, lang);
+      }
+    } catch {
+      const errMsg: Msg = { role: "assistant", content: "Connection error. Please try again." };
+      setMessages(prev => [...prev, errMsg]);
+      if (leadId) await saveChatMessages(leadId, [errMsg]);
+    }
+    setIsStreaming(false);
+  };
+
   const handleChatSubmit = async () => {
     if (!input.trim() || isStreaming) return;
     const userMsg: Msg = { role: "user", content: input.trim() };
@@ -418,6 +567,16 @@ const ChatbotWidget = () => {
                           <ReactMarkdown>{m.content}</ReactMarkdown>
                         </div>
                       ) : m.content}
+                      {m.role === "assistant" && m.content && (
+                        <button
+                          onClick={() => handlePlayVoice(i, m.content)}
+                          className="mt-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                          title={speakingMsgIndex === i ? "Stop voice" : "Play voice"}
+                        >
+                          <Volume2 className={`h-3.5 w-3.5 ${speakingMsgIndex === i ? "text-primary animate-pulse" : ""}`} />
+                          {speakingMsgIndex === i ? "Stop" : "Listen"}
+                        </button>
+                      )}
                     </div>
                     {m.role === "user" && <User className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />}
                   </div>
@@ -450,6 +609,11 @@ const ChatbotWidget = () => {
           {/* Input */}
           {(step === "collecting" || step === "chat") && (
             <div className="border-t border-border p-3">
+              {isListening && (
+                <div className="mb-2 flex items-center justify-center gap-2 text-xs text-destructive font-medium animate-pulse">
+                  <Mic className="h-3.5 w-3.5" /> Listening... Speak now
+                </div>
+              )}
               <div className="flex gap-2">
                 <input
                   value={input}
@@ -457,8 +621,18 @@ const ChatbotWidget = () => {
                   onKeyDown={handleKeyDown}
                   placeholder={step === "collecting" ? (currentField?.options ? "Or type here..." : currentField?.placeholder) : "Ask me anything..."}
                   className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                  disabled={isStreaming}
+                  disabled={isStreaming || isListening}
                 />
+                {step === "chat" && (
+                  <button
+                    onClick={isListening ? stopListening : startListening}
+                    disabled={isStreaming}
+                    className={`rounded-lg px-3 py-2 transition-colors ${isListening ? "bg-destructive text-destructive-foreground animate-pulse" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
+                    title={isListening ? "Stop listening" : "Speak"}
+                  >
+                    {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  </button>
+                )}
                 <button
                   onClick={step === "chat" ? handleChatSubmit : handleFieldSubmit}
                   disabled={!input.trim() || isStreaming}
