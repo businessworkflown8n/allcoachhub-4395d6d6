@@ -737,6 +737,8 @@ const ChatbotWidget = () => {
   };
 
   const handleStartOver = () => {
+    stopVoiceMode();
+    interruptCurrentResponse();
     localStorage.removeItem(STORAGE_KEY);
     setLeadId(null);
     setLeadName("");
