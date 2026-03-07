@@ -71,6 +71,38 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_history: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          lead_id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          lead_id: string
+          role: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          lead_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_history_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "chatbot_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chatbot_leads: {
         Row: {
           company: string | null
