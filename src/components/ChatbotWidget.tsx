@@ -450,6 +450,21 @@ const ChatbotWidget = () => {
   };
 
   /**
+   * Interrupt any ongoing AI response — cancel speech and abort streaming fetch.
+   */
+  const interruptCurrentResponse = useCallback(() => {
+    // Stop any ongoing speech
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    setSpeakingMsgIndex(null);
+    // Abort any streaming fetch
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsStreaming(false);
+  }, []);
+
+  /**
    * Speak text using SpeechSynthesis with opposite-gender voice selection.
    */
   const speakWithGender = useCallback((text: string, lang: string, gender: DetectedGender) => {
@@ -464,6 +479,14 @@ const ChatbotWidget = () => {
 
     const voice = pickVoice(lang, gender);
     if (voice) utterance.voice = voice;
+
+    utterance.onend = () => {
+      setSpeakingMsgIndex(null);
+      // After AI finishes speaking, restart recognition if voice mode is active
+      if (voiceModeActiveRef.current) {
+        restartRecognition();
+      }
+    };
 
     window.speechSynthesis.speak(utterance);
   }, []);
@@ -489,86 +512,17 @@ const ChatbotWidget = () => {
     window.speechSynthesis.speak(utterance);
   };
 
-  const startListening = async () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Speech recognition is not supported in your browser. Please use Chrome.");
-      return;
-    }
-
-    // Get mic stream for gender detection
-    let stream: MediaStream | null = null;
-    let genderPromise: Promise<DetectedGender> = Promise.resolve("unknown");
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      voiceStreamRef.current = stream;
-      genderPromise = detectGenderFromStream(stream, 2500);
-    } catch {
-      // Continue without gender detection
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "";
-
-    recognition.onresult = async (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      const resultLang = event.results[0][0].lang || recognition.lang || "en";
-      const baseLang = resultLang.split("-")[0] || "en";
-      setDetectedLang(baseLang);
-      setIsListening(false);
-
-      // Wait for gender detection result
-      const gender = await genderPromise;
-      setDetectedGender(gender);
-
-      // Cleanup mic stream
-      if (voiceStreamRef.current) {
-        voiceStreamRef.current.getTracks().forEach(t => t.stop());
-        voiceStreamRef.current = null;
-      }
-
-      if (step === "chat") {
-        const userMsg: Msg = { role: "user", content: transcript };
-        setMessages(prev => {
-          const updated = [...prev, userMsg];
-          if (leadId) saveChatMessages(leadId, [userMsg]);
-          streamChatWithVoice(updated, baseLang, gender);
-          return updated;
-        });
-      } else if (step === "collecting") {
-        setInput(transcript);
-      }
-    };
-
-    recognition.onerror = () => {
-      setIsListening(false);
-      if (voiceStreamRef.current) {
-        voiceStreamRef.current.getTracks().forEach(t => t.stop());
-        voiceStreamRef.current = null;
-      }
-    };
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognitionRef.current = recognition;
-    setIsListening(true);
-    recognition.start();
-  };
-
-  const stopListening = () => {
-    recognitionRef.current?.stop();
-    setIsListening(false);
-    if (voiceStreamRef.current) {
-      voiceStreamRef.current.getTracks().forEach(t => t.stop());
-      voiceStreamRef.current = null;
-    }
-  };
-
+  /**
+   * Stream chat with voice response — supports abort via AbortController.
+   */
   const streamChatWithVoice = async (allMessages: Msg[], lang: string, gender: DetectedGender) => {
+    // Interrupt any previous response
+    interruptCurrentResponse();
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     setIsStreaming(true);
+
     try {
       const resp = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chatbot`,
@@ -578,14 +532,15 @@ const ChatbotWidget = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ messages: allMessages, userName: leadName || undefined }),
+          body: JSON.stringify({ messages: allMessages, userName: leadNameRef.current || undefined }),
+          signal: controller.signal,
         }
       );
 
       if (!resp.ok || !resp.body) {
         const errMsg: Msg = { role: "assistant", content: "Sorry, I'm having trouble right now. Please try again!" };
         setMessages(prev => [...prev, errMsg]);
-        if (leadId) await saveChatMessages(leadId, [errMsg]);
+        if (leadIdRef.current) await saveChatMessages(leadIdRef.current, [errMsg]);
         setIsStreaming(false);
         return;
       }
@@ -625,16 +580,142 @@ const ChatbotWidget = () => {
       }
 
       if (assistantText) {
-        if (leadId) await saveChatMessages(leadId, [{ role: "assistant", content: assistantText }]);
+        if (leadIdRef.current) await saveChatMessages(leadIdRef.current, [{ role: "assistant", content: assistantText }]);
         // Auto-play voice response with opposite-gender voice
         speakWithGender(assistantText, lang, gender);
       }
-    } catch {
+    } catch (e: any) {
+      if (e?.name === "AbortError") {
+        // Interrupted by user — this is expected
+        return;
+      }
       const errMsg: Msg = { role: "assistant", content: "Connection error. Please try again." };
       setMessages(prev => [...prev, errMsg]);
-      if (leadId) await saveChatMessages(leadId, [errMsg]);
+      if (leadIdRef.current) await saveChatMessages(leadIdRef.current, [errMsg]);
     }
     setIsStreaming(false);
+  };
+
+  /**
+   * Restart speech recognition for continuous voice mode.
+   */
+  const restartRecognition = useCallback(() => {
+    if (!voiceModeActiveRef.current) return;
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+    try {
+      recognition.start();
+      setIsListening(true);
+    } catch {
+      // Already started or unavailable — retry after short delay
+      setTimeout(() => {
+        if (!voiceModeActiveRef.current) return;
+        try {
+          recognition.start();
+          setIsListening(true);
+        } catch { /* give up */ }
+      }, 300);
+    }
+  }, []);
+
+  /**
+   * Start continuous voice mode — mic stays active, auto-restarts after each utterance.
+   */
+  const startVoiceMode = async () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in your browser. Please use Chrome.");
+      return;
+    }
+
+    // Get mic stream for gender detection (one-time)
+    if (detectedGender === "unknown") {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        voiceStreamRef.current = stream;
+        const gender = await detectGenderFromStream(stream, 2500);
+        setDetectedGender(gender);
+        stream.getTracks().forEach(t => t.stop());
+        voiceStreamRef.current = null;
+      } catch {
+        // Continue without gender detection
+      }
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false; // Use VAD: stops after user pauses
+    recognition.interimResults = true;
+    recognition.lang = ""; // Auto-detect
+
+    recognition.onresult = (event: any) => {
+      // Get the latest final result
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          const transcript = event.results[i][0].transcript.trim();
+          if (!transcript) return;
+
+          const resultLang = event.results[i][0].lang || recognition.lang || "en";
+          const baseLang = resultLang.split("-")[0] || "en";
+          setDetectedLang(baseLang);
+
+          // Interrupt any current AI response
+          interruptCurrentResponse();
+
+          // Send message
+          const userMsg: Msg = { role: "user", content: transcript };
+          setMessages(prev => {
+            const updated = [...prev, userMsg];
+            if (leadIdRef.current) saveChatMessages(leadIdRef.current, [userMsg]);
+            streamChatWithVoice(updated, baseLang, detectedGender === "unknown" ? "female" : detectedGender);
+            return updated;
+          });
+        }
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      // Auto-restart if voice mode is still active and we're not waiting for AI
+      if (voiceModeActiveRef.current) {
+        // Small delay before restarting to avoid rapid restarts
+        setTimeout(() => restartRecognition(), 500);
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      setIsListening(false);
+      if (event.error === "no-speech" || event.error === "aborted") {
+        // Expected in continuous mode — just restart
+        if (voiceModeActiveRef.current) {
+          setTimeout(() => restartRecognition(), 500);
+        }
+        return;
+      }
+      console.error("Speech recognition error:", event.error);
+    };
+
+    recognitionRef.current = recognition;
+    setVoiceModeActive(true);
+    voiceModeActiveRef.current = true;
+    setIsListening(true);
+    recognition.start();
+  };
+
+  /**
+   * Stop continuous voice mode.
+   */
+  const stopVoiceMode = () => {
+    setVoiceModeActive(false);
+    voiceModeActiveRef.current = false;
+    setIsListening(false);
+    try {
+      recognitionRef.current?.stop();
+    } catch { /* ignore */ }
+    recognitionRef.current = null;
+    if (voiceStreamRef.current) {
+      voiceStreamRef.current.getTracks().forEach(t => t.stop());
+      voiceStreamRef.current = null;
+    }
   };
 
   const handleChatSubmit = async () => {
