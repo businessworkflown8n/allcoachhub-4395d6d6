@@ -38,8 +38,12 @@ const ChatbotWidget = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [leadId, setLeadId] = useState<string | null>(null);
   const [leadName, setLeadName] = useState<string>("");
+  const [isListening, setIsListening] = useState(false);
+  const [detectedLang, setDetectedLang] = useState<string>("en");
+  const [speakingMsgIndex, setSpeakingMsgIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
