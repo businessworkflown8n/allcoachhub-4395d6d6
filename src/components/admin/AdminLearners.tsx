@@ -234,8 +234,9 @@ const AdminLearners = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-5">
           <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{s.enrolled}</p><p className="text-xs text-muted-foreground">Courses Enrolled</p></div>
+          <div className="rounded-xl border border-border bg-card p-4"><Video className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.webinarCount}</p><p className="text-xs text-muted-foreground">Webinars Registered</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><GraduationCap className="h-5 w-5 text-green-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.completed}</p><p className="text-xs text-muted-foreground">Completed</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-blue-400 mb-2" /><p className="text-2xl font-bold text-foreground">${s.totalSpent.toFixed(2)}</p><p className="text-xs text-muted-foreground">Total Spent</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-purple-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.categories.length}</p><p className="text-xs text-muted-foreground">Category Interests</p></div>
