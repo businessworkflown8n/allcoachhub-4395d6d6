@@ -1,9 +1,9 @@
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown, ChevronRight } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import SearchDialog from "@/components/SearchDialog";
 import LocationSelector from "@/components/LocationSelector";
 import { useTranslation } from "@/i18n/TranslationProvider";
@@ -12,9 +12,15 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const { role } = useUserRole();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [coursesOpen, setCoursesOpen] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [mobileCoursesOpen, setMobileCoursesOpen] = useState(false);
+  const [mobileDemoOpen, setMobileDemoOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const dashboardPath = role === "admin" ? "/admin" : role === "coach" ? "/coach" : "/learner";
 
@@ -27,6 +33,30 @@ const Navbar = () => {
     }
   };
 
+  // Close desktop dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setCoursesOpen(false);
+        setDemoOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleDropdownEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setCoursesOpen(true);
+  };
+
+  const handleDropdownLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setCoursesOpen(false);
+      setDemoOpen(false);
+    }, 150);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -37,9 +67,61 @@ const Navbar = () => {
 
         <div className="hidden items-center gap-8 md:flex">
           <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.browseCoaches")}</button>
-          <Link to="/courses" className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.courses")}</Link>
+          
+          {/* Courses dropdown */}
+          <div
+            ref={dropdownRef}
+            className="relative"
+            onMouseEnter={handleDropdownEnter}
+            onMouseLeave={handleDropdownLeave}
+          >
+            <button
+              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => { setCoursesOpen(!coursesOpen); navigate("/courses"); }}
+            >
+              {t("nav.courses")}
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${coursesOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {coursesOpen && (
+              <div className="absolute left-0 top-full mt-2 w-48 rounded-lg border border-border bg-popover p-1 shadow-lg">
+                <Link
+                  to="/courses"
+                  className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                  onClick={() => { setCoursesOpen(false); }}
+                >
+                  Regular Classes
+                </Link>
+                <div
+                  className="relative"
+                  onMouseEnter={() => setDemoOpen(true)}
+                  onMouseLeave={() => setDemoOpen(false)}
+                >
+                  <button
+                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                    onClick={() => setDemoOpen(!demoOpen)}
+                  >
+                    Demo Classes
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+
+                  {demoOpen && (
+                    <div className="absolute left-full top-0 ml-1 w-44 rounded-lg border border-border bg-popover p-1 shadow-lg">
+                      <Link
+                        to="/webinars"
+                        className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                        onClick={() => { setCoursesOpen(false); setDemoOpen(false); }}
+                      >
+                        Webinars
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.howItWorks")}</button>
-          <Link to="/webinars" className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.webinars")}</Link>
           <Link to="/ai-blogs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.aiBlogs")}</Link>
         </div>
 
@@ -77,16 +159,50 @@ const Navbar = () => {
         </div>
       </div>
 
+      {/* Mobile menu */}
       {mobileOpen && (
         <div className="border-t border-border bg-background px-4 pb-4 md:hidden">
-          <div className="flex flex-col gap-3 pt-3">
-            <button onClick={() => { setMobileOpen(false); handleSectionClick("#coaches"); }} className="text-sm text-muted-foreground text-left">{t("nav.browseCoaches")}</button>
-            <Link to="/courses" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">{t("nav.courses")}</Link>
-            <button onClick={() => { setMobileOpen(false); handleSectionClick("#how-it-works"); }} className="text-sm text-muted-foreground text-left">{t("nav.howItWorks")}</button>
-          <Link to="/webinars" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">{t("nav.webinars")}</Link>
-          <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">{t("nav.aiBlogs")}</Link>
+          <div className="flex flex-col gap-1 pt-3">
+            <button onClick={() => { setMobileOpen(false); handleSectionClick("#coaches"); }} className="rounded-md px-3 py-2 text-sm text-muted-foreground text-left hover:bg-accent">{t("nav.browseCoaches")}</button>
+            
+            {/* Mobile Courses accordion */}
+            <div>
+              <button
+                onClick={() => setMobileCoursesOpen(!mobileCoursesOpen)}
+                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
+              >
+                {t("nav.courses")}
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${mobileCoursesOpen ? "rotate-180" : ""}`} />
+              </button>
+              {mobileCoursesOpen && (
+                <div className="ml-3 flex flex-col gap-1 border-l border-border pl-3">
+                  <Link to="/courses" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">
+                    Regular Classes
+                  </Link>
+                  <div>
+                    <button
+                      onClick={() => setMobileDemoOpen(!mobileDemoOpen)}
+                      className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
+                    >
+                      Demo Classes
+                      <ChevronDown className={`h-3.5 w-3.5 transition-transform ${mobileDemoOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    {mobileDemoOpen && (
+                      <div className="ml-3 flex flex-col gap-1 border-l border-border pl-3">
+                        <Link to="/webinars" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">
+                          Webinars
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button onClick={() => { setMobileOpen(false); handleSectionClick("#how-it-works"); }} className="rounded-md px-3 py-2 text-sm text-muted-foreground text-left hover:bg-accent">{t("nav.howItWorks")}</button>
+            <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">{t("nav.aiBlogs")}</Link>
             {user && (
-              <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground">{t("nav.dashboard")}</Link>
+              <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">{t("nav.dashboard")}</Link>
             )}
           </div>
         </div>
