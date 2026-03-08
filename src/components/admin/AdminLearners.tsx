@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Video } from "lucide-react";
 
 
 
@@ -20,12 +21,15 @@ const AdminLearners = () => {
   const [learners, setLearners] = useState<any[]>([]);
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [webinarRegs, setWebinarRegs] = useState<any[]>([]);
+  const [webinars, setWebinars] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [selectedLearner, setSelectedLearner] = useState<any>(null);
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [webinarFilter, setWebinarFilter] = useState<string>("all");
   const [spendSort, setSpendSort] = useState<"none" | "asc" | "desc">("none");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -33,14 +37,18 @@ const AdminLearners = () => {
     const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "learner");
     if (!roles || roles.length === 0) { setLoading(false); return; }
     const ids = roles.map((r) => r.user_id);
-    const [profiles, enrollData, courseData] = await Promise.all([
+    const [profiles, enrollData, courseData, webinarRegData, webinarData] = await Promise.all([
       supabase.from("profiles").select("*").in("user_id", ids),
       supabase.from("enrollments").select("*").in("learner_id", ids),
       supabase.from("courses").select("id, title, category"),
+      supabase.from("webinar_registrations").select("*").in("learner_id", ids),
+      supabase.from("webinars").select("id, title, webinar_date, coach_id"),
     ]);
     setLearners(profiles.data || []);
     setEnrollments(enrollData.data || []);
     setCourses(courseData.data || []);
+    setWebinarRegs(webinarRegData.data || []);
+    setWebinars(webinarData.data || []);
     setLoading(false);
   };
 
@@ -53,7 +61,8 @@ const AdminLearners = () => {
     const avgProgress = le.length > 0 ? Math.round(le.reduce((s, e) => s + Number(e.progress_percent || 0), 0) / le.length) : 0;
     const categories = [...new Set(le.map(e => courses.find(c => c.id === e.course_id)?.category).filter(Boolean))];
     const lastEnrollment = le.length > 0 ? le.sort((a, b) => new Date(b.enrolled_at).getTime() - new Date(a.enrolled_at).getTime())[0].enrolled_at : null;
-    return { enrolled: le.length, totalSpent, completed, avgProgress, categories, lastEnrollment };
+    const webinarCount = webinarRegs.filter((w) => w.learner_id === userId).length;
+    return { enrolled: le.length, totalSpent, completed, avgProgress, categories, lastEnrollment, webinarCount };
   };
 
   const deleteLearner = async (learner: any) => {
