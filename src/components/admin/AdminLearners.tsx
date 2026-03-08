@@ -113,13 +113,15 @@ const AdminLearners = () => {
 
   const countries = useMemo(() => [...new Set(learners.map(l => l.country).filter(Boolean))].sort(), [learners]);
   const allCategories = useMemo(() => [...new Set(courses.map(c => c.category).filter(Boolean))].sort(), [courses]);
+  const allWebinars = useMemo(() => webinars.map(w => ({ id: w.id, title: w.title })), [webinars]);
 
   const filtered = useMemo(() => {
     let result = learners.filter((l) => {
       const matchesSearch = !search || [l.full_name, l.email, l.country, l.industry, l.city, l.contact_number].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
       const matchesCountry = countryFilter === "all" || l.country === countryFilter;
       const matchesCategory = categoryFilter === "all" || getLearnerStats(l.user_id).categories.includes(categoryFilter);
-      return matchesSearch && matchesCountry && matchesCategory;
+      const matchesWebinar = webinarFilter === "all" || webinarRegs.some(wr => wr.learner_id === l.user_id && wr.webinar_id === webinarFilter);
+      return matchesSearch && matchesCountry && matchesCategory && matchesWebinar;
     });
     if (spendSort !== "none") {
       result = [...result].sort((a, b) => {
@@ -129,7 +131,7 @@ const AdminLearners = () => {
       });
     }
     return result;
-  }, [learners, search, countryFilter, categoryFilter, spendSort, enrollments, courses]);
+  }, [learners, search, countryFilter, categoryFilter, webinarFilter, spendSort, enrollments, courses, webinarRegs]);
 
   const toggleSelectAll = () => {
     if (selectedIds.size === filtered.length) setSelectedIds(new Set());
@@ -153,10 +155,12 @@ const AdminLearners = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["Name", "Email", "Phone", "WhatsApp", "Country", "City", "Industry", "Job Title", "Education", "Experience Level", "Enrolled Courses", "Categories", "Progress %", "Total Spent", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Last Active", "Joined"];
+    const headers = ["Name", "Email", "Phone", "WhatsApp", "Country", "City", "Industry", "Job Title", "Education", "Experience Level", "Enrolled Courses", "Webinars Registered", "Categories", "Progress %", "Total Spent", "Payment Status", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Last Active", "Joined"];
     const rows = filtered.map((l) => {
       const s = getLearnerStats(l.user_id);
-      return [l.full_name, l.email, l.contact_number, l.whatsapp_number, l.country, l.city, l.industry, l.job_title, l.education, l.experience_level, s.enrolled, s.categories.join(";"), `${s.avgProgress}%`, `$${s.totalSpent.toFixed(2)}`, l.marketing_consent ? "Yes" : "No", l.utm_source, l.utm_medium, l.utm_campaign, (l.tags || []).join(";"), l.last_active_at ? new Date(l.last_active_at).toLocaleDateString() : "", new Date(l.created_at).toLocaleDateString()];
+      const paymentStatuses = enrollments.filter(e => e.learner_id === l.user_id).map(e => e.payment_status);
+      const overallPayment = paymentStatuses.length === 0 ? "N/A" : paymentStatuses.every(p => p === "paid") ? "Paid" : paymentStatuses.some(p => p === "paid") ? "Partial" : "Unpaid";
+      return [l.full_name, l.email, l.contact_number, l.whatsapp_number, l.country, l.city, l.industry, l.job_title, l.education, l.experience_level, s.enrolled, s.webinarCount, s.categories.join(";"), `${s.avgProgress}%`, `$${s.totalSpent.toFixed(2)}`, overallPayment, l.marketing_consent ? "Yes" : "No", l.utm_source, l.utm_medium, l.utm_campaign, (l.tags || []).join(";"), l.last_active_at ? new Date(l.last_active_at).toLocaleDateString() : "", new Date(l.created_at).toLocaleDateString()];
     });
     const csv = [headers, ...rows].map((r) => r.map(v => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
