@@ -493,6 +493,7 @@ const AdminCoaches = () => {
                 <TableHead>Country</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Courses</TableHead>
+                <TableHead>Webinars</TableHead>
                 <TableHead>Enrollments</TableHead>
                 <TableHead>Paid</TableHead>
                 <TableHead>Unpaid</TableHead>
@@ -520,6 +521,7 @@ const AdminCoaches = () => {
                       </span>
                     </TableCell>
                     <TableCell className="text-foreground">{s.courses}</TableCell>
+                    <TableCell className="text-foreground">{s.webinars}</TableCell>
                     <TableCell className="text-foreground">{s.enrollments}</TableCell>
                     <TableCell className="text-green-400">{s.paidEnrollments}</TableCell>
                     <TableCell className="text-yellow-400">{s.unpaidEnrollments}</TableCell>
