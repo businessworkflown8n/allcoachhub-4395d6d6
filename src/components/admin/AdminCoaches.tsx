@@ -243,8 +243,9 @@ const AdminCoaches = () => {
         )}
 
         {/* Stats row */}
-        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-7">
           <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{s.courses}</p><p className="text-xs text-muted-foreground">Total Courses</p></div>
+          <div className="rounded-xl border border-border bg-card p-4"><Video className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.webinars}</p><p className="text-xs text-muted-foreground">Webinars Hosted</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-blue-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.enrollments}</p><p className="text-xs text-muted-foreground">Total Enrollments</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><CheckCircle className="h-5 w-5 text-green-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.paidEnrollments}</p><p className="text-xs text-muted-foreground">Paid Enrollments</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><X className="h-5 w-5 text-yellow-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.unpaidEnrollments}</p><p className="text-xs text-muted-foreground">Unpaid Enrollments</p></div>
