@@ -16,11 +16,25 @@ const Navbar = () => {
   const [demoOpen, setDemoOpen] = useState(false);
   const [mobileCoursesOpen, setMobileCoursesOpen] = useState(false);
   const [mobileDemoOpen, setMobileDemoOpen] = useState(false);
+  const [blogMenuOpen, setBlogMenuOpen] = useState(false);
+  const [mobileBlogOpen, setMobileBlogOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const blogTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const blogCategories = [
+    { slug: "ai-trends", label: "AI Trends" },
+    { slug: "ai-education", label: "AI in Education" },
+    { slug: "ai-tools", label: "AI Tools" },
+    { slug: "ai-fundamentals", label: "AI Fundamentals" },
+    { slug: "ai-careers", label: "AI Careers" },
+    { slug: "ai-research", label: "AI Research" },
+    { slug: "ai-policy", label: "AI Policy" },
+    { slug: "weekly-ai-news", label: "Weekly Update" },
+  ];
 
   const dashboardPath = role === "admin" ? "/admin" : role === "coach" ? "/coach" : "/learner";
 
@@ -122,7 +136,34 @@ const Navbar = () => {
           </div>
 
           <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.howItWorks")}</button>
-          <Link to="/ai-blogs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.aiBlogs")}</Link>
+          {/* AI Jobs & News dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => { if (blogTimeoutRef.current) clearTimeout(blogTimeoutRef.current); setBlogMenuOpen(true); }}
+            onMouseLeave={() => { blogTimeoutRef.current = setTimeout(() => setBlogMenuOpen(false), 150); }}
+          >
+            <Link
+              to="/ai-blogs"
+              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              AI Jobs & News
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${blogMenuOpen ? "rotate-180" : ""}`} />
+            </Link>
+            {blogMenuOpen && (
+              <div className="absolute left-0 top-full mt-2 w-48 rounded-lg border border-border bg-popover p-1 shadow-lg">
+                {blogCategories.map((cat) => (
+                  <Link
+                    key={cat.slug}
+                    to={`/ai-jobs-news/${cat.slug}`}
+                    className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                    onClick={() => setBlogMenuOpen(false)}
+                  >
+                    {cat.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -200,7 +241,33 @@ const Navbar = () => {
             </div>
 
             <button onClick={() => { setMobileOpen(false); handleSectionClick("#how-it-works"); }} className="rounded-md px-3 py-2 text-sm text-muted-foreground text-left hover:bg-accent">{t("nav.howItWorks")}</button>
-            <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">{t("nav.aiBlogs")}</Link>
+            {/* Mobile AI Jobs & News accordion */}
+            <div>
+              <button
+                onClick={() => setMobileBlogOpen(!mobileBlogOpen)}
+                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
+              >
+                AI Jobs & News
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${mobileBlogOpen ? "rotate-180" : ""}`} />
+              </button>
+              {mobileBlogOpen && (
+                <div className="ml-3 flex flex-col gap-1 border-l border-border pl-3">
+                  <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">
+                    All Articles
+                  </Link>
+                  {blogCategories.map((cat) => (
+                    <Link
+                      key={cat.slug}
+                      to={`/ai-jobs-news/${cat.slug}`}
+                      onClick={() => setMobileOpen(false)}
+                      className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
+                    >
+                      {cat.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
             {user && (
               <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">{t("nav.dashboard")}</Link>
             )}
