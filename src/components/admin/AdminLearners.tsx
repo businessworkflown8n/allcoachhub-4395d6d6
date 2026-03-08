@@ -170,8 +170,8 @@ const AdminLearners = () => {
     a.click();
   };
 
-  const clearFilters = () => { setSearch(""); setCountryFilter("all"); setCategoryFilter("all"); setSpendSort("none"); };
-  const hasFilters = search || countryFilter !== "all" || categoryFilter !== "all" || spendSort !== "none";
+  const clearFilters = () => { setSearch(""); setCountryFilter("all"); setCategoryFilter("all"); setWebinarFilter("all"); setSpendSort("none"); };
+  const hasFilters = search || countryFilter !== "all" || categoryFilter !== "all" || webinarFilter !== "all" || spendSort !== "none";
 
   const totalSpend = learners.reduce((s, l) => s + getLearnerStats(l.user_id).totalSpent, 0);
   const totalEnrolled = enrollments.length;
