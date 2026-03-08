@@ -162,10 +162,10 @@ const AdminCoaches = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["Name", "Company", "Email", "Phone", "WhatsApp", "Status", "Category", "Country", "City", "Courses", "Enrollments", "Paid", "Unpaid", "Revenue", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Joined"];
+    const headers = ["Name", "Company", "Email", "Phone", "WhatsApp", "Status", "Category", "Country", "City", "Courses", "Webinars Hosted", "Enrollments", "Paid", "Unpaid", "Revenue", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Joined"];
     const rows = filtered.map((c) => {
       const s = getCoachStats(c.user_id);
-      return [c.full_name, c.company_name, c.email, c.contact_number, c.whatsapp_number, c.is_suspended ? "Suspended" : "Active", c.category, c.country, c.city, s.courses, s.enrollments, s.paidEnrollments, s.unpaidEnrollments, `$${s.revenue.toFixed(2)}`, c.marketing_consent ? "Yes" : "No", c.utm_source, c.utm_medium, c.utm_campaign, (c.tags || []).join(";"), new Date(c.created_at).toLocaleDateString()];
+      return [c.full_name, c.company_name, c.email, c.contact_number, c.whatsapp_number, c.is_suspended ? "Suspended" : "Active", c.category, c.country, c.city, s.courses, s.webinars, s.enrollments, s.paidEnrollments, s.unpaidEnrollments, `$${s.revenue.toFixed(2)}`, c.marketing_consent ? "Yes" : "No", c.utm_source, c.utm_medium, c.utm_campaign, (c.tags || []).join(";"), new Date(c.created_at).toLocaleDateString()];
     });
     const csv = [headers, ...rows].map((r) => r.map(v => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -433,6 +433,7 @@ const AdminCoaches = () => {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-border bg-card p-4"><Shield className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{coaches.length}</p><p className="text-xs text-muted-foreground">Total Coaches</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-blue-400 mb-2" /><p className="text-2xl font-bold text-foreground">{courses.length}</p><p className="text-xs text-muted-foreground">Total Courses</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><Video className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{webinars.length}</p><p className="text-xs text-muted-foreground">Total Webinars</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-purple-400 mb-2" /><p className="text-2xl font-bold text-foreground">{totalEnrollments}</p><p className="text-xs text-muted-foreground">Total Enrollments</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-green-400 mb-2" /><p className="text-2xl font-bold text-foreground">${totalRevenue.toFixed(2)}</p><p className="text-xs text-muted-foreground">Total Revenue (Paid)</p></div>
       </div>
