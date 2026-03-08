@@ -59,10 +59,10 @@ const AdminCoaches = () => {
     const coachEnrollments = enrollments.filter((e) => e.coach_id === userId);
     const paidEnrollments = coachEnrollments.filter((e) => e.payment_status === "paid");
     const unpaidEnrollments = coachEnrollments.filter((e) => e.payment_status !== "paid");
-    // Revenue only from paid enrollments
     const revenue = paidEnrollments.reduce((s, e) => s + Number(e.amount_paid || 0), 0);
     const categories = [...new Set(coachCourses.map(c => c.category))];
-    return { courses: coachCourses.length, enrollments: coachEnrollments.length, revenue, categories, paidEnrollments: paidEnrollments.length, unpaidEnrollments: unpaidEnrollments.length };
+    const coachWebinars = webinars.filter((w) => w.coach_id === userId);
+    return { courses: coachCourses.length, enrollments: coachEnrollments.length, revenue, categories, paidEnrollments: paidEnrollments.length, unpaidEnrollments: unpaidEnrollments.length, webinars: coachWebinars.length };
   };
 
   const getCourseStats = (courseId: string) => {
