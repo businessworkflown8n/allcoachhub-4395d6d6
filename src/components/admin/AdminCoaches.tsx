@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Shield, Search, Download, Eye, BookOpen, DollarSign, Users, Ban, CheckCircle, Trash2, Tag, Mail, X, ArrowUpDown, Filter } from "lucide-react";
+import { Shield, Search, Download, Eye, BookOpen, DollarSign, Users, Ban, CheckCircle, Trash2, Tag, Mail, X, ArrowUpDown, Filter, Video } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ const AdminCoaches = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [webinars, setWebinars] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCoach, setSelectedCoach] = useState<any>(null);
@@ -36,16 +37,18 @@ const AdminCoaches = () => {
     const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "coach");
     if (!roles || roles.length === 0) { setLoading(false); return; }
     const ids = roles.map((r) => r.user_id);
-    const [profiles, courseData, enrollData, payData] = await Promise.all([
+    const [profiles, courseData, enrollData, payData, webinarData] = await Promise.all([
       supabase.from("profiles").select("*").in("user_id", ids),
       supabase.from("courses").select("*").in("coach_id", ids),
       supabase.from("enrollments").select("*").in("coach_id", ids),
       supabase.from("payments").select("*").in("coach_id", ids),
+      supabase.from("webinars").select("*").in("coach_id", ids),
     ]);
     setCoaches(profiles.data || []);
     setCourses(courseData.data || []);
     setEnrollments(enrollData.data || []);
     setPayments(payData.data || []);
+    setWebinars(webinarData.data || []);
     setLoading(false);
   };
 
