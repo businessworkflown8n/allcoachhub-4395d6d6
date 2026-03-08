@@ -434,6 +434,9 @@ const AdminLearners = () => {
             <SelectTrigger className="w-40 bg-secondary border-border"><SelectValue placeholder="Category" /></SelectTrigger>
             <SelectContent><SelectItem value="all">All Categories</SelectItem>{allCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
           </Select>
+          <Select value={webinarFilter} onValueChange={setWebinarFilter}>
+            <SelectTrigger className="w-40 bg-secondary border-border"><SelectValue placeholder="Webinar" /></SelectTrigger>
+            <SelectContent><SelectItem value="all">All Webinars</SelectItem>{allWebinars.map(w => <SelectItem key={w.id} value={w.id}>{w.title}</SelectItem>)}</SelectContent>
           <Button size="sm" variant={spendSort !== "none" ? "default" : "outline"} onClick={() => setSpendSort(prev => prev === "none" ? "desc" : prev === "desc" ? "asc" : "none")} className="gap-1">
             <ArrowUpDown className="h-3.5 w-3.5" /> Spend {spendSort === "desc" ? "↓" : spendSort === "asc" ? "↑" : ""}
           </Button>
@@ -453,9 +456,15 @@ const AdminLearners = () => {
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Country</TableHead>
-                <TableHead>Enrolled</TableHead>
+                <TableHead>Courses</TableHead>
+                <TableHead>Webinars</TableHead>
                 <TableHead>Spend</TableHead>
+                <TableHead>Payment</TableHead>
                 <TableHead>Progress</TableHead>
+                <TableHead>Tags</TableHead>
+                <TableHead>Last Active</TableHead>
+                <TableHead>Joined</TableHead>
+                <TableHead>Actions</TableHead>
                 <TableHead>Tags</TableHead>
                 <TableHead>Last Active</TableHead>
                 <TableHead>Joined</TableHead>
@@ -474,7 +483,17 @@ const AdminLearners = () => {
                     <TableCell className="text-muted-foreground">{l.contact_number || "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{l.country || "—"}</TableCell>
                     <TableCell className="text-foreground">{s.enrolled}</TableCell>
+                    <TableCell className="text-foreground">{s.webinarCount}</TableCell>
                     <TableCell className="text-green-400 font-medium">${s.totalSpent.toFixed(2)}</TableCell>
+                    <TableCell>
+                      {(() => {
+                        const le = enrollments.filter(e => e.learner_id === l.user_id);
+                        if (le.length === 0) return <span className="text-muted-foreground text-xs">N/A</span>;
+                        const allPaid = le.every(e => e.payment_status === "paid");
+                        const somePaid = le.some(e => e.payment_status === "paid");
+                        return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${allPaid ? "bg-green-500/20 text-green-400" : somePaid ? "bg-yellow-500/20 text-yellow-400" : "bg-red-500/20 text-red-400"}`}>{allPaid ? "Paid" : somePaid ? "Partial" : "Unpaid"}</span>;
+                      })()}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-16 rounded-full bg-secondary"><div className="h-1.5 rounded-full bg-primary" style={{ width: `${s.avgProgress}%` }} /></div>
