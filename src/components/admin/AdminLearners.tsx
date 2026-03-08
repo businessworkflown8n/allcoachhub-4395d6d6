@@ -437,6 +437,7 @@ const AdminLearners = () => {
           <Select value={webinarFilter} onValueChange={setWebinarFilter}>
             <SelectTrigger className="w-40 bg-secondary border-border"><SelectValue placeholder="Webinar" /></SelectTrigger>
             <SelectContent><SelectItem value="all">All Webinars</SelectItem>{allWebinars.map(w => <SelectItem key={w.id} value={w.id}>{w.title}</SelectItem>)}</SelectContent>
+          </Select>
           <Button size="sm" variant={spendSort !== "none" ? "default" : "outline"} onClick={() => setSpendSort(prev => prev === "none" ? "desc" : prev === "desc" ? "asc" : "none")} className="gap-1">
             <ArrowUpDown className="h-3.5 w-3.5" /> Spend {spendSort === "desc" ? "↓" : spendSort === "asc" ? "↑" : ""}
           </Button>
