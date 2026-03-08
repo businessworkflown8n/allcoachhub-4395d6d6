@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Shield, Search, Download, Eye, BookOpen, DollarSign, Users, Ban, CheckCircle, Trash2, Tag, Mail, X, ArrowUpDown, Filter } from "lucide-react";
+import { Shield, Search, Download, Eye, BookOpen, DollarSign, Users, Ban, CheckCircle, Trash2, Tag, Mail, X, ArrowUpDown, Filter, Video } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ const AdminCoaches = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [webinars, setWebinars] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCoach, setSelectedCoach] = useState<any>(null);
@@ -36,16 +37,18 @@ const AdminCoaches = () => {
     const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "coach");
     if (!roles || roles.length === 0) { setLoading(false); return; }
     const ids = roles.map((r) => r.user_id);
-    const [profiles, courseData, enrollData, payData] = await Promise.all([
+    const [profiles, courseData, enrollData, payData, webinarData] = await Promise.all([
       supabase.from("profiles").select("*").in("user_id", ids),
       supabase.from("courses").select("*").in("coach_id", ids),
       supabase.from("enrollments").select("*").in("coach_id", ids),
       supabase.from("payments").select("*").in("coach_id", ids),
+      supabase.from("webinars").select("*").in("coach_id", ids),
     ]);
     setCoaches(profiles.data || []);
     setCourses(courseData.data || []);
     setEnrollments(enrollData.data || []);
     setPayments(payData.data || []);
+    setWebinars(webinarData.data || []);
     setLoading(false);
   };
 
@@ -56,10 +59,10 @@ const AdminCoaches = () => {
     const coachEnrollments = enrollments.filter((e) => e.coach_id === userId);
     const paidEnrollments = coachEnrollments.filter((e) => e.payment_status === "paid");
     const unpaidEnrollments = coachEnrollments.filter((e) => e.payment_status !== "paid");
-    // Revenue only from paid enrollments
     const revenue = paidEnrollments.reduce((s, e) => s + Number(e.amount_paid || 0), 0);
     const categories = [...new Set(coachCourses.map(c => c.category))];
-    return { courses: coachCourses.length, enrollments: coachEnrollments.length, revenue, categories, paidEnrollments: paidEnrollments.length, unpaidEnrollments: unpaidEnrollments.length };
+    const coachWebinars = webinars.filter((w) => w.coach_id === userId);
+    return { courses: coachCourses.length, enrollments: coachEnrollments.length, revenue, categories, paidEnrollments: paidEnrollments.length, unpaidEnrollments: unpaidEnrollments.length, webinars: coachWebinars.length };
   };
 
   const getCourseStats = (courseId: string) => {
@@ -159,10 +162,10 @@ const AdminCoaches = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["Name", "Company", "Email", "Phone", "WhatsApp", "Status", "Category", "Country", "City", "Courses", "Enrollments", "Paid", "Unpaid", "Revenue", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Joined"];
+    const headers = ["Name", "Company", "Email", "Phone", "WhatsApp", "Status", "Category", "Country", "City", "Courses", "Webinars Hosted", "Enrollments", "Paid", "Unpaid", "Revenue", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Joined"];
     const rows = filtered.map((c) => {
       const s = getCoachStats(c.user_id);
-      return [c.full_name, c.company_name, c.email, c.contact_number, c.whatsapp_number, c.is_suspended ? "Suspended" : "Active", c.category, c.country, c.city, s.courses, s.enrollments, s.paidEnrollments, s.unpaidEnrollments, `$${s.revenue.toFixed(2)}`, c.marketing_consent ? "Yes" : "No", c.utm_source, c.utm_medium, c.utm_campaign, (c.tags || []).join(";"), new Date(c.created_at).toLocaleDateString()];
+      return [c.full_name, c.company_name, c.email, c.contact_number, c.whatsapp_number, c.is_suspended ? "Suspended" : "Active", c.category, c.country, c.city, s.courses, s.webinars, s.enrollments, s.paidEnrollments, s.unpaidEnrollments, `$${s.revenue.toFixed(2)}`, c.marketing_consent ? "Yes" : "No", c.utm_source, c.utm_medium, c.utm_campaign, (c.tags || []).join(";"), new Date(c.created_at).toLocaleDateString()];
     });
     const csv = [headers, ...rows].map((r) => r.map(v => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -240,8 +243,9 @@ const AdminCoaches = () => {
         )}
 
         {/* Stats row */}
-        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-7">
           <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{s.courses}</p><p className="text-xs text-muted-foreground">Total Courses</p></div>
+          <div className="rounded-xl border border-border bg-card p-4"><Video className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.webinars}</p><p className="text-xs text-muted-foreground">Webinars Hosted</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-blue-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.enrollments}</p><p className="text-xs text-muted-foreground">Total Enrollments</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><CheckCircle className="h-5 w-5 text-green-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.paidEnrollments}</p><p className="text-xs text-muted-foreground">Paid Enrollments</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><X className="h-5 w-5 text-yellow-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.unpaidEnrollments}</p><p className="text-xs text-muted-foreground">Unpaid Enrollments</p></div>
@@ -429,6 +433,7 @@ const AdminCoaches = () => {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-border bg-card p-4"><Shield className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{coaches.length}</p><p className="text-xs text-muted-foreground">Total Coaches</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-blue-400 mb-2" /><p className="text-2xl font-bold text-foreground">{courses.length}</p><p className="text-xs text-muted-foreground">Total Courses</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><Video className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{webinars.length}</p><p className="text-xs text-muted-foreground">Total Webinars</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-purple-400 mb-2" /><p className="text-2xl font-bold text-foreground">{totalEnrollments}</p><p className="text-xs text-muted-foreground">Total Enrollments</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-green-400 mb-2" /><p className="text-2xl font-bold text-foreground">${totalRevenue.toFixed(2)}</p><p className="text-xs text-muted-foreground">Total Revenue (Paid)</p></div>
       </div>
@@ -488,6 +493,7 @@ const AdminCoaches = () => {
                 <TableHead>Country</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Courses</TableHead>
+                <TableHead>Webinars</TableHead>
                 <TableHead>Enrollments</TableHead>
                 <TableHead>Paid</TableHead>
                 <TableHead>Unpaid</TableHead>
@@ -515,6 +521,7 @@ const AdminCoaches = () => {
                       </span>
                     </TableCell>
                     <TableCell className="text-foreground">{s.courses}</TableCell>
+                    <TableCell className="text-foreground">{s.webinars}</TableCell>
                     <TableCell className="text-foreground">{s.enrollments}</TableCell>
                     <TableCell className="text-green-400">{s.paidEnrollments}</TableCell>
                     <TableCell className="text-yellow-400">{s.unpaidEnrollments}</TableCell>

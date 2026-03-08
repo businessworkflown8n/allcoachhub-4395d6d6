@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Video } from "lucide-react";
 
 
 
@@ -20,12 +21,15 @@ const AdminLearners = () => {
   const [learners, setLearners] = useState<any[]>([]);
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [webinarRegs, setWebinarRegs] = useState<any[]>([]);
+  const [webinars, setWebinars] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [selectedLearner, setSelectedLearner] = useState<any>(null);
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [webinarFilter, setWebinarFilter] = useState<string>("all");
   const [spendSort, setSpendSort] = useState<"none" | "asc" | "desc">("none");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -33,14 +37,18 @@ const AdminLearners = () => {
     const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "learner");
     if (!roles || roles.length === 0) { setLoading(false); return; }
     const ids = roles.map((r) => r.user_id);
-    const [profiles, enrollData, courseData] = await Promise.all([
+    const [profiles, enrollData, courseData, webinarRegData, webinarData] = await Promise.all([
       supabase.from("profiles").select("*").in("user_id", ids),
       supabase.from("enrollments").select("*").in("learner_id", ids),
       supabase.from("courses").select("id, title, category"),
+      supabase.from("webinar_registrations").select("*").in("learner_id", ids),
+      supabase.from("webinars").select("id, title, webinar_date, coach_id"),
     ]);
     setLearners(profiles.data || []);
     setEnrollments(enrollData.data || []);
     setCourses(courseData.data || []);
+    setWebinarRegs(webinarRegData.data || []);
+    setWebinars(webinarData.data || []);
     setLoading(false);
   };
 
@@ -53,7 +61,8 @@ const AdminLearners = () => {
     const avgProgress = le.length > 0 ? Math.round(le.reduce((s, e) => s + Number(e.progress_percent || 0), 0) / le.length) : 0;
     const categories = [...new Set(le.map(e => courses.find(c => c.id === e.course_id)?.category).filter(Boolean))];
     const lastEnrollment = le.length > 0 ? le.sort((a, b) => new Date(b.enrolled_at).getTime() - new Date(a.enrolled_at).getTime())[0].enrolled_at : null;
-    return { enrolled: le.length, totalSpent, completed, avgProgress, categories, lastEnrollment };
+    const webinarCount = webinarRegs.filter((w) => w.learner_id === userId).length;
+    return { enrolled: le.length, totalSpent, completed, avgProgress, categories, lastEnrollment, webinarCount };
   };
 
   const deleteLearner = async (learner: any) => {
@@ -104,13 +113,15 @@ const AdminLearners = () => {
 
   const countries = useMemo(() => [...new Set(learners.map(l => l.country).filter(Boolean))].sort(), [learners]);
   const allCategories = useMemo(() => [...new Set(courses.map(c => c.category).filter(Boolean))].sort(), [courses]);
+  const allWebinars = useMemo(() => webinars.map(w => ({ id: w.id, title: w.title })), [webinars]);
 
   const filtered = useMemo(() => {
     let result = learners.filter((l) => {
       const matchesSearch = !search || [l.full_name, l.email, l.country, l.industry, l.city, l.contact_number].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
       const matchesCountry = countryFilter === "all" || l.country === countryFilter;
       const matchesCategory = categoryFilter === "all" || getLearnerStats(l.user_id).categories.includes(categoryFilter);
-      return matchesSearch && matchesCountry && matchesCategory;
+      const matchesWebinar = webinarFilter === "all" || webinarRegs.some(wr => wr.learner_id === l.user_id && wr.webinar_id === webinarFilter);
+      return matchesSearch && matchesCountry && matchesCategory && matchesWebinar;
     });
     if (spendSort !== "none") {
       result = [...result].sort((a, b) => {
@@ -120,7 +131,7 @@ const AdminLearners = () => {
       });
     }
     return result;
-  }, [learners, search, countryFilter, categoryFilter, spendSort, enrollments, courses]);
+  }, [learners, search, countryFilter, categoryFilter, webinarFilter, spendSort, enrollments, courses, webinarRegs]);
 
   const toggleSelectAll = () => {
     if (selectedIds.size === filtered.length) setSelectedIds(new Set());
@@ -144,10 +155,12 @@ const AdminLearners = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["Name", "Email", "Phone", "WhatsApp", "Country", "City", "Industry", "Job Title", "Education", "Experience Level", "Enrolled Courses", "Categories", "Progress %", "Total Spent", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Last Active", "Joined"];
+    const headers = ["Name", "Email", "Phone", "WhatsApp", "Country", "City", "Industry", "Job Title", "Education", "Experience Level", "Enrolled Courses", "Webinars Registered", "Categories", "Progress %", "Total Spent", "Payment Status", "Marketing Consent", "UTM Source", "UTM Medium", "UTM Campaign", "Tags", "Last Active", "Joined"];
     const rows = filtered.map((l) => {
       const s = getLearnerStats(l.user_id);
-      return [l.full_name, l.email, l.contact_number, l.whatsapp_number, l.country, l.city, l.industry, l.job_title, l.education, l.experience_level, s.enrolled, s.categories.join(";"), `${s.avgProgress}%`, `$${s.totalSpent.toFixed(2)}`, l.marketing_consent ? "Yes" : "No", l.utm_source, l.utm_medium, l.utm_campaign, (l.tags || []).join(";"), l.last_active_at ? new Date(l.last_active_at).toLocaleDateString() : "", new Date(l.created_at).toLocaleDateString()];
+      const paymentStatuses = enrollments.filter(e => e.learner_id === l.user_id).map(e => e.payment_status);
+      const overallPayment = paymentStatuses.length === 0 ? "N/A" : paymentStatuses.every(p => p === "paid") ? "Paid" : paymentStatuses.some(p => p === "paid") ? "Partial" : "Unpaid";
+      return [l.full_name, l.email, l.contact_number, l.whatsapp_number, l.country, l.city, l.industry, l.job_title, l.education, l.experience_level, s.enrolled, s.webinarCount, s.categories.join(";"), `${s.avgProgress}%`, `$${s.totalSpent.toFixed(2)}`, overallPayment, l.marketing_consent ? "Yes" : "No", l.utm_source, l.utm_medium, l.utm_campaign, (l.tags || []).join(";"), l.last_active_at ? new Date(l.last_active_at).toLocaleDateString() : "", new Date(l.created_at).toLocaleDateString()];
     });
     const csv = [headers, ...rows].map((r) => r.map(v => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -157,8 +170,8 @@ const AdminLearners = () => {
     a.click();
   };
 
-  const clearFilters = () => { setSearch(""); setCountryFilter("all"); setCategoryFilter("all"); setSpendSort("none"); };
-  const hasFilters = search || countryFilter !== "all" || categoryFilter !== "all" || spendSort !== "none";
+  const clearFilters = () => { setSearch(""); setCountryFilter("all"); setCategoryFilter("all"); setWebinarFilter("all"); setSpendSort("none"); };
+  const hasFilters = search || countryFilter !== "all" || categoryFilter !== "all" || webinarFilter !== "all" || spendSort !== "none";
 
   const totalSpend = learners.reduce((s, l) => s + getLearnerStats(l.user_id).totalSpent, 0);
   const totalEnrolled = enrollments.length;
@@ -221,8 +234,9 @@ const AdminLearners = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-5">
           <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{s.enrolled}</p><p className="text-xs text-muted-foreground">Courses Enrolled</p></div>
+          <div className="rounded-xl border border-border bg-card p-4"><Video className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.webinarCount}</p><p className="text-xs text-muted-foreground">Webinars Registered</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><GraduationCap className="h-5 w-5 text-green-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.completed}</p><p className="text-xs text-muted-foreground">Completed</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-blue-400 mb-2" /><p className="text-2xl font-bold text-foreground">${s.totalSpent.toFixed(2)}</p><p className="text-xs text-muted-foreground">Total Spent</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-purple-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.categories.length}</p><p className="text-xs text-muted-foreground">Category Interests</p></div>
@@ -263,6 +277,33 @@ const AdminLearners = () => {
             })}
           </div>
         </div>
+
+        {/* Webinar Registrations */}
+        {(() => {
+          const learnerWebinarRegs = webinarRegs.filter(wr => wr.learner_id === selectedLearner.user_id);
+          return learnerWebinarRegs.length > 0 ? (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">Webinar Registrations ({learnerWebinarRegs.length})</h3>
+              <div className="rounded-xl border border-border overflow-auto">
+                <Table>
+                  <TableHeader><TableRow><TableHead>Webinar</TableHead><TableHead>Date</TableHead><TableHead>Registered On</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {learnerWebinarRegs.map((wr) => {
+                      const webinar = webinars.find(w => w.id === wr.webinar_id);
+                      return (
+                        <TableRow key={wr.id}>
+                          <TableCell className="text-foreground font-medium">{webinar?.title || "—"}</TableCell>
+                          <TableCell className="text-muted-foreground">{webinar?.webinar_date ? new Date(webinar.webinar_date).toLocaleDateString() : "—"}</TableCell>
+                          <TableCell className="text-muted-foreground">{new Date(wr.registered_at).toLocaleDateString()}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ) : null;
+        })()}
 
         {/* Enrollments */}
         {learnerEnrollments.length > 0 && (
@@ -323,13 +364,14 @@ const AdminLearners = () => {
         <div className="rounded-xl border border-border bg-card p-4"><GraduationCap className="h-5 w-5 text-blue-400 mb-2" /><p className="text-2xl font-bold text-foreground">{learners.length}</p><p className="text-xs text-muted-foreground">Total Learners</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{activeLearners}</p><p className="text-xs text-muted-foreground">Active (30 days)</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{totalEnrolled}</p><p className="text-xs text-muted-foreground">Total Enrollments</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><Video className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{webinarRegs.length}</p><p className="text-xs text-muted-foreground">Webinar Registrations</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><GraduationCap className="h-5 w-5 text-emerald-400 mb-2" /><p className="text-2xl font-bold text-foreground">{completedEnrollments}</p><p className="text-xs text-muted-foreground">Completed Courses</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-green-400 mb-2" /><p className="text-2xl font-bold text-foreground">${totalSpend.toFixed(2)}</p><p className="text-xs text-muted-foreground">Total Revenue</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-teal-400 mb-2" /><p className="text-2xl font-bold text-foreground">${avgSpend.toFixed(2)}</p><p className="text-xs text-muted-foreground">Avg Spend / Learner</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-green-500 mb-2" /><p className="text-2xl font-bold text-foreground">{paidEnrollments}</p><p className="text-xs text-muted-foreground">Paid Enrollments</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-yellow-400 mb-2" /><p className="text-2xl font-bold text-foreground">{unpaidEnrollments}</p><p className="text-xs text-muted-foreground">Unpaid Enrollments</p></div>
       </div>
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-2">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+        <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-yellow-400 mb-2" /><p className="text-2xl font-bold text-foreground">{unpaidEnrollments}</p><p className="text-xs text-muted-foreground">Unpaid Enrollments</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-purple-400 mb-2" /><p className="text-2xl font-bold text-foreground">{learners.filter(l => l.marketing_consent).length}</p><p className="text-xs text-muted-foreground">Marketing Opted In</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><Filter className="h-5 w-5 text-orange-400 mb-2" /><p className="text-2xl font-bold text-foreground">{[...new Set(learners.map(l => l.country).filter(Boolean))].length}</p><p className="text-xs text-muted-foreground">Countries</p></div>
       </div>
@@ -392,6 +434,10 @@ const AdminLearners = () => {
             <SelectTrigger className="w-40 bg-secondary border-border"><SelectValue placeholder="Category" /></SelectTrigger>
             <SelectContent><SelectItem value="all">All Categories</SelectItem>{allCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
           </Select>
+          <Select value={webinarFilter} onValueChange={setWebinarFilter}>
+            <SelectTrigger className="w-40 bg-secondary border-border"><SelectValue placeholder="Webinar" /></SelectTrigger>
+            <SelectContent><SelectItem value="all">All Webinars</SelectItem>{allWebinars.map(w => <SelectItem key={w.id} value={w.id}>{w.title}</SelectItem>)}</SelectContent>
+          </Select>
           <Button size="sm" variant={spendSort !== "none" ? "default" : "outline"} onClick={() => setSpendSort(prev => prev === "none" ? "desc" : prev === "desc" ? "asc" : "none")} className="gap-1">
             <ArrowUpDown className="h-3.5 w-3.5" /> Spend {spendSort === "desc" ? "↓" : spendSort === "asc" ? "↑" : ""}
           </Button>
@@ -411,9 +457,15 @@ const AdminLearners = () => {
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Country</TableHead>
-                <TableHead>Enrolled</TableHead>
+                <TableHead>Courses</TableHead>
+                <TableHead>Webinars</TableHead>
                 <TableHead>Spend</TableHead>
+                <TableHead>Payment</TableHead>
                 <TableHead>Progress</TableHead>
+                <TableHead>Tags</TableHead>
+                <TableHead>Last Active</TableHead>
+                <TableHead>Joined</TableHead>
+                <TableHead>Actions</TableHead>
                 <TableHead>Tags</TableHead>
                 <TableHead>Last Active</TableHead>
                 <TableHead>Joined</TableHead>
@@ -432,7 +484,17 @@ const AdminLearners = () => {
                     <TableCell className="text-muted-foreground">{l.contact_number || "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{l.country || "—"}</TableCell>
                     <TableCell className="text-foreground">{s.enrolled}</TableCell>
+                    <TableCell className="text-foreground">{s.webinarCount}</TableCell>
                     <TableCell className="text-green-400 font-medium">${s.totalSpent.toFixed(2)}</TableCell>
+                    <TableCell>
+                      {(() => {
+                        const le = enrollments.filter(e => e.learner_id === l.user_id);
+                        if (le.length === 0) return <span className="text-muted-foreground text-xs">N/A</span>;
+                        const allPaid = le.every(e => e.payment_status === "paid");
+                        const somePaid = le.some(e => e.payment_status === "paid");
+                        return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${allPaid ? "bg-green-500/20 text-green-400" : somePaid ? "bg-yellow-500/20 text-yellow-400" : "bg-red-500/20 text-red-400"}`}>{allPaid ? "Paid" : somePaid ? "Partial" : "Unpaid"}</span>;
+                      })()}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-16 rounded-full bg-secondary"><div className="h-1.5 rounded-full bg-primary" style={{ width: `${s.avgProgress}%` }} /></div>
