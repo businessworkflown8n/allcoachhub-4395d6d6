@@ -278,6 +278,33 @@ const AdminLearners = () => {
           </div>
         </div>
 
+        {/* Webinar Registrations */}
+        {(() => {
+          const learnerWebinarRegs = webinarRegs.filter(wr => wr.learner_id === selectedLearner.user_id);
+          return learnerWebinarRegs.length > 0 ? (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">Webinar Registrations ({learnerWebinarRegs.length})</h3>
+              <div className="rounded-xl border border-border overflow-auto">
+                <Table>
+                  <TableHeader><TableRow><TableHead>Webinar</TableHead><TableHead>Date</TableHead><TableHead>Registered On</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {learnerWebinarRegs.map((wr) => {
+                      const webinar = webinars.find(w => w.id === wr.webinar_id);
+                      return (
+                        <TableRow key={wr.id}>
+                          <TableCell className="text-foreground font-medium">{webinar?.title || "—"}</TableCell>
+                          <TableCell className="text-muted-foreground">{webinar?.webinar_date ? new Date(webinar.webinar_date).toLocaleDateString() : "—"}</TableCell>
+                          <TableCell className="text-muted-foreground">{new Date(wr.registered_at).toLocaleDateString()}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ) : null;
+        })()}
+
         {/* Enrollments */}
         {learnerEnrollments.length > 0 && (
           <div className="space-y-3">
@@ -337,13 +364,14 @@ const AdminLearners = () => {
         <div className="rounded-xl border border-border bg-card p-4"><GraduationCap className="h-5 w-5 text-blue-400 mb-2" /><p className="text-2xl font-bold text-foreground">{learners.length}</p><p className="text-xs text-muted-foreground">Total Learners</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{activeLearners}</p><p className="text-xs text-muted-foreground">Active (30 days)</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{totalEnrolled}</p><p className="text-xs text-muted-foreground">Total Enrollments</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><Video className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{webinarRegs.length}</p><p className="text-xs text-muted-foreground">Webinar Registrations</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><GraduationCap className="h-5 w-5 text-emerald-400 mb-2" /><p className="text-2xl font-bold text-foreground">{completedEnrollments}</p><p className="text-xs text-muted-foreground">Completed Courses</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-green-400 mb-2" /><p className="text-2xl font-bold text-foreground">${totalSpend.toFixed(2)}</p><p className="text-xs text-muted-foreground">Total Revenue</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-teal-400 mb-2" /><p className="text-2xl font-bold text-foreground">${avgSpend.toFixed(2)}</p><p className="text-xs text-muted-foreground">Avg Spend / Learner</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-green-500 mb-2" /><p className="text-2xl font-bold text-foreground">{paidEnrollments}</p><p className="text-xs text-muted-foreground">Paid Enrollments</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-yellow-400 mb-2" /><p className="text-2xl font-bold text-foreground">{unpaidEnrollments}</p><p className="text-xs text-muted-foreground">Unpaid Enrollments</p></div>
       </div>
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-2">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+        <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-yellow-400 mb-2" /><p className="text-2xl font-bold text-foreground">{unpaidEnrollments}</p><p className="text-xs text-muted-foreground">Unpaid Enrollments</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-purple-400 mb-2" /><p className="text-2xl font-bold text-foreground">{learners.filter(l => l.marketing_consent).length}</p><p className="text-xs text-muted-foreground">Marketing Opted In</p></div>
         <div className="rounded-xl border border-border bg-card p-4"><Filter className="h-5 w-5 text-orange-400 mb-2" /><p className="text-2xl font-bold text-foreground">{[...new Set(learners.map(l => l.country).filter(Boolean))].length}</p><p className="text-xs text-muted-foreground">Countries</p></div>
       </div>
