@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Search, Calendar, Clock, ArrowRight, Sparkles, RefreshCw, MapPin, Building2, Briefcase, ExternalLink, BadgeIndianRupee, DollarSign, User } from "lucide-react";

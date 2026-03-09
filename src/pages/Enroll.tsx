@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,13 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const Enroll = () => {
+  useSEO({
+    title: "Enroll in AI Course – Complete Your Registration",
+    description: "Complete your enrollment in our expert-led AI course. Fill out your details and start learning today.",
+    canonical: "https://www.aicoachportal.com/enroll",
+    noIndex: true,
+  });
+
   const { courseId } = useParams();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
