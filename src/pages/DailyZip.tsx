@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useEffect as useDocEffect } from "react";
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -300,6 +300,19 @@ const DailyZip = () => {
   const gridSize = puzzle.grid_size;
 
   return (
+  useEffect(() => {
+    document.title = "Daily Zip – AI Puzzle Game | AI Coach Portal";
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute("content", "Play Daily Zip, the AI puzzle game where you solve AI workflows, prompts, and automation challenges in a fun and interactive way.");
+    else {
+      const m = document.createElement("meta");
+      m.name = "description";
+      m.content = "Play Daily Zip, the AI puzzle game where you solve AI workflows, prompts, and automation challenges in a fun and interactive way.";
+      document.head.appendChild(m);
+    }
+  }, []);
+
+    return (
     <>
       <Navbar />
       <main className="min-h-screen bg-background pt-20 pb-16">
