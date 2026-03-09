@@ -29,7 +29,8 @@ const PATH_WIDTH_RATIO = 0.55; // ratio of cell size
 const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 
 const DailyZip = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [currentLevel, setCurrentLevel] = useState(1);
   const [tab, setTab] = useState<"game" | "daily" | "leaderboard">("game");
   const [userPath, setUserPath] = useState<Cell[]>([]);
