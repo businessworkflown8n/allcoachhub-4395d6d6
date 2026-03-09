@@ -259,6 +259,80 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_zip_puzzles: {
+        Row: {
+          created_at: string
+          difficulty: string
+          grid_size: number
+          id: string
+          is_active: boolean
+          puzzle_data: Json
+          scheduled_date: string | null
+          solution_data: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          difficulty?: string
+          grid_size?: number
+          id?: string
+          is_active?: boolean
+          puzzle_data?: Json
+          scheduled_date?: string | null
+          solution_data?: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          difficulty?: string
+          grid_size?: number
+          id?: string
+          is_active?: boolean
+          puzzle_data?: Json
+          scheduled_date?: string | null
+          solution_data?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      daily_zip_scores: {
+        Row: {
+          completed_at: string
+          id: string
+          puzzle_id: string
+          score: number
+          time_seconds: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          puzzle_id: string
+          score?: number
+          time_seconds: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          puzzle_id?: string
+          score?: number
+          time_seconds?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_zip_scores_puzzle_id_fkey"
+            columns: ["puzzle_id"]
+            isOneToOne: false
+            referencedRelation: "daily_zip_puzzles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enrollments: {
         Row: {
           amount_paid: number | null
