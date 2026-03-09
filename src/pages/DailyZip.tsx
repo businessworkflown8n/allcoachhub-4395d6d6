@@ -135,6 +135,7 @@ const DailyZip = () => {
     setTimer(0);
     setIsRunning(false);
     setHintsUsed(0);
+    hasAutoFullscreened.current = false;
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
