@@ -118,6 +118,7 @@ const App = () => (
             <Route path="/daily-zip" element={<DailyZip />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/install" element={<Install />} />
+            <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/webinars" element={<Webinars />} />
             <Route path="/course/:slug" element={<CourseDetail />} />
