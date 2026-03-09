@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Calendar, Clock, User, ArrowRight, ChevronRight, List } from "lucide-react";
+import { Calendar, Clock, User, ArrowRight, ChevronRight, List, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import {
@@ -30,6 +30,9 @@ type BlogPostType = {
   meta_title: string | null;
   meta_description: string | null;
   author: string | null;
+  cta_text: string | null;
+  cta_link: string | null;
+  tags: string[] | null;
 };
 
 // Extract headings from markdown for TOC
@@ -282,16 +285,33 @@ const BlogPost = () => {
                 </ReactMarkdown>
               </div>
 
+              {/* Social Share Buttons */}
+              <div className="mt-8 flex items-center gap-3 flex-wrap">
+                <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground"><Share2 className="h-4 w-4" /> Share:</span>
+                {(() => {
+                  const url = encodeURIComponent(`https://www.aicoachportal.com/ai-blogs/${post.slug}`);
+                  const title = encodeURIComponent(post.title);
+                  return (
+                    <>
+                      <a href={`https://api.whatsapp.com/send?text=${title}%20${url}`} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors">WhatsApp</a>
+                      <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${url}`} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors">LinkedIn</a>
+                      <a href={`https://twitter.com/intent/tweet?text=${title}&url=${url}`} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors">Twitter</a>
+                      <a href={`https://www.facebook.com/sharer/sharer.php?u=${url}`} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors">Facebook</a>
+                    </>
+                  );
+                })()}
+              </div>
+
               {/* CTA Section */}
               <div className="mt-12 rounded-xl border border-primary/20 bg-primary/5 p-6 text-center sm:p-8">
                 <h3 className="text-xl font-bold text-foreground sm:text-2xl">Ready to Start Your AI Journey?</h3>
                 <p className="mt-2 text-muted-foreground">Join thousands of learners and coaches on AI Coach Portal.</p>
                 <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                   <Link
-                    to="/courses"
+                    to={post.cta_link || "/courses"}
                     className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-all hover:brightness-110"
                   >
-                    Explore AI Courses <ArrowRight className="h-4 w-4" />
+                    {post.cta_text || "Explore AI Courses"} <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
                     to="/auth?mode=signup"

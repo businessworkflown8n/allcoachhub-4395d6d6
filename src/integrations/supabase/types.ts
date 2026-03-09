@@ -21,6 +21,8 @@ export type Database = {
           category: string
           content: string | null
           created_at: string
+          cta_link: string | null
+          cta_text: string | null
           excerpt: string
           id: string
           image_url: string | null
@@ -31,6 +33,7 @@ export type Database = {
           published_at: string
           read_time: string
           slug: string | null
+          tags: string[] | null
           title: string
         }
         Insert: {
@@ -39,6 +42,8 @@ export type Database = {
           category?: string
           content?: string | null
           created_at?: string
+          cta_link?: string | null
+          cta_text?: string | null
           excerpt: string
           id?: string
           image_url?: string | null
@@ -49,6 +54,7 @@ export type Database = {
           published_at?: string
           read_time?: string
           slug?: string | null
+          tags?: string[] | null
           title: string
         }
         Update: {
@@ -57,6 +63,8 @@ export type Database = {
           category?: string
           content?: string | null
           created_at?: string
+          cta_link?: string | null
+          cta_text?: string | null
           excerpt?: string
           id?: string
           image_url?: string | null
@@ -67,6 +75,7 @@ export type Database = {
           published_at?: string
           read_time?: string
           slug?: string | null
+          tags?: string[] | null
           title?: string
         }
         Relationships: []
