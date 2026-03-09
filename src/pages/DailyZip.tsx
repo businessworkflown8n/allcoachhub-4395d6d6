@@ -39,6 +39,40 @@ const DailyZip = () => {
   const [hintsUsed, setHintsUsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
+  const gameContainerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const hasAutoFullscreened = useRef(false);
+
+  // Fullscreen helpers
+  const enterFullscreen = useCallback(() => {
+    const el = gameContainerRef.current;
+    if (!el) return;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if ((el as any).webkitRequestFullscreen) (el as any).webkitRequestFullscreen();
+  }, []);
+
+  const exitFullscreen = useCallback(() => {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (isFullscreen) exitFullscreen();
+    else enterFullscreen();
+  }, [isFullscreen, enterFullscreen, exitFullscreen]);
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handler = () => {
+      setIsFullscreen(!!document.fullscreenElement || !!(document as any).webkitFullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handler);
+    document.addEventListener("webkitfullscreenchange", handler);
+    return () => {
+      document.removeEventListener("fullscreenchange", handler);
+      document.removeEventListener("webkitfullscreenchange", handler);
+    };
+  }, []);
 
   // DB state
   const [progress, setProgress] = useState<{ current_level: number; total_score: number; total_games_played: number } | null>(null);
