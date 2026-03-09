@@ -421,6 +421,58 @@ const DailyZip = () => {
     return <circle cx={cx} cy={cy} r={pathW / 2} fill={color} />;
   };
 
+  if (authLoading) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen bg-background pt-20 pb-16">
+          <div className="flex items-center justify-center pt-32">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (!user) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen bg-background pt-20 pb-16">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-md pt-16 text-center">
+              <div className="mb-6 flex items-center justify-center gap-2">
+                <Zap className="h-10 w-10 text-primary" />
+                <h1 className="text-4xl font-bold text-foreground">Daily Zip</h1>
+              </div>
+              <p className="mb-2 text-muted-foreground">A grid puzzle game with 1000 levels</p>
+              <p className="mb-8 text-sm text-muted-foreground">Connect the dots in order • Fill every cell • Compete on the leaderboard</p>
+              <Card className="border-border/50 bg-card/80 backdrop-blur">
+                <CardContent className="pt-6 space-y-4">
+                  <div className="flex items-center justify-center gap-3">
+                    <LogIn className="h-8 w-8 text-primary" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-foreground">Sign up to play Daily Zip</h2>
+                  <p className="text-sm text-muted-foreground">Create a free account to start playing, track your progress, and compete on the leaderboard.</p>
+                  <div className="flex flex-col gap-3">
+                    <Button onClick={() => navigate("/auth?mode=signup")} className="w-full">
+                      Sign Up Free
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate("/auth?mode=login")} className="w-full">
+                      Already have an account? Log In
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <Navbar />
