@@ -31,6 +31,7 @@ import Webinars from "./pages/Webinars";
 import DailyZip from "./pages/DailyZip";
 import Unsubscribe from "./pages/Unsubscribe";
 import Install from "./pages/Install";
+import Sitemap from "./pages/Sitemap";
 import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 import ChatbotWidget from "./components/ChatbotWidget";
@@ -117,6 +118,7 @@ const App = () => (
             <Route path="/daily-zip" element={<DailyZip />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/install" element={<Install />} />
+            <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/webinars" element={<Webinars />} />
             <Route path="/course/:slug" element={<CourseDetail />} />
