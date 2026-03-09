@@ -354,12 +354,32 @@ const DailyZip = () => {
     window.open(urls[platform], "_blank");
   };
 
-  const shareChallenge = () => {
+  const shareLink = "https://www.aicoachportal.com/daily-zip";
+
+  const getChallengeMessage = () => {
     const levelText = tab === "daily" ? "the Daily Challenge" : `Level ${currentLevel}`;
     const diff = puzzle.difficulty;
-    const msg = `🎯 I dare you to try ${levelText} on Daily Zip!\n\n🧩 Difficulty: ${diff} (${gridSize}×${gridSize} grid)\n⚡ Think you can solve it fast?\n\n🔥 Challenge accepted? Play here:\n👉 https://www.aicoachportal.com/daily-zip`;
-    const encoded = encodeURIComponent(msg);
-    window.open(`https://wa.me/?text=${encoded}`, "_blank");
+    return `🎯 I dare you to try ${levelText} on Daily Zip!\n\n🧩 Difficulty: ${diff} (${gridSize}×${gridSize} grid)\n⚡ Think you can solve it fast?\n\n🔥 Challenge accepted? Play here:\n👉 ${shareLink}`;
+  };
+
+  const shareChallenge = () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(getChallengeMessage())}`, "_blank");
+  };
+
+  const copyShareLink = () => {
+    navigator.clipboard.writeText(shareLink).then(() => {
+      toast.success("Link copied to clipboard!");
+    }).catch(() => {
+      toast.error("Failed to copy link");
+    });
+  };
+
+  const copyChallenge = () => {
+    navigator.clipboard.writeText(getChallengeMessage()).then(() => {
+      toast.success("Challenge message copied!");
+    }).catch(() => {
+      toast.error("Failed to copy message");
+    });
   };
 
   // SEO
