@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Clock, Zap, RotateCcw, Undo2, Lightbulb, ChevronLeft, ChevronRight, Share2, Users, Globe, TrendingUp, Calendar } from "lucide-react";
+import { Trophy, Clock, Zap, RotateCcw, Undo2, Lightbulb, ChevronLeft, ChevronRight, Share2, Users, Globe, TrendingUp, Calendar, Maximize, Minimize } from "lucide-react";
 import { toast } from "sonner";
 import { generatePuzzle, generateDailyPuzzle, getDifficulty, getGridSize, type PuzzleData, type Cell } from "@/lib/puzzleGenerator";
 
