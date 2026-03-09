@@ -15,12 +15,14 @@ import AdminLocaleSettings from "@/components/admin/AdminLocaleSettings";
 import AdminChatbotLeads from "@/components/admin/AdminChatbotLeads";
 import AdminCommunicationSettings from "@/components/admin/AdminCommunicationSettings";
 import AdminDailyZip from "@/components/admin/AdminDailyZip";
+import AdminBlogs from "@/components/admin/AdminBlogs";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
   { label: "Coaches", path: "/admin/coaches", icon: <Shield className="h-4 w-4" /> },
   { label: "Learners", path: "/admin/learners", icon: <GraduationCap className="h-4 w-4" /> },
   { label: "Courses", path: "/admin/courses", icon: <BookOpen className="h-4 w-4" /> },
+  { label: "Blog Management", path: "/admin/blogs", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Webinars", path: "/admin/webinars", icon: <Video className="h-4 w-4" /> },
   { label: "Enrollments", path: "/admin/enrollments", icon: <ClipboardList className="h-4 w-4" /> },
   { label: "Coach Performance", path: "/admin/performance", icon: <TrendingUp className="h-4 w-4" /> },
@@ -41,6 +43,7 @@ const AdminDashboard = () => {
         <Route path="coaches" element={<AdminCoaches />} />
         <Route path="learners" element={<AdminLearners />} />
         <Route path="courses" element={<AdminCourses />} />
+        <Route path="blogs" element={<AdminBlogs />} />
         <Route path="webinars" element={<AdminWebinars />} />
         <Route path="enrollments" element={<AdminEnrollments />} />
         <Route path="performance" element={<AdminCoachPerformance />} />

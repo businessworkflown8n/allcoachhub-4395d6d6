@@ -8,6 +8,7 @@ import CoursesSection from "@/components/CoursesSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import CTASection from "@/components/CTASection";
+import HomeBlogSection from "@/components/HomeBlogSection";
 import Footer from "@/components/Footer";
 
 const jsonLd = {
@@ -50,6 +51,7 @@ const Index = () => {
         <CoursesSection />
         <HowItWorksSection />
         <TestimonialsSection />
+        <HomeBlogSection />
         <CTASection />
       </main>
       <Footer />
