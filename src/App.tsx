@@ -101,8 +101,8 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AnalyticsTracker />
           <Routes>
-            <AnalyticsTracker />
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<RoleSelect />} />
             <Route path="/login/:role" element={<Login />} />
