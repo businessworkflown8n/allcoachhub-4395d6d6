@@ -35,6 +35,7 @@ import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 import ChatbotWidget from "./components/ChatbotWidget";
 import AnalyticsTracker from "./components/AnalyticsTracker";
+import WebsitePopup from "./components/WebsitePopup";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode; allowedRole: string }) => {
@@ -142,6 +143,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <FloatingButtons />
+          <WebsitePopup />
           <AICursor />
         </BrowserRouter>
       </AuthProvider>
