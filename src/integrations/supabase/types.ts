@@ -406,6 +406,7 @@ export type Database = {
         Row: {
           audience_filter: Json | null
           audience_type: string
+          channel: string
           content: string
           created_at: string
           cta_link: string | null
@@ -425,6 +426,7 @@ export type Database = {
         Insert: {
           audience_filter?: Json | null
           audience_type?: string
+          channel?: string
           content: string
           created_at?: string
           cta_link?: string | null
@@ -444,6 +446,7 @@ export type Database = {
         Update: {
           audience_filter?: Json | null
           audience_type?: string
+          channel?: string
           content?: string
           created_at?: string
           cta_link?: string | null
@@ -475,6 +478,7 @@ export type Database = {
           signup_date: string | null
           source: string | null
           user_type: string | null
+          whatsapp_number: string | null
         }
         Insert: {
           country?: string | null
@@ -488,6 +492,7 @@ export type Database = {
           signup_date?: string | null
           source?: string | null
           user_type?: string | null
+          whatsapp_number?: string | null
         }
         Update: {
           country?: string | null
@@ -501,6 +506,7 @@ export type Database = {
           signup_date?: string | null
           source?: string | null
           user_type?: string | null
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
@@ -514,6 +520,7 @@ export type Database = {
           id: string
           name: string
           subject: string
+          template_html: string | null
           updated_at: string
         }
         Insert: {
@@ -525,6 +532,7 @@ export type Database = {
           id?: string
           name: string
           subject: string
+          template_html?: string | null
           updated_at?: string
         }
         Update: {
@@ -536,6 +544,7 @@ export type Database = {
           id?: string
           name?: string
           subject?: string
+          template_html?: string | null
           updated_at?: string
         }
         Relationships: []
