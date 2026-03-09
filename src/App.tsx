@@ -34,7 +34,7 @@ import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 import ChatbotWidget from "./components/ChatbotWidget";
-
+import AnalyticsTracker from "./components/AnalyticsTracker";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode; allowedRole: string }) => {
@@ -102,6 +102,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <AnalyticsTracker />
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<RoleSelect />} />
             <Route path="/login/:role" element={<Login />} />
