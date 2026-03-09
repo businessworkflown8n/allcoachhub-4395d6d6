@@ -10,11 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   Mail, Send, Plus, Pencil, Trash2, Eye, Clock, MessageCircle, Phone,
-  Megaphone, Instagram, Facebook, Linkedin, Twitter, Youtube, Globe
+  Megaphone, Instagram, Facebook, Linkedin, Twitter, Youtube, Globe, UserCheck
 } from "lucide-react";
 
 type Campaign = {
@@ -77,6 +78,7 @@ const CoachCampaigns = () => {
   const [form, setForm] = useState(emptyForm);
   const [sending, setSending] = useState(false);
   const [profile, setProfile] = useState<{ full_name: string; email: string } | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
 
   const fetchAll = async () => {
     if (!user) return;
@@ -158,7 +160,6 @@ const CoachCampaigns = () => {
       if (!confirm(`Send "${campaign.subject}" to your learners?`)) return;
       setSending(true);
       try {
-        // Get enrolled learners for this coach's courses
         const { data: enrollments } = await supabase.from("enrollments").select("email, full_name").eq("coach_id", user.id);
         const recipients = enrollments?.map((e: any) => ({ email: e.email, name: e.full_name })).filter((r: any) => r.email) || [];
         if (!recipients.length) { toast.error("No enrolled learners found"); setSending(false); return; }
@@ -178,6 +179,18 @@ const CoachCampaigns = () => {
 
   const getPlatformInfo = (channel: string) => CAMPAIGN_PLATFORMS.find(p => p.value === channel) || CAMPAIGN_PLATFORMS[0];
 
+  // Separate assigned (admin-created) vs self-created campaigns
+  // Admin assigns by setting coach_id — we detect "assigned" by checking if sender_name is admin default or content differs
+  // Simpler: all campaigns with coach_id = user.id are shown; we just show a badge if status is draft (freshly assigned)
+  const assignedCampaigns = campaigns.filter(c => c.status === "draft");
+  const myCampaigns = campaigns.filter(c => c.status !== "draft");
+
+  const getFilteredCampaigns = () => {
+    if (activeTab === "assigned") return assignedCampaigns;
+    if (activeTab === "sent") return myCampaigns;
+    return campaigns;
+  };
+
   if (loading) return <div className="flex justify-center p-8"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
 
   return (
@@ -185,16 +198,17 @@ const CoachCampaigns = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2"><Megaphone className="h-6 w-6 text-primary" /> My Campaigns</h2>
-          <p className="text-muted-foreground text-sm mt-1">Create and manage marketing campaigns for your courses</p>
+          <p className="text-muted-foreground text-sm mt-1">Manage your campaigns and admin-assigned campaigns</p>
         </div>
         <Button onClick={() => openCreate()} className="gap-2"><Plus className="h-4 w-4" /> Create Campaign</Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-primary">{campaigns.length}</p><p className="text-xs text-muted-foreground">Total</p></CardContent></Card>
         <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-500">{campaigns.filter(c => c.status === "sent").length}</p><p className="text-xs text-muted-foreground">Sent</p></CardContent></Card>
-        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-yellow-500">{campaigns.filter(c => c.status === "draft").length}</p><p className="text-xs text-muted-foreground">Drafts</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-yellow-500">{assignedCampaigns.length}</p><p className="text-xs text-muted-foreground">Drafts / Assigned</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-blue-500">{campaigns.filter(c => c.status === "ready").length}</p><p className="text-xs text-muted-foreground">Ready</p></CardContent></Card>
       </div>
 
       {/* Quick Create */}
@@ -209,6 +223,17 @@ const CoachCampaigns = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="all">All ({campaigns.length})</TabsTrigger>
+          <TabsTrigger value="assigned" className="gap-1">
+            <UserCheck className="h-3 w-3" /> Drafts / Assigned ({assignedCampaigns.length})
+          </TabsTrigger>
+          <TabsTrigger value="sent">Sent / Ready ({myCampaigns.length})</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Table */}
       <Card>
@@ -225,17 +250,17 @@ const CoachCampaigns = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {campaigns.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No campaigns yet. Create your first one!</TableCell></TableRow>
+              {getFilteredCampaigns().length === 0 && (
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No campaigns found</TableCell></TableRow>
               )}
-              {campaigns.map(c => {
+              {getFilteredCampaigns().map(c => {
                 const platform = getPlatformInfo(c.channel);
                 const PIcon = platform.icon;
                 return (
                   <TableRow key={c.id}>
                     <TableCell><Badge variant="outline" className="gap-1"><PIcon className={`h-3 w-3 ${platform.color}`} />{platform.label}</Badge></TableCell>
                     <TableCell className="font-medium max-w-[200px] truncate">{c.subject}</TableCell>
-                    <TableCell><Badge variant={c.status === "sent" ? "default" : "secondary"}>{c.status}</Badge></TableCell>
+                    <TableCell><Badge variant={c.status === "sent" ? "default" : c.status === "ready" ? "outline" : "secondary"}>{c.status}</Badge></TableCell>
                     <TableCell className="text-sm">{c.total_sent || 0}/{c.total_recipients || 0}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{format(new Date(c.created_at), "dd MMM yyyy")}</TableCell>
                     <TableCell>
