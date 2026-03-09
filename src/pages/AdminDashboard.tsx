@@ -41,6 +41,13 @@ const navItems = [
 ];
 
 const AdminDashboard = () => {
+  useSEO({
+    title: "Admin Dashboard – AI Coach Portal",
+    description: "Platform administration dashboard for managing courses, coaches, learners, and analytics.",
+    canonical: "https://www.aicoachportal.com/admin",
+    noIndex: true,
+  });
+
   return (
     <DashboardLayout navItems={navItems} title="Admin Dashboard">
       <Routes>
