@@ -136,6 +136,7 @@ const Navbar = () => {
           </div>
 
           <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.howItWorks")}</button>
+          <Link to="/daily-zip" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Daily Zip</Link>
           {/* AI Jobs & News dropdown */}
           <div
             className="relative"
@@ -241,6 +242,7 @@ const Navbar = () => {
             </div>
 
             <button onClick={() => { setMobileOpen(false); handleSectionClick("#how-it-works"); }} className="rounded-md px-3 py-2 text-sm text-muted-foreground text-left hover:bg-accent">{t("nav.howItWorks")}</button>
+            <Link to="/daily-zip" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">Daily Zip</Link>
             {/* Mobile AI Jobs & News accordion */}
             <div>
               <button
