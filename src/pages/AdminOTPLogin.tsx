@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +10,13 @@ import { toast } from "@/hooks/use-toast";
 const ADMIN_EMAIL = "aicoachportal@gmail.com";
 
 const AdminOTPLogin = () => {
+  useSEO({
+    title: "Verify OTP – Admin Login",
+    description: "Enter your one-time password to access the admin dashboard.",
+    canonical: "https://www.aicoachportal.com/admin/otp-login",
+    noIndex: true,
+  });
+
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const { user, loading: authLoading } = useAuth();

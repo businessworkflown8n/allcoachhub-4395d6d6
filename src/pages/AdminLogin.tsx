@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +10,13 @@ import { Shield, ArrowRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const AdminLogin = () => {
+  useSEO({
+    title: "Admin Login – AI Coach Portal",
+    description: "Secure admin login for AI Coach Portal administrators.",
+    canonical: "https://www.aicoachportal.com/admin/login",
+    noIndex: true,
+  });
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
