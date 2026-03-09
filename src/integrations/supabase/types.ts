@@ -407,6 +407,7 @@ export type Database = {
           audience_filter: Json | null
           audience_type: string
           channel: string
+          coach_id: string | null
           content: string
           created_at: string
           cta_link: string | null
@@ -427,6 +428,7 @@ export type Database = {
           audience_filter?: Json | null
           audience_type?: string
           channel?: string
+          coach_id?: string | null
           content: string
           created_at?: string
           cta_link?: string | null
@@ -447,6 +449,7 @@ export type Database = {
           audience_filter?: Json | null
           audience_type?: string
           channel?: string
+          coach_id?: string | null
           content?: string
           created_at?: string
           cta_link?: string | null
