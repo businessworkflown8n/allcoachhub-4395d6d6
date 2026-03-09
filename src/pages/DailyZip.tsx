@@ -228,6 +228,11 @@ const DailyZip = () => {
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     setIsDrawing(true);
+    // Auto-enter fullscreen on first interaction
+    if (!hasAutoFullscreened.current && gameContainerRef.current) {
+      hasAutoFullscreened.current = true;
+      enterFullscreen();
+    }
     const cell = getCellFromPointer(e.clientX, e.clientY);
     if (cell) {
       lastCellRef.current = `${cell.row},${cell.col}`;
