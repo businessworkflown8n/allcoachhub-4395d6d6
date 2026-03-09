@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail } from "lucide-react";
+import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2 } from "lucide-react";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminCoaches from "@/components/admin/AdminCoaches";
 import AdminLearners from "@/components/admin/AdminLearners";
@@ -17,6 +17,7 @@ import AdminCommunicationSettings from "@/components/admin/AdminCommunicationSet
 import AdminDailyZip from "@/components/admin/AdminDailyZip";
 import AdminBlogs from "@/components/admin/AdminBlogs";
 import AdminEmailTools from "@/components/admin/AdminEmailTools";
+import AdminSocialMedia from "@/components/admin/AdminSocialMedia";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
@@ -33,6 +34,7 @@ const navItems = [
   { label: "Communication", path: "/admin/communication", icon: <MessageSquare className="h-4 w-4" /> },
   { label: "Daily Zip", path: "/admin/daily-zip", icon: <Gamepad2 className="h-4 w-4" /> },
   { label: "Email Marketing", path: "/admin/email-tools", icon: <Mail className="h-4 w-4" /> },
+  { label: "Social Media", path: "/admin/social", icon: <Share2 className="h-4 w-4" /> },
   { label: "Settings", path: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
   { label: "Locale & Currency", path: "/admin/locale", icon: <Globe className="h-4 w-4" /> },
 ];
@@ -55,6 +57,7 @@ const AdminDashboard = () => {
         <Route path="communication" element={<AdminCommunicationSettings />} />
         <Route path="daily-zip" element={<AdminDailyZip />} />
         <Route path="email-tools" element={<AdminEmailTools />} />
+        <Route path="social" element={<AdminSocialMedia />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="locale" element={<AdminLocaleSettings />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
