@@ -541,17 +541,56 @@ const DailyZip = () => {
                       onPointerCancel={handlePointerUp}
                       onContextMenu={e => e.preventDefault()}
                     >
+                      {/* Grid background with clear lines */}
+                      <div
+                        className="absolute inset-0 rounded-lg"
+                        style={{
+                          background: "hsl(var(--muted) / 0.15)",
+                          border: "2px solid hsl(var(--border))",
+                        }}
+                      />
+                      {/* Horizontal grid lines */}
+                      {Array.from({ length: gridSize - 1 }, (_, i) => {
+                        const y = (i + 1) * (cellSize + gap) - gap / 2;
+                        return (
+                          <div
+                            key={`h-line-${i}`}
+                            className="absolute left-0 right-0"
+                            style={{
+                              top: y,
+                              height: 2,
+                              background: "hsl(var(--border))",
+                              zIndex: 1,
+                            }}
+                          />
+                        );
+                      })}
+                      {/* Vertical grid lines */}
+                      {Array.from({ length: gridSize - 1 }, (_, i) => {
+                        const x = (i + 1) * (cellSize + gap) - gap / 2;
+                        return (
+                          <div
+                            key={`v-line-${i}`}
+                            className="absolute top-0 bottom-0"
+                            style={{
+                              left: x,
+                              width: 2,
+                              background: "hsl(var(--border))",
+                              zIndex: 1,
+                            }}
+                          />
+                        );
+                      })}
                       {/* Grid cells */}
                       {Array.from({ length: gridSize }, (_, row) =>
                         Array.from({ length: gridSize }, (_, col) => {
-                          const wp = getWaypointAt(row, col);
                           const x = col * (cellSize + gap);
                           const y = row * (cellSize + gap);
 
                           return (
                             <div
                               key={`${row}-${col}`}
-                              className="absolute rounded-md border border-border/40 bg-muted/30"
+                              className="absolute rounded-sm bg-muted/20"
                               style={{
                                 left: x, top: y,
                                 width: cellSize, height: cellSize,
