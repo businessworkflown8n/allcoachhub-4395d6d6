@@ -29,6 +29,7 @@ import BlogPost from "./pages/BlogPost";
 import Courses from "./pages/Courses";
 import Webinars from "./pages/Webinars";
 import DailyZip from "./pages/DailyZip";
+import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 import ChatbotWidget from "./components/ChatbotWidget";
@@ -111,6 +112,7 @@ const App = () => (
             <Route path="/ai-jobs-news/:category" element={<AIBlogsCategory />} />
             <Route path="/ai-blogs/:slug" element={<BlogPost />} />
             <Route path="/daily-zip" element={<DailyZip />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/webinars" element={<Webinars />} />
             <Route path="/course/:slug" element={<CourseDetail />} />
