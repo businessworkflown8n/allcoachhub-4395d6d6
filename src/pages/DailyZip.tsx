@@ -284,6 +284,20 @@ const DailyZip = () => {
     if (currentLevel < MAX_LEVEL) setCurrentLevel(currentLevel + 1);
   };
 
+  const goToPrevLevel = () => {
+    if (currentLevel > 1) setCurrentLevel(currentLevel - 1);
+  };
+
+  // Auto-advance to next level after completion (with delay)
+  useEffect(() => {
+    if (isCompleted && tab === "game" && currentLevel < MAX_LEVEL) {
+      const timeout = setTimeout(() => {
+        goToNextLevel();
+      }, 2500);
+      return () => clearTimeout(timeout);
+    }
+  }, [isCompleted, tab, currentLevel]);
+
   const shareResult = (platform: string) => {
     const levelText = tab === "daily" ? "today's Daily Challenge" : `Level ${currentLevel}`;
     const msg = `🧩 I completed ${levelText} in Daily Zip in ${formatTime(timer)}!\nCan you beat my score?\n\nPlay here: https://www.aicoachportal.com/daily-zip`;
@@ -524,6 +538,31 @@ const DailyZip = () => {
                       <RotateCcw className="mr-1 h-3.5 w-3.5" /> Restart
                     </Button>
                   </div>
+
+                  {/* Previous / Next navigation */}
+                  {tab === "game" && (
+                    <div className="mt-4 flex items-center justify-between">
+                      <Button
+                        variant="outline"
+                        onClick={goToPrevLevel}
+                        disabled={currentLevel <= 1}
+                        className="gap-1.5"
+                      >
+                        <ChevronLeft className="h-4 w-4" /> Previous
+                      </Button>
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Level {currentLevel} / {MAX_LEVEL}
+                      </span>
+                      <Button
+                        variant="outline"
+                        onClick={goToNextLevel}
+                        disabled={currentLevel >= (progress?.current_level || 1)}
+                        className="gap-1.5"
+                      >
+                        Next <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
 
                   {/* Progress */}
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
