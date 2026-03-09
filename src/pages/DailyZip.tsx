@@ -443,10 +443,13 @@ const DailyZip = () => {
           {tab === "leaderboard" ? (
             <LeaderboardView leaderboard={leaderboard} communityStats={communityStats} userId={user?.id} period={leaderboardPeriod} setPeriod={setLeaderboardPeriod} />
           ) : (
-            <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_300px]">
+            <div ref={gameContainerRef} className={`mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_300px] ${isFullscreen ? "bg-background p-4 overflow-auto" : ""}`}>
               <Card className="border-border/50 bg-card/80 backdrop-blur">
                 <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 pb-3">
                   <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleFullscreen} title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
+                      {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                    </Button>
                     {tab === "game" && (
                       <div className="flex items-center gap-1">
                         <Button variant="ghost" size="icon" className="h-7 w-7" disabled={currentLevel <= 1} onClick={() => setCurrentLevel(currentLevel - 1)}>
