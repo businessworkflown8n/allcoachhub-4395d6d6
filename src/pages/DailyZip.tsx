@@ -815,7 +815,7 @@ const DailyZip = () => {
                     </Button>
                   </CardContent>
                 </Card>
-            </div>
+              </div>
           )}
         </div>
       </main>
