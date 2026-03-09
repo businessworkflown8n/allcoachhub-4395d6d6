@@ -295,11 +295,6 @@ const DailyZip = () => {
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 
-  if (!puzzle) return null;
-
-  const gridSize = puzzle.grid_size;
-
-  return (
   useEffect(() => {
     document.title = "Daily Zip – AI Puzzle Game | AI Coach Portal";
     const meta = document.querySelector('meta[name="description"]');
@@ -311,6 +306,10 @@ const DailyZip = () => {
       document.head.appendChild(m);
     }
   }, []);
+
+  if (!puzzle) return null;
+
+  const gridSize = puzzle.grid_size;
 
   return (
     <>
