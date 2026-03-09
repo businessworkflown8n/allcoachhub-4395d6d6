@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Clock, Zap, RotateCcw, Undo2, Lightbulb, ChevronLeft, ChevronRight, Share2, Users, Globe, TrendingUp, Calendar } from "lucide-react";
+import { Trophy, Clock, Zap, RotateCcw, Undo2, Lightbulb, ChevronLeft, ChevronRight, Share2, Users, Globe, TrendingUp, Calendar, Maximize, Minimize } from "lucide-react";
 import { toast } from "sonner";
 import { generatePuzzle, generateDailyPuzzle, getDifficulty, getGridSize, type PuzzleData, type Cell } from "@/lib/puzzleGenerator";
 
@@ -39,6 +39,40 @@ const DailyZip = () => {
   const [hintsUsed, setHintsUsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
+  const gameContainerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const hasAutoFullscreened = useRef(false);
+
+  // Fullscreen helpers
+  const enterFullscreen = useCallback(() => {
+    const el = gameContainerRef.current;
+    if (!el) return;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if ((el as any).webkitRequestFullscreen) (el as any).webkitRequestFullscreen();
+  }, []);
+
+  const exitFullscreen = useCallback(() => {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (isFullscreen) exitFullscreen();
+    else enterFullscreen();
+  }, [isFullscreen, enterFullscreen, exitFullscreen]);
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handler = () => {
+      setIsFullscreen(!!document.fullscreenElement || !!(document as any).webkitFullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handler);
+    document.addEventListener("webkitfullscreenchange", handler);
+    return () => {
+      document.removeEventListener("fullscreenchange", handler);
+      document.removeEventListener("webkitfullscreenchange", handler);
+    };
+  }, []);
 
   // DB state
   const [progress, setProgress] = useState<{ current_level: number; total_score: number; total_games_played: number } | null>(null);
@@ -101,6 +135,7 @@ const DailyZip = () => {
     setTimer(0);
     setIsRunning(false);
     setHintsUsed(0);
+    hasAutoFullscreened.current = false;
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
@@ -194,6 +229,11 @@ const DailyZip = () => {
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     setIsDrawing(true);
+    // Auto-enter fullscreen on first interaction
+    if (!hasAutoFullscreened.current && gameContainerRef.current) {
+      hasAutoFullscreened.current = true;
+      enterFullscreen();
+    }
     const cell = getCellFromPointer(e.clientX, e.clientY);
     if (cell) {
       lastCellRef.current = `${cell.row},${cell.col}`;
@@ -404,10 +444,13 @@ const DailyZip = () => {
           {tab === "leaderboard" ? (
             <LeaderboardView leaderboard={leaderboard} communityStats={communityStats} userId={user?.id} period={leaderboardPeriod} setPeriod={setLeaderboardPeriod} />
           ) : (
-            <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_300px]">
+            <div ref={gameContainerRef} className={`mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_300px] ${isFullscreen ? "bg-background p-4 overflow-auto" : ""}`}>
               <Card className="border-border/50 bg-card/80 backdrop-blur">
                 <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 pb-3">
                   <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleFullscreen} title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
+                      {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                    </Button>
                     {tab === "game" && (
                       <div className="flex items-center gap-1">
                         <Button variant="ghost" size="icon" className="h-7 w-7" disabled={currentLevel <= 1} onClick={() => setCurrentLevel(currentLevel - 1)}>
