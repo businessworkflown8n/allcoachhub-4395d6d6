@@ -11,6 +11,7 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { useTranslation } from "@/i18n/TranslationProvider";
+import { trackSearch, trackSearchResultClick } from "@/lib/analytics";
 
 const SearchDialog = () => {
   const [open, setOpen] = useState(false);
@@ -43,6 +44,21 @@ const SearchDialog = () => {
     fetchCourses();
   }, [open]);
 
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    if (value.length >= 3) {
+      trackSearch(value, courses.filter(c => c.title.toLowerCase().includes(value.toLowerCase())).length, "command_dialog");
+    }
+  };
+
+  const handleCourseSelect = (course: any, index: number) => {
+    trackSearchResultClick(searchTerm, course.title, index);
+    navigate(`/course/${course.slug || course.id}`);
+    setOpen(false);
+  };
+
   return (
     <>
       <button
@@ -58,17 +74,14 @@ const SearchDialog = () => {
       </button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder={t("search.inputPlaceholder")} />
+        <CommandInput placeholder={t("search.inputPlaceholder")} value={searchTerm} onValueChange={handleSearchChange} />
         <CommandList>
           <CommandEmpty>{t("search.noResults")}</CommandEmpty>
           <CommandGroup heading={t("search.courses")}>
-            {courses.map((course) => (
+            {courses.map((course, idx) => (
               <CommandItem
                 key={course.id}
-                onSelect={() => {
-                  navigate(`/course/${(course as any).slug || course.id}`);
-                  setOpen(false);
-                }}
+                onSelect={() => handleCourseSelect(course, idx)}
               >
                 <Search className="mr-2 h-4 w-4" />
                 <div>

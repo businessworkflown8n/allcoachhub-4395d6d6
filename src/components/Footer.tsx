@@ -1,5 +1,6 @@
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 import { useTranslation } from "@/i18n/TranslationProvider";
+import { trackSocialClick } from "@/lib/analytics";
 
 const socials = [
   { name: "X", href: "https://x.com/Aicoachportal", icon: () => (
@@ -13,6 +14,11 @@ const socials = [
 
 const Footer = () => {
   const { t } = useTranslation();
+
+  const handleSocialClick = (name: string, href: string) => {
+    trackSocialClick(name, href);
+  };
+
   return (
     <footer className="border-t border-border bg-card py-10">
       <div className="container mx-auto flex flex-col items-center gap-4 px-4">
@@ -24,6 +30,7 @@ const Footer = () => {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={s.name}
+              onClick={() => handleSocialClick(s.name, s.href)}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               <s.icon className="h-5 w-5" />

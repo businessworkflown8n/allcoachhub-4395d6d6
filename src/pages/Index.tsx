@@ -42,17 +42,17 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar />
-      <header>
+      <header id="hero">
         <HeroSection />
       </header>
       <main>
-        <CategoriesSection />
-        <CoachesSection />
-        <CoursesSection />
-        <HowItWorksSection />
-        <TestimonialsSection />
-        <HomeBlogSection />
-        <CTASection />
+        <section id="categories"><CategoriesSection /></section>
+        <section id="coaches"><CoachesSection /></section>
+        <section id="courses"><CoursesSection /></section>
+        <section id="how-it-works"><HowItWorksSection /></section>
+        <section id="testimonials"><TestimonialsSection /></section>
+        <section id="blogs"><HomeBlogSection /></section>
+        <section id="cta"><CTASection /></section>
       </main>
       <Footer />
     </div>
