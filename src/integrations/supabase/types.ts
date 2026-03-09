@@ -945,6 +945,57 @@ export type Database = {
           },
         ]
       }
+      social_posts: {
+        Row: {
+          content: string
+          created_at: string
+          hashtags: string[] | null
+          id: string
+          image_url: string | null
+          link_url: string | null
+          platforms: string[] | null
+          published_at: string | null
+          scheduled_at: string | null
+          status: string
+          title: string | null
+          updated_at: string
+          user_id: string
+          video_url: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          hashtags?: string[] | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          platforms?: string[] | null
+          published_at?: string | null
+          scheduled_at?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          video_url?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          hashtags?: string[] | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          platforms?: string[] | null
+          published_at?: string | null
+          scheduled_at?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
