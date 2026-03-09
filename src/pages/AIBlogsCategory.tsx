@@ -114,14 +114,14 @@ const AIBlogsCategory = () => {
   const [loading, setLoading] = useState(true);
 
   const config = category ? categoryConfig[category] : null;
-
-  useEffect(() => {
-    if (config) {
-      document.title = config.metaTitle;
-      const meta = document.querySelector('meta[name="description"]');
-      if (meta) meta.setAttribute("content", config.metaDescription);
-    }
-  }, [config]);
+  
+  useSEO({
+    title: config?.metaTitle || "AI Blogs – AI Coach Portal",
+    description: config?.metaDescription || "Explore the latest AI insights, trends, and educational content from industry experts.",
+    canonical: `https://www.aicoachportal.com/ai-jobs-news/${category}`,
+    ogTitle: config?.metaTitle || "AI Blogs – AI Coach Portal",
+    ogDescription: config?.metaDescription || "Explore the latest AI insights, trends, and educational content from industry experts.",
+  });
 
   useEffect(() => {
     if (config) fetchBlogs();

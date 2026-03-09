@@ -59,6 +59,16 @@ const BlogPost = () => {
   const [related, setRelated] = useState<BlogPostType[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useSEO({
+    title: post?.meta_title || post?.title || "Blog Post – AI Coach Portal",
+    description: post?.meta_description || post?.excerpt || "Read the latest AI insights and educational content.",
+    canonical: `https://www.aicoachportal.com/ai-blogs/${slug}`,
+    ogTitle: post?.meta_title || post?.title,
+    ogDescription: post?.meta_description || post?.excerpt,
+    ogImage: post?.image_url || undefined,
+    ogType: "article",
+  });
+
   useEffect(() => {
     if (!slug) return;
     (async () => {
