@@ -342,7 +342,8 @@ const DailyZip = () => {
 
   const shareResult = (platform: string) => {
     const levelText = tab === "daily" ? "today's Daily Challenge" : `Level ${currentLevel}`;
-    const msg = `🧩 I completed ${levelText} in Daily Zip in ${formatTime(timer)}!\nCan you beat my score?\n\nPlay here: https://www.aicoachportal.com/daily-zip`;
+    const score = Math.max(tab === "daily" ? 500 : 1000 - timer * 5 - hintsUsed * 50, 100);
+    const msg = `🧩 I just crushed ${levelText} on Daily Zip!\n⏱️ Time: ${formatTime(timer)} | 🏆 Score: ${score}\n\n🔥 I challenge you to beat my time! Can you crack it faster?\n\n👉 Play now: https://www.aicoachportal.com/daily-zip`;
     const encoded = encodeURIComponent(msg);
     const urls: Record<string, string> = {
       whatsapp: `https://wa.me/?text=${encoded}`,
@@ -351,6 +352,14 @@ const DailyZip = () => {
       facebook: `https://www.facebook.com/sharer/sharer.php?quote=${encoded}&u=${encodeURIComponent("https://www.aicoachportal.com/daily-zip")}`,
     };
     window.open(urls[platform], "_blank");
+  };
+
+  const shareChallenge = () => {
+    const levelText = tab === "daily" ? "the Daily Challenge" : `Level ${currentLevel}`;
+    const diff = puzzle.difficulty;
+    const msg = `🎯 I dare you to try ${levelText} on Daily Zip!\n\n🧩 Difficulty: ${diff} (${gridSize}×${gridSize} grid)\n⚡ Think you can solve it fast?\n\n🔥 Challenge accepted? Play here:\n👉 https://www.aicoachportal.com/daily-zip`;
+    const encoded = encodeURIComponent(msg);
+    window.open(`https://wa.me/?text=${encoded}`, "_blank");
   };
 
   // SEO
