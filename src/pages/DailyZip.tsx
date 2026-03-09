@@ -301,21 +301,6 @@ const DailyZip = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Daily Zip – AI Puzzle Game | AI Coach Portal</title>
-        <meta name="description" content="Play Daily Zip, the AI puzzle game where you solve AI workflows, prompts, and automation challenges in a fun and interactive way." />
-        <link rel="canonical" href="https://www.aicoachportal.com/daily-zip" />
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebApplication",
-          "name": "Daily Zip",
-          "description": "AI puzzle game where you solve AI workflows and automation challenges",
-          "url": "https://www.aicoachportal.com/daily-zip",
-          "applicationCategory": "Game",
-          "operatingSystem": "Web",
-        })}</script>
-      </Helmet>
-
       <Navbar />
       <main className="min-h-screen bg-background pt-20 pb-16">
         <div className="container mx-auto px-4">
