@@ -402,6 +402,144 @@ export type Database = {
           },
         ]
       }
+      email_campaigns: {
+        Row: {
+          audience_filter: Json | null
+          audience_type: string
+          content: string
+          created_at: string
+          cta_link: string | null
+          cta_text: string | null
+          id: string
+          scheduled_at: string | null
+          sender_email: string | null
+          sender_name: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          template_name: string | null
+          total_recipients: number | null
+          total_sent: number | null
+          updated_at: string
+        }
+        Insert: {
+          audience_filter?: Json | null
+          audience_type?: string
+          content: string
+          created_at?: string
+          cta_link?: string | null
+          cta_text?: string | null
+          id?: string
+          scheduled_at?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template_name?: string | null
+          total_recipients?: number | null
+          total_sent?: number | null
+          updated_at?: string
+        }
+        Update: {
+          audience_filter?: Json | null
+          audience_type?: string
+          content?: string
+          created_at?: string
+          cta_link?: string | null
+          cta_text?: string | null
+          id?: string
+          scheduled_at?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template_name?: string | null
+          total_recipients?: number | null
+          total_sent?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_contacts: {
+        Row: {
+          country: string | null
+          course_enrolled: string | null
+          created_at: string
+          email: string
+          id: string
+          is_unsubscribed: boolean | null
+          name: string | null
+          phone: string | null
+          signup_date: string | null
+          source: string | null
+          user_type: string | null
+        }
+        Insert: {
+          country?: string | null
+          course_enrolled?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          is_unsubscribed?: boolean | null
+          name?: string | null
+          phone?: string | null
+          signup_date?: string | null
+          source?: string | null
+          user_type?: string | null
+        }
+        Update: {
+          country?: string | null
+          course_enrolled?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          is_unsubscribed?: boolean | null
+          name?: string | null
+          phone?: string | null
+          signup_date?: string | null
+          source?: string | null
+          user_type?: string | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          cta_link: string | null
+          cta_text: string | null
+          id: string
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          cta_link?: string | null
+          cta_text?: string | null
+          id?: string
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          cta_link?: string | null
+          cta_text?: string | null
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       enrollments: {
         Row: {
           amount_paid: number | null
