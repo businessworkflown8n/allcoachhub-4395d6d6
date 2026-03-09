@@ -31,6 +31,7 @@ import Webinars from "./pages/Webinars";
 import DailyZip from "./pages/DailyZip";
 import Unsubscribe from "./pages/Unsubscribe";
 import Install from "./pages/Install";
+import Sitemap from "./pages/Sitemap";
 import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 import ChatbotWidget from "./components/ChatbotWidget";
