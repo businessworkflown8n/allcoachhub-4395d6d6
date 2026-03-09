@@ -259,6 +259,66 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_zip_level_scores: {
+        Row: {
+          completed_at: string
+          id: string
+          level_number: number
+          score: number
+          time_seconds: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          level_number: number
+          score?: number
+          time_seconds: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          level_number?: number
+          score?: number
+          time_seconds?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_zip_progress: {
+        Row: {
+          best_time_seconds: number | null
+          created_at: string
+          current_level: number
+          id: string
+          total_games_played: number
+          total_score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_time_seconds?: number | null
+          created_at?: string
+          current_level?: number
+          id?: string
+          total_games_played?: number
+          total_score?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_time_seconds?: number | null
+          created_at?: string
+          current_level?: number
+          id?: string
+          total_games_played?: number
+          total_score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_zip_puzzles: {
         Row: {
           created_at: string
