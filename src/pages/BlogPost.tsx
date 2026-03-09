@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Navbar from "@/components/Navbar";
@@ -57,6 +58,16 @@ const BlogPost = () => {
   const [post, setPost] = useState<BlogPostType | null>(null);
   const [related, setRelated] = useState<BlogPostType[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useSEO({
+    title: post?.meta_title || post?.title || "Blog Post – AI Coach Portal",
+    description: post?.meta_description || post?.excerpt || "Read the latest AI insights and educational content.",
+    canonical: `https://www.aicoachportal.com/ai-blogs/${slug}`,
+    ogTitle: post?.meta_title || post?.title,
+    ogDescription: post?.meta_description || post?.excerpt,
+    ogImage: post?.image_url || undefined,
+    ogType: "article",
+  });
 
   useEffect(() => {
     if (!slug) return;

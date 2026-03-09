@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2 } from "lucide-react";
 import CoachProfile from "@/components/coach/CoachProfile";
@@ -20,6 +21,13 @@ const navItems = [
 ];
 
 const CoachDashboard = () => {
+  useSEO({
+    title: "Coach Dashboard – Manage Courses & Earnings",
+    description: "Manage your courses, enrollments, webinars, and track your coaching earnings.",
+    canonical: "https://www.aicoachportal.com/coach",
+    noIndex: true,
+  });
+
   return (
     <DashboardLayout navItems={navItems} title="Coach Dashboard">
       <Routes>

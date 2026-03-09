@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2 } from "lucide-react";
 import LearnerProfile from "@/components/learner/LearnerProfile";
@@ -24,6 +25,13 @@ const navItems = [
 ];
 
 const LearnerDashboard = () => {
+  useSEO({
+    title: "Learner Dashboard – My Courses & Progress",
+    description: "Access your enrolled courses, webinars, certificates, and learning progress.",
+    canonical: "https://www.aicoachportal.com/learner",
+    noIndex: true,
+  });
+
   return (
     <DashboardLayout navItems={navItems} title="Learner Dashboard">
       <Routes>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +9,13 @@ import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.gif";
 
 const ResetPassword = () => {
+  useSEO({
+    title: "Reset Password – AI Coach Portal",
+    description: "Reset your AI Coach Portal account password securely.",
+    canonical: "https://www.aicoachportal.com/reset-password",
+    noIndex: true,
+  });
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Star, Clock, Users, ArrowLeft, Heart, Share2 } from "lucide-react";
@@ -15,6 +16,16 @@ const CourseDetail = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [wishlisted, setWishlisted] = useState(false);
+
+  useSEO({
+    title: course ? `${course.title} – AI Course by ${coach?.full_name || 'Expert Coach'}` : "Course Details – AI Coach Portal",
+    description: course?.description?.substring(0, 155) || "Learn AI skills from expert coaches with hands-on courses in prompt engineering, AI agents, automation, and more.",
+    canonical: `https://www.aicoachportal.com/courses/${slug}`,
+    ogTitle: course?.title,
+    ogDescription: course?.description?.substring(0, 155),
+    ogImage: course?.thumbnail_url,
+    ogType: "article",
+  });
 
   useEffect(() => {
     const fetchCourse = async () => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Search, Calendar, Clock, ArrowRight, Sparkles, RefreshCw, MapPin, Building2, Briefcase, ExternalLink, BadgeIndianRupee, DollarSign, User } from "lucide-react";
@@ -59,16 +60,18 @@ const blogListJsonLd = {
 };
 
 const AIBlogs = () => {
+  useSEO({
+    title: "AI Jobs & News – Latest AI Trends, Tools & Career Insights",
+    description: "Stay updated with the latest AI news, trends, tools, and career opportunities. Expert insights on AI education, research, policy, and industry developments.",
+    canonical: "https://www.aicoachportal.com/ai-blogs",
+    ogTitle: "AI Jobs & News – Latest AI Trends, Tools & Career Insights",
+    ogDescription: "Stay updated with the latest AI news, trends, tools, and career opportunities. Expert insights on AI education, research, policy, and industry developments.",
+  });
+
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    document.title = "AI Jobs & News | Latest AI Trends, Careers & Tools | AI Coach Portal";
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", "Explore AI jobs, news, trends, tools, career guides, and expert articles on artificial intelligence. Updated daily.");
-  }, []);
 
   useEffect(() => {
     fetchBlogs();

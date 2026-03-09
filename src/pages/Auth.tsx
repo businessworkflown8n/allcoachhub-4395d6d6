@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -11,6 +12,16 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const initialMode = searchParams.get("mode") === "login" ? "login" : "signup";
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
+  
+  useSEO({
+    title: mode === "login" ? "Login – AI Coach Portal" : "Sign Up – AI Coach Portal",
+    description: mode === "login" 
+      ? "Sign in to your AI Coach Portal account to access courses, webinars, and AI learning resources."
+      : "Create your AI Coach Portal account and start learning AI from expert coaches today.",
+    canonical: `https://www.aicoachportal.com/auth?mode=${mode}`,
+    noIndex: true,
+  });
+
   const { user, loading } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
   const redirect = searchParams.get("redirect");
