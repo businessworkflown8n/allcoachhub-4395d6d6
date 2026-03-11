@@ -101,7 +101,7 @@ const Navbar = () => {
               <div className="absolute left-0 top-full mt-2 w-48 rounded-lg border border-border bg-popover p-1 shadow-lg">
                 <Link
                   to="/courses"
-                  className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                  className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                   onClick={() => { setCoursesOpen(false); }}
                 >
                   Regular Classes
@@ -112,7 +112,7 @@ const Navbar = () => {
                   onMouseLeave={() => setDemoOpen(false)}
                 >
                   <button
-                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                     onClick={() => setDemoOpen(!demoOpen)}
                   >
                     Demo Classes
@@ -123,7 +123,7 @@ const Navbar = () => {
                     <div className="absolute left-full top-0 ml-1 w-44 rounded-lg border border-border bg-popover p-1 shadow-lg">
                       <Link
                         to="/webinars"
-                        className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                        className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                         onClick={() => { setCoursesOpen(false); setDemoOpen(false); }}
                       >
                         Webinars
