@@ -184,7 +184,7 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link to="/auth?mode=login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <Link to="/auth?mode=login" className="text-sm text-muted-foreground transition-colors hover:text-primary">
                 {t("nav.signIn")}
               </Link>
               <Link
