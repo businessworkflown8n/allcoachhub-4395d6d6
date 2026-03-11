@@ -90,7 +90,7 @@ const Navbar = () => {
             onMouseLeave={handleDropdownLeave}
           >
             <button
-              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary"
               onClick={() => { setCoursesOpen(!coursesOpen); navigate("/courses"); }}
             >
               {t("nav.courses")}
