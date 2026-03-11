@@ -80,7 +80,7 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.browseCoaches")}</button>
+          <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-primary">{t("nav.browseCoaches")}</button>
           
           {/* Courses dropdown */}
           <div
