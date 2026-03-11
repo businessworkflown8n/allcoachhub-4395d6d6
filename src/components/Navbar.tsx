@@ -172,7 +172,7 @@ const Navbar = () => {
           <SearchDialog />
           {user ? (
             <>
-              <Link to={dashboardPath} className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground md:block">
+              <Link to={dashboardPath} className="hidden text-sm text-muted-foreground transition-colors hover:text-primary md:block">
                 {t("nav.dashboard")}
               </Link>
               <button
