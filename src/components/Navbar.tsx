@@ -80,7 +80,7 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.browseCoaches")}</button>
+          <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-primary">{t("nav.browseCoaches")}</button>
           
           {/* Courses dropdown */}
           <div
@@ -90,7 +90,7 @@ const Navbar = () => {
             onMouseLeave={handleDropdownLeave}
           >
             <button
-              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary"
               onClick={() => { setCoursesOpen(!coursesOpen); navigate("/courses"); }}
             >
               {t("nav.courses")}
@@ -135,8 +135,8 @@ const Navbar = () => {
             )}
           </div>
 
-          <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.howItWorks")}</button>
-          <Link to="/daily-zip" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Daily Zip</Link>
+          <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-primary">{t("nav.howItWorks")}</button>
+          <Link to="/daily-zip" className="text-sm text-muted-foreground transition-colors hover:text-primary">Daily Zip</Link>
           {/* AI Jobs & News dropdown */}
           <div
             className="relative"
@@ -145,7 +145,7 @@ const Navbar = () => {
           >
             <Link
               to="/ai-blogs"
-              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary"
             >
               AI Jobs & News
               <ChevronDown className={`h-3.5 w-3.5 transition-transform ${blogMenuOpen ? "rotate-180" : ""}`} />
@@ -172,7 +172,7 @@ const Navbar = () => {
           <SearchDialog />
           {user ? (
             <>
-              <Link to={dashboardPath} className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground md:block">
+              <Link to={dashboardPath} className="hidden text-sm text-muted-foreground transition-colors hover:text-primary md:block">
                 {t("nav.dashboard")}
               </Link>
               <button
@@ -184,7 +184,7 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link to="/auth?mode=login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <Link to="/auth?mode=login" className="text-sm text-muted-foreground transition-colors hover:text-primary">
                 {t("nav.signIn")}
               </Link>
               <Link
