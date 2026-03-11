@@ -218,20 +218,20 @@ const Navbar = () => {
               </button>
               {mobileCoursesOpen && (
                 <div className="ml-3 flex flex-col gap-1 border-l border-border pl-3">
-                  <Link to="/courses" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">
+                  <Link to="/courses" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground">
                     Regular Classes
                   </Link>
                   <div>
                     <button
                       onClick={() => setMobileDemoOpen(!mobileDemoOpen)}
-                      className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
+                      className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     >
                       Demo Classes
                       <ChevronDown className={`h-3.5 w-3.5 transition-transform ${mobileDemoOpen ? "rotate-180" : ""}`} />
                     </button>
                     {mobileDemoOpen && (
                       <div className="ml-3 flex flex-col gap-1 border-l border-border pl-3">
-                        <Link to="/webinars" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">
+                        <Link to="/webinars" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground">
                           Webinars
                         </Link>
                       </div>
