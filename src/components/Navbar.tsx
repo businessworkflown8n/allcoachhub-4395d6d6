@@ -145,7 +145,7 @@ const Navbar = () => {
           >
             <Link
               to="/ai-blogs"
-              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary"
             >
               AI Jobs & News
               <ChevronDown className={`h-3.5 w-3.5 transition-transform ${blogMenuOpen ? "rotate-180" : ""}`} />
