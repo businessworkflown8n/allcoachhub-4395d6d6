@@ -101,7 +101,7 @@ const Navbar = () => {
               <div className="absolute left-0 top-full mt-2 w-48 rounded-lg border border-border bg-popover p-1 shadow-lg">
                 <Link
                   to="/courses"
-                  className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                  className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                   onClick={() => { setCoursesOpen(false); }}
                 >
                   Regular Classes
@@ -112,7 +112,7 @@ const Navbar = () => {
                   onMouseLeave={() => setDemoOpen(false)}
                 >
                   <button
-                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                     onClick={() => setDemoOpen(!demoOpen)}
                   >
                     Demo Classes
@@ -123,7 +123,7 @@ const Navbar = () => {
                     <div className="absolute left-full top-0 ml-1 w-44 rounded-lg border border-border bg-popover p-1 shadow-lg">
                       <Link
                         to="/webinars"
-                        className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                        className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                         onClick={() => { setCoursesOpen(false); setDemoOpen(false); }}
                       >
                         Webinars
@@ -156,7 +156,7 @@ const Navbar = () => {
                   <Link
                     key={cat.slug}
                     to={`/ai-jobs-news/${cat.slug}`}
-                    className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                    className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                     onClick={() => setBlogMenuOpen(false)}
                   >
                     {cat.label}
@@ -218,20 +218,20 @@ const Navbar = () => {
               </button>
               {mobileCoursesOpen && (
                 <div className="ml-3 flex flex-col gap-1 border-l border-border pl-3">
-                  <Link to="/courses" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">
+                  <Link to="/courses" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground">
                     Regular Classes
                   </Link>
                   <div>
                     <button
                       onClick={() => setMobileDemoOpen(!mobileDemoOpen)}
-                      className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
+                      className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     >
                       Demo Classes
                       <ChevronDown className={`h-3.5 w-3.5 transition-transform ${mobileDemoOpen ? "rotate-180" : ""}`} />
                     </button>
                     {mobileDemoOpen && (
                       <div className="ml-3 flex flex-col gap-1 border-l border-border pl-3">
-                        <Link to="/webinars" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">
+                        <Link to="/webinars" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground">
                           Webinars
                         </Link>
                       </div>
@@ -254,7 +254,7 @@ const Navbar = () => {
               </button>
               {mobileBlogOpen && (
                 <div className="ml-3 flex flex-col gap-1 border-l border-border pl-3">
-                  <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">
+                  <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground">
                     All Articles
                   </Link>
                   {blogCategories.map((cat) => (
@@ -262,7 +262,7 @@ const Navbar = () => {
                       key={cat.slug}
                       to={`/ai-jobs-news/${cat.slug}`}
                       onClick={() => setMobileOpen(false)}
-                      className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
+                      className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     >
                       {cat.label}
                     </Link>
