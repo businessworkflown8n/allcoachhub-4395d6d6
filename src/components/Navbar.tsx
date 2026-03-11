@@ -156,7 +156,7 @@ const Navbar = () => {
                   <Link
                     key={cat.slug}
                     to={`/ai-jobs-news/${cat.slug}`}
-                    className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                    className="block rounded-md px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-accent hover:text-primary"
                     onClick={() => setBlogMenuOpen(false)}
                   >
                     {cat.label}
