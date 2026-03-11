@@ -254,7 +254,7 @@ const Navbar = () => {
               </button>
               {mobileBlogOpen && (
                 <div className="ml-3 flex flex-col gap-1 border-l border-border pl-3">
-                  <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">
+                  <Link to="/ai-blogs" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground">
                     All Articles
                   </Link>
                   {blogCategories.map((cat) => (
@@ -262,7 +262,7 @@ const Navbar = () => {
                       key={cat.slug}
                       to={`/ai-jobs-news/${cat.slug}`}
                       onClick={() => setMobileOpen(false)}
-                      className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
+                      className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     >
                       {cat.label}
                     </Link>
