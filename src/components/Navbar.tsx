@@ -135,8 +135,8 @@ const Navbar = () => {
             )}
           </div>
 
-          <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{t("nav.howItWorks")}</button>
-          <Link to="/daily-zip" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Daily Zip</Link>
+          <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-primary">{t("nav.howItWorks")}</button>
+          <Link to="/daily-zip" className="text-sm text-muted-foreground transition-colors hover:text-primary">Daily Zip</Link>
           {/* AI Jobs & News dropdown */}
           <div
             className="relative"
