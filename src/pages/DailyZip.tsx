@@ -33,6 +33,7 @@ const DailyZip = () => {
   const navigate = useNavigate();
   const [currentLevel, setCurrentLevel] = useState(1);
   const [tab, setTab] = useState<"game" | "daily" | "leaderboard">("game");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<number | null>(null); // null = auto from level, 5/6/8 = override
   const [userPath, setUserPath] = useState<Cell[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);

@@ -129,9 +129,9 @@ function generateSerpentinePath(size: number): Cell[] {
   return path;
 }
 
-export function generatePuzzle(level: number): PuzzleData {
-  const gridSize = getGridSize(level);
-  const difficulty = getDifficulty(level);
+export function generatePuzzle(level: number, gridSizeOverride?: number): PuzzleData {
+  const gridSize = gridSizeOverride || getGridSize(level);
+  const difficulty = gridSizeOverride ? (gridSizeOverride <= 5 ? "Easy" : gridSizeOverride <= 6 ? "Medium" : gridSizeOverride <= 7 ? "Hard" : "Expert") : getDifficulty(level);
   const totalCells = gridSize * gridSize;
 
   // Try multiple seeds to find a valid Hamiltonian path
