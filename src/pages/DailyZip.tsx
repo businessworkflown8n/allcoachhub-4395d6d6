@@ -262,6 +262,41 @@ const DailyZip = () => {
     lastCellRef.current = null;
   };
 
+  // Keyboard arrow key controls for desktop
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isCompleted) return;
+      const dirMap: Record<string, [number, number]> = {
+        ArrowUp: [-1, 0],
+        ArrowDown: [1, 0],
+        ArrowLeft: [0, -1],
+        ArrowRight: [0, 1],
+      };
+      const dir = dirMap[e.key];
+      if (!dir) return;
+      e.preventDefault();
+
+      if (userPath.length === 0) {
+        // Start from waypoint 1
+        const wp1 = puzzle.waypoints.find(w => w.value === 1);
+        if (wp1) {
+          handleCellInteraction(wp1.row, wp1.col);
+        }
+        return;
+      }
+
+      const head = userPath[userPath.length - 1];
+      const newRow = head.row + dir[0];
+      const newCol = head.col + dir[1];
+      if (newRow >= 0 && newRow < puzzle.gridSize && newCol >= 0 && newCol < puzzle.gridSize) {
+        handleCellInteraction(newRow, newCol);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [userPath, isCompleted, puzzle, handleCellInteraction]);
+
   const handleUndo = () => {
     if (userPath.length <= 1) return;
     setUserPath(userPath.slice(0, -1));
