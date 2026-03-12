@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Clock, Zap, RotateCcw, Undo2, Lightbulb, ChevronLeft, ChevronRight, Share2, Users, Globe, TrendingUp, Calendar, Maximize, Minimize, LogIn, Copy, Link } from "lucide-react";
+import { Trophy, Clock, Zap, RotateCcw, Undo2, Lightbulb, ChevronLeft, ChevronRight, Share2, Users, Globe, TrendingUp, Calendar, Maximize, Minimize, LogIn, Copy, Link, Keyboard, Mouse } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { generatePuzzle, generateDailyPuzzle, getDifficulty, getGridSize, type PuzzleData, type Cell } from "@/lib/puzzleGenerator";
@@ -33,6 +33,7 @@ const DailyZip = () => {
   const navigate = useNavigate();
   const [currentLevel, setCurrentLevel] = useState(1);
   const [tab, setTab] = useState<"game" | "daily" | "leaderboard">("game");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<number | null>(null); // null = auto from level, 5/6/8 = override
   const [userPath, setUserPath] = useState<Cell[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -84,8 +85,8 @@ const DailyZip = () => {
 
   const puzzle = useMemo<PuzzleData>(() => {
     if (tab === "daily") return generateDailyPuzzle();
-    return generatePuzzle(currentLevel);
-  }, [currentLevel, tab]);
+    return generatePuzzle(currentLevel, selectedDifficulty || undefined);
+  }, [currentLevel, tab, selectedDifficulty]);
 
   // Load progress
   useEffect(() => {
@@ -260,6 +261,41 @@ const DailyZip = () => {
     setIsDrawing(false);
     lastCellRef.current = null;
   };
+
+  // Keyboard arrow key controls for desktop
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isCompleted) return;
+      const dirMap: Record<string, [number, number]> = {
+        ArrowUp: [-1, 0],
+        ArrowDown: [1, 0],
+        ArrowLeft: [0, -1],
+        ArrowRight: [0, 1],
+      };
+      const dir = dirMap[e.key];
+      if (!dir) return;
+      e.preventDefault();
+
+      if (userPath.length === 0) {
+        // Start from waypoint 1
+        const wp1 = puzzle.waypoints.find(w => w.value === 1);
+        if (wp1) {
+          handleCellInteraction(wp1.row, wp1.col);
+        }
+        return;
+      }
+
+      const head = userPath[userPath.length - 1];
+      const newRow = head.row + dir[0];
+      const newCol = head.col + dir[1];
+      if (newRow >= 0 && newRow < puzzle.gridSize && newCol >= 0 && newCol < puzzle.gridSize) {
+        handleCellInteraction(newRow, newCol);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [userPath, isCompleted, puzzle, handleCellInteraction]);
 
   const handleUndo = () => {
     if (userPath.length <= 1) return;
@@ -516,13 +552,41 @@ const DailyZip = () => {
             <p className="text-sm text-muted-foreground">Connect the dots in order • Fill every cell</p>
           </div>
 
-          <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="mx-auto mb-6 max-w-md">
+          <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="mx-auto mb-4 max-w-md">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="game" className="gap-1"><Zap className="h-3.5 w-3.5" /> Levels</TabsTrigger>
               <TabsTrigger value="daily" className="gap-1"><Calendar className="h-3.5 w-3.5" /> Daily</TabsTrigger>
               <TabsTrigger value="leaderboard" className="gap-1"><Trophy className="h-3.5 w-3.5" /> Ranks</TabsTrigger>
             </TabsList>
           </Tabs>
+
+          {/* Difficulty Selector */}
+          {tab === "game" && (
+            <div className="mx-auto mb-6 max-w-md">
+              <p className="mb-2 text-center text-xs font-medium text-muted-foreground">Select Difficulty</p>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { label: "Auto", value: null, desc: "From Level", color: "border-border" },
+                  { label: "Easy", value: 5, desc: "5×5 Grid", color: "border-green-500/50 bg-green-500/5" },
+                  { label: "Medium", value: 6, desc: "6×6 Grid", color: "border-yellow-500/50 bg-yellow-500/5" },
+                  { label: "Hard", value: 8, desc: "8×8 Grid", color: "border-red-500/50 bg-red-500/5" },
+                ].map((opt) => (
+                  <button
+                    key={opt.label}
+                    onClick={() => setSelectedDifficulty(opt.value)}
+                    className={`rounded-lg border-2 p-2 text-center transition-all ${
+                      selectedDifficulty === opt.value
+                        ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                        : opt.color + " hover:border-primary/40"
+                    }`}
+                  >
+                    <p className="text-xs font-semibold text-foreground">{opt.label}</p>
+                    <p className="text-[10px] text-muted-foreground">{opt.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {tab === "leaderboard" ? (
             <LeaderboardView leaderboard={leaderboard} communityStats={communityStats} userId={user?.id} period={leaderboardPeriod} setPeriod={setLeaderboardPeriod} />
@@ -741,14 +805,14 @@ const DailyZip = () => {
                   {/* How to play */}
                   <div className="mt-4 rounded-lg border border-border/40 bg-muted/20 p-3">
                     <p className="mb-2 text-xs font-semibold text-foreground">How to play</p>
-                    <div className="flex gap-6">
+                    <div className="flex flex-wrap gap-4">
                       <div className="flex flex-col items-center gap-1">
                         <div className="flex gap-0.5">
                           {[1,2,3].map(n => (
                             <span key={n} className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-background text-[9px] font-bold">{n}</span>
                           ))}
                         </div>
-                        <span className="text-[10px] text-muted-foreground">Connect the dots in order</span>
+                        <span className="text-[10px] text-muted-foreground">Connect dots in order</span>
                       </div>
                       <div className="flex flex-col items-center gap-1">
                         <div className="grid grid-cols-3 gap-px">
@@ -757,6 +821,14 @@ const DailyZip = () => {
                           ))}
                         </div>
                         <span className="text-[10px] text-muted-foreground">Fill every cell</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex gap-0.5 items-center">
+                          <Mouse className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">/</span>
+                          <Keyboard className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">Drag or Arrow Keys</span>
                       </div>
                     </div>
                   </div>
