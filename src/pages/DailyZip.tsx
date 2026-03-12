@@ -552,13 +552,41 @@ const DailyZip = () => {
             <p className="text-sm text-muted-foreground">Connect the dots in order • Fill every cell</p>
           </div>
 
-          <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="mx-auto mb-6 max-w-md">
+          <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="mx-auto mb-4 max-w-md">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="game" className="gap-1"><Zap className="h-3.5 w-3.5" /> Levels</TabsTrigger>
               <TabsTrigger value="daily" className="gap-1"><Calendar className="h-3.5 w-3.5" /> Daily</TabsTrigger>
               <TabsTrigger value="leaderboard" className="gap-1"><Trophy className="h-3.5 w-3.5" /> Ranks</TabsTrigger>
             </TabsList>
           </Tabs>
+
+          {/* Difficulty Selector */}
+          {tab === "game" && (
+            <div className="mx-auto mb-6 max-w-md">
+              <p className="mb-2 text-center text-xs font-medium text-muted-foreground">Select Difficulty</p>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { label: "Auto", value: null, desc: "From Level", color: "border-border" },
+                  { label: "Easy", value: 5, desc: "5×5 Grid", color: "border-green-500/50 bg-green-500/5" },
+                  { label: "Medium", value: 6, desc: "6×6 Grid", color: "border-yellow-500/50 bg-yellow-500/5" },
+                  { label: "Hard", value: 8, desc: "8×8 Grid", color: "border-red-500/50 bg-red-500/5" },
+                ].map((opt) => (
+                  <button
+                    key={opt.label}
+                    onClick={() => setSelectedDifficulty(opt.value)}
+                    className={`rounded-lg border-2 p-2 text-center transition-all ${
+                      selectedDifficulty === opt.value
+                        ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                        : opt.color + " hover:border-primary/40"
+                    }`}
+                  >
+                    <p className="text-xs font-semibold text-foreground">{opt.label}</p>
+                    <p className="text-[10px] text-muted-foreground">{opt.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {tab === "leaderboard" ? (
             <LeaderboardView leaderboard={leaderboard} communityStats={communityStats} userId={user?.id} period={leaderboardPeriod} setPeriod={setLeaderboardPeriod} />
