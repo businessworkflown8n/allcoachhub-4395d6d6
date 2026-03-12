@@ -85,8 +85,8 @@ const DailyZip = () => {
 
   const puzzle = useMemo<PuzzleData>(() => {
     if (tab === "daily") return generateDailyPuzzle();
-    return generatePuzzle(currentLevel);
-  }, [currentLevel, tab]);
+    return generatePuzzle(currentLevel, selectedDifficulty || undefined);
+  }, [currentLevel, tab, selectedDifficulty]);
 
   // Load progress
   useEffect(() => {
