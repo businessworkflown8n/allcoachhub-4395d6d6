@@ -52,6 +52,14 @@ const jsonLd = {
 const Index = () => {
   const location = useLocation();
 
+  useSEO({
+    title: "AI Coach Portal – Learn AI Tools, AI Skills & Automation",
+    description: "Top AI learning platform for AI tools, AI coaching & AI skills training. Master ChatGPT, AI agents, automation & prompt engineering with expert coaches.",
+    canonical: "https://www.aicoachportal.com/",
+    ogTitle: "AI Coach Portal – Learn AI Tools, AI Skills & Automation",
+    ogDescription: "Top AI learning platform for AI tools, AI coaching & AI skills training. Master ChatGPT, AI agents, automation & prompt engineering with expert coaches.",
+  });
+
   useEffect(() => {
     if (location.hash) {
       setTimeout(() => {
