@@ -805,14 +805,14 @@ const DailyZip = () => {
                   {/* How to play */}
                   <div className="mt-4 rounded-lg border border-border/40 bg-muted/20 p-3">
                     <p className="mb-2 text-xs font-semibold text-foreground">How to play</p>
-                    <div className="flex gap-6">
+                    <div className="flex flex-wrap gap-4">
                       <div className="flex flex-col items-center gap-1">
                         <div className="flex gap-0.5">
                           {[1,2,3].map(n => (
                             <span key={n} className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-background text-[9px] font-bold">{n}</span>
                           ))}
                         </div>
-                        <span className="text-[10px] text-muted-foreground">Connect the dots in order</span>
+                        <span className="text-[10px] text-muted-foreground">Connect dots in order</span>
                       </div>
                       <div className="flex flex-col items-center gap-1">
                         <div className="grid grid-cols-3 gap-px">
@@ -821,6 +821,14 @@ const DailyZip = () => {
                           ))}
                         </div>
                         <span className="text-[10px] text-muted-foreground">Fill every cell</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex gap-0.5 items-center">
+                          <Mouse className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">/</span>
+                          <Keyboard className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">Drag or Arrow Keys</span>
                       </div>
                     </div>
                   </div>
