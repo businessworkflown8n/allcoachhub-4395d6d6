@@ -216,6 +216,29 @@ const AIBlogsCategory = () => {
           </Breadcrumb>
         </div>
 
+        {/* Subpages for AI Research */}
+        {category === "ai-research" && (
+          <section className="container mx-auto px-4 pt-8">
+            <div className="mb-2 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-bold text-foreground">Featured Resources</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <Link
+                to="/ai-jobs-news/ai-research/ai-seo-prompt"
+                className="group rounded-xl border border-primary/30 bg-primary/5 p-5 transition-all hover:shadow-lg hover:border-primary/50"
+              >
+                <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">Free Resource</span>
+                <h3 className="mt-3 text-lg font-semibold text-foreground">100+ AI SEO Prompts</h3>
+                <p className="mt-2 text-sm text-muted-foreground">Access 100+ AI SEO prompts for ChatGPT, Gemini & Claude to supercharge your SEO workflow.</p>
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-80 group-hover:opacity-100">
+                  Get Prompts <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            </div>
+          </section>
+        )}
+
         <section className="container mx-auto px-4 py-12">
           {loading ? (
             <div className="flex justify-center py-12">
