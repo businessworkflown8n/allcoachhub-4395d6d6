@@ -75,10 +75,20 @@ const Webinars = () => {
     }
     setRegistering(webinar.id);
 
+    // Fetch profile for registration details
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, email, contact_number")
+      .eq("user_id", user.id)
+      .single();
+
     const { error } = await supabase.from("webinar_registrations").insert({
       webinar_id: webinar.id,
       learner_id: user.id,
-    });
+      registrant_name: profile?.full_name || user.email?.split("@")[0] || "Unknown",
+      registrant_email: profile?.email || user.email || "",
+      registrant_phone: profile?.contact_number || "",
+    } as any);
 
     if (error) {
       toast({ title: "Registration failed", description: error.message, variant: "destructive" });
