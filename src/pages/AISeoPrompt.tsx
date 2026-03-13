@@ -1,6 +1,8 @@
-import { Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ArrowRight, Sparkles, Lock, FileText, CheckCircle } from "lucide-react";
