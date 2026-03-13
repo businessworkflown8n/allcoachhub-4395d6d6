@@ -22,14 +22,15 @@ interface Lead {
 }
 
 const AdminChatbotLeads = () => {
+  const { user, loading: authLoading } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
   useEffect(() => {
-    fetchLeads();
-  }, []);
+    if (!authLoading && user) fetchLeads();
+  }, [authLoading, user]);
 
   const fetchLeads = async () => {
     setLoading(true);
