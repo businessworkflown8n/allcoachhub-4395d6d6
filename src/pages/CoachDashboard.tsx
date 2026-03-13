@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone } from "lucide-react";
+import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard } from "lucide-react";
 import CoachProfile from "@/components/coach/CoachProfile";
 import CoachCourses from "@/components/coach/CoachCourses";
 import CoachCourseForm from "@/components/coach/CoachCourseForm";
@@ -10,8 +10,10 @@ import CoachEarnings from "@/components/coach/CoachEarnings";
 import CoachWebinars from "@/components/coach/CoachWebinars";
 import SocialMediaHub from "@/components/shared/SocialMediaHub";
 import CoachCampaigns from "@/components/coach/CoachCampaigns";
+import CoachOverview from "@/components/coach/CoachOverview";
 
 const navItems = [
+  { label: "Overview", path: "/coach/overview", icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: "My Courses", path: "/coach/courses", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Add Course", path: "/coach/courses/new", icon: <Plus className="h-4 w-4" /> },
   { label: "My Webinars", path: "/coach/webinars", icon: <Video className="h-4 w-4" /> },
@@ -42,7 +44,7 @@ const CoachDashboard = () => {
         <Route path="enrollments" element={<CoachEnrollments />} />
         <Route path="earnings" element={<CoachEarnings />} />
         <Route path="profile" element={<CoachProfile />} />
-        <Route path="*" element={<Navigate to="courses" replace />} />
+        <Route path="*" element={<Navigate to="overview" replace />} />
       </Routes>
     </DashboardLayout>
   );

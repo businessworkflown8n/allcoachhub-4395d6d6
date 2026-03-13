@@ -268,8 +268,8 @@ const CoachWebinars = () => {
                   }`}>
                     Link: {w.webinar_link_status === "approved" ? "Approved" : w.webinar_link_status === "rejected" ? "Rejected" : "Pending"}
                   </span>
-                  <button onClick={() => viewRegistrants(w.id)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                    <Users className="h-3 w-3" /> {regCounts[w.id] || 0}
+              <button onClick={() => viewRegistrants(w.id)} className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                    <Users className="h-3.5 w-3.5" /> {regCounts[w.id] || 0} Registrations
                   </button>
                 </div>
                 <h3 className="text-sm font-bold text-foreground">{w.title}</h3>
