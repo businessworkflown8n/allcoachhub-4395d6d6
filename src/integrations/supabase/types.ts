@@ -1023,6 +1023,9 @@ export type Database = {
           id: string
           learner_id: string
           registered_at: string
+          registrant_email: string | null
+          registrant_name: string | null
+          registrant_phone: string | null
           webinar_id: string
         }
         Insert: {
@@ -1030,6 +1033,9 @@ export type Database = {
           id?: string
           learner_id: string
           registered_at?: string
+          registrant_email?: string | null
+          registrant_name?: string | null
+          registrant_phone?: string | null
           webinar_id: string
         }
         Update: {
@@ -1037,6 +1043,9 @@ export type Database = {
           id?: string
           learner_id?: string
           registered_at?: string
+          registrant_email?: string | null
+          registrant_name?: string | null
+          registrant_phone?: string | null
           webinar_id?: string
         }
         Relationships: [
