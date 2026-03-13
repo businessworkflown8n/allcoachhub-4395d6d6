@@ -29,6 +29,7 @@ const navItems = [
   { label: "Courses", path: "/admin/courses", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Blog Management", path: "/admin/blogs", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Webinars", path: "/admin/webinars", icon: <Video className="h-4 w-4" /> },
+  { label: "Webinar Registrations", path: "/admin/webinar-registrations", icon: <UserCheck className="h-4 w-4" /> },
   { label: "Enrollments", path: "/admin/enrollments", icon: <ClipboardList className="h-4 w-4" /> },
   { label: "Coach Performance", path: "/admin/performance", icon: <TrendingUp className="h-4 w-4" /> },
   { label: "Revenue", path: "/admin/revenue", icon: <DollarSign className="h-4 w-4" /> },
