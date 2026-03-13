@@ -35,10 +35,10 @@ const AdminChatbotLeads = () => {
   const fetchLeads = async () => {
     setLoading(true);
     const { data } = await supabase
-      .from("chatbot_leads" as any)
+      .from("chatbot_leads")
       .select("*")
       .order("created_at", { ascending: false });
-    setLeads((data as any as Lead[]) || []);
+    setLeads((data as Lead[]) || []);
     setLoading(false);
   };
 
