@@ -38,9 +38,13 @@ const LoginForm = () => {
 
     if (error) {
       trackFormError("login", "credentials");
+      const isInvalidCredentials = error.message.toLowerCase().includes("invalid login credentials") || 
+                                    error.message.toLowerCase().includes("invalid email or password");
       toast({
-        title: "Login failed",
-        description: error.message,
+        title: isInvalidCredentials ? "Email not registered" : "Login failed",
+        description: isInvalidCredentials 
+          ? "This email is not registered yet. Please complete the signup process first."
+          : error.message,
         variant: "destructive",
       });
       return;
