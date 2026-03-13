@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,22 +22,23 @@ interface Lead {
 }
 
 const AdminChatbotLeads = () => {
+  const { user, loading: authLoading } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
   useEffect(() => {
-    fetchLeads();
-  }, []);
+    if (!authLoading && user) fetchLeads();
+  }, [authLoading, user]);
 
   const fetchLeads = async () => {
     setLoading(true);
     const { data } = await supabase
-      .from("chatbot_leads" as any)
+      .from("chatbot_leads")
       .select("*")
       .order("created_at", { ascending: false });
-    setLeads((data as any as Lead[]) || []);
+    setLeads((data as Lead[]) || []);
     setLoading(false);
   };
 
