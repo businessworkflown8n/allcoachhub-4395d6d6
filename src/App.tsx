@@ -32,6 +32,7 @@ import DailyZip from "./pages/DailyZip";
 import Unsubscribe from "./pages/Unsubscribe";
 import Install from "./pages/Install";
 import Sitemap from "./pages/Sitemap";
+import AISeoPrompt from "./pages/AISeoPrompt";
 import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 import ChatbotWidget from "./components/ChatbotWidget";
@@ -113,6 +114,7 @@ const App = () => (
             <Route path="/admin/otp-login" element={<AdminOTPLogin />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/ai-blogs" element={<AIBlogs />} />
+            <Route path="/ai-jobs-news/ai-research/ai-seo-prompt" element={<AISeoPrompt />} />
             <Route path="/ai-jobs-news/:category" element={<AIBlogsCategory />} />
             <Route path="/ai-blogs/:slug" element={<BlogPost />} />
             <Route path="/daily-zip" element={<DailyZip />} />
