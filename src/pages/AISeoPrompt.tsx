@@ -20,6 +20,23 @@ const DOCUMENT_URL = "https://docs.google.com/document/d/1YST8WemQag2Qu8Kqivrg3K
 
 const AISeoPrompt = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const emailSentRef = useRef(false);
+
+  // Send SEO prompts email when user arrives after signup/login redirect
+  useEffect(() => {
+    if (user && !emailSentRef.current) {
+      const alreadySent = localStorage.getItem(`seo_prompts_email_${user.id}`);
+      if (!alreadySent) {
+        emailSentRef.current = true;
+        supabase.functions.invoke("send-seo-prompts-email", {
+          body: { email: user.email, name: user.user_metadata?.full_name },
+        }).then(() => {
+          localStorage.setItem(`seo_prompts_email_${user.id}`, "true");
+        }).catch(() => {});
+      }
+    }
+  }, [user]);
 
   useSEO({
     title: "100+ AI SEO Prompts for ChatGPT, Gemini & Claude | AI Coach Portal",
