@@ -18,6 +18,7 @@ const SignupForm = () => {
   const [role, setRole] = useState<"learner" | "coach">("learner");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
