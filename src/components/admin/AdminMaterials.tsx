@@ -11,11 +11,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Download, Mail, Search, Link2, TrendingUp, Copy } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Download, Mail, Search, Link2, TrendingUp, Copy, Share2 } from "lucide-react";
 
 const CATEGORIES = ["General", "AI Research", "AI Tools", "Templates", "Guides", "Worksheets", "Case Studies"];
 const FILE_TYPES = ["pdf", "doc", "xls", "image", "video"];
+
+const SOCIAL_PLATFORMS = [
+  { key: "linkedin", label: "LinkedIn", settingKey: "social_linkedin_enabled" },
+  { key: "facebook", label: "Facebook", settingKey: "social_facebook_enabled" },
+  { key: "instagram", label: "Instagram", settingKey: "social_instagram_enabled" },
+  { key: "twitter", label: "X / Twitter", settingKey: "social_twitter_enabled" },
+  { key: "youtube", label: "YouTube", settingKey: "social_youtube_enabled" },
+  { key: "tiktok", label: "TikTok", settingKey: "social_tiktok_enabled" },
+] as const;
 
 type Material = {
   id: string;
@@ -34,6 +42,18 @@ type Material = {
   email_share_count: number;
   created_at: string;
   updated_at: string;
+  linkedin_url: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  twitter_url: string | null;
+  youtube_url: string | null;
+  tiktok_url: string | null;
+  linkedin_clicks: number;
+  facebook_clicks: number;
+  instagram_clicks: number;
+  twitter_clicks: number;
+  youtube_clicks: number;
+  tiktok_clicks: number;
 };
 
 const emptyForm = {
@@ -47,6 +67,17 @@ const emptyForm = {
   is_published: true,
   is_downloadable: true,
   is_email_shareable: true,
+  linkedin_url: "",
+  facebook_url: "",
+  instagram_url: "",
+  twitter_url: "",
+  youtube_url: "",
+  tiktok_url: "",
+};
+
+const isValidUrl = (url: string) => {
+  if (!url.trim()) return true; // empty is valid (optional)
+  try { new URL(url); return true; } catch { return false; }
 };
 
 const AdminMaterials = () => {
@@ -59,11 +90,24 @@ const AdminMaterials = () => {
   const [filterCategory, setFilterCategory] = useState("All");
   const [uploading, setUploading] = useState(false);
   const [thumbnailUploading, setThumbnailUploading] = useState(false);
-  const [globalSettings, setGlobalSettings] = useState({
+  const [globalSettings, setGlobalSettings] = useState<Record<string, boolean>>({
     materials_page_enabled: true,
     materials_download_enabled: true,
     materials_email_share_enabled: true,
+    social_media_enabled: false,
+    social_linkedin_enabled: true,
+    social_facebook_enabled: true,
+    social_instagram_enabled: true,
+    social_twitter_enabled: true,
+    social_youtube_enabled: true,
+    social_tiktok_enabled: true,
   });
+
+  const ALL_SETTING_KEYS = [
+    "materials_page_enabled", "materials_download_enabled", "materials_email_share_enabled",
+    "social_media_enabled",
+    ...SOCIAL_PLATFORMS.map((p) => p.settingKey),
+  ];
 
   const fetchMaterials = async () => {
     setLoading(true);
@@ -79,9 +123,9 @@ const AdminMaterials = () => {
     const { data } = await supabase
       .from("platform_settings")
       .select("key, value")
-      .in("key", ["materials_page_enabled", "materials_download_enabled", "materials_email_share_enabled"]);
+      .in("key", ALL_SETTING_KEYS);
     if (data) {
-      const s: any = { ...globalSettings };
+      const s: Record<string, boolean> = { ...globalSettings };
       data.forEach((r: any) => { s[r.key] = r.value === "true"; });
       setGlobalSettings(s);
     }
@@ -90,13 +134,17 @@ const AdminMaterials = () => {
   useEffect(() => { fetchMaterials(); fetchSettings(); }, []);
 
   const updateGlobalSetting = async (key: string, value: boolean) => {
-    setGlobalSettings((prev: any) => ({ ...prev, [key]: value }));
-    const { error } = await supabase
+    setGlobalSettings((prev) => ({ ...prev, [key]: value }));
+    // Upsert: try update first, if no rows affected, insert
+    const { error, count } = await supabase
       .from("platform_settings")
       .update({ value: value.toString() })
       .eq("key", key);
-    if (error) toast.error("Failed to update setting");
-    else toast.success("Setting updated");
+    if (error) {
+      // Try insert if key doesn't exist
+      await supabase.from("platform_settings").insert({ key, value: value.toString() });
+    }
+    toast.success("Setting updated");
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "file" | "thumbnail") => {
@@ -133,12 +181,27 @@ const AdminMaterials = () => {
       is_published: m.is_published,
       is_downloadable: m.is_downloadable,
       is_email_shareable: m.is_email_shareable,
+      linkedin_url: m.linkedin_url || "",
+      facebook_url: m.facebook_url || "",
+      instagram_url: m.instagram_url || "",
+      twitter_url: m.twitter_url || "",
+      youtube_url: m.youtube_url || "",
+      tiktok_url: m.tiktok_url || "",
     });
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
+    // Validate social URLs
+    const socialFields = ["linkedin_url", "facebook_url", "instagram_url", "twitter_url", "youtube_url", "tiktok_url"] as const;
+    for (const field of socialFields) {
+      if (!isValidUrl(form[field])) {
+        toast.error(`Invalid URL for ${field.replace("_url", "").replace("_", " ")}`);
+        return;
+      }
+    }
+
     const payload: any = {
       title: form.title.trim(),
       description: form.description || null,
@@ -149,6 +212,12 @@ const AdminMaterials = () => {
       is_published: form.is_published,
       is_downloadable: form.is_downloadable,
       is_email_shareable: form.is_email_shareable,
+      linkedin_url: form.linkedin_url.trim() || null,
+      facebook_url: form.facebook_url.trim() || null,
+      instagram_url: form.instagram_url.trim() || null,
+      twitter_url: form.twitter_url.trim() || null,
+      youtube_url: form.youtube_url.trim() || null,
+      tiktok_url: form.tiktok_url.trim() || null,
     };
     if (form.slug.trim()) payload.slug = form.slug.trim();
 
@@ -184,6 +253,11 @@ const AdminMaterials = () => {
     toast.success("Link copied!");
   };
 
+  const getSocialLinkCount = (m: Material) => {
+    return [m.linkedin_url, m.facebook_url, m.instagram_url, m.twitter_url, m.youtube_url, m.tiktok_url]
+      .filter(Boolean).length;
+  };
+
   const filtered = materials.filter((m) => {
     const matchCat = filterCategory === "All" || m.category === filterCategory;
     const matchSearch = m.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -214,7 +288,29 @@ const AdminMaterials = () => {
               <Switch checked={globalSettings.materials_email_share_enabled} onCheckedChange={(v) => updateGlobalSetting("materials_email_share_enabled", v)} />
               <Label>Email Sharing</Label>
             </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={globalSettings.social_media_enabled} onCheckedChange={(v) => updateGlobalSetting("social_media_enabled", v)} />
+              <Label>Social Media Buttons</Label>
+            </div>
           </div>
+
+          {/* Platform-level social toggles */}
+          {globalSettings.social_media_enabled && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-sm text-muted-foreground mb-3">Enable/disable individual platforms:</p>
+              <div className="flex flex-wrap gap-5">
+                {SOCIAL_PLATFORMS.map((p) => (
+                  <div key={p.key} className="flex items-center gap-2">
+                    <Switch
+                      checked={globalSettings[p.settingKey] ?? true}
+                      onCheckedChange={(v) => updateGlobalSetting(p.settingKey, v)}
+                    />
+                    <Label className="text-sm">{p.label}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -258,6 +354,7 @@ const AdminMaterials = () => {
                 <TableHead>Category</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Social</TableHead>
                 <TableHead>Views</TableHead>
                 <TableHead>Downloads</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -265,32 +362,45 @@ const AdminMaterials = () => {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No materials found</TableCell></TableRow>
-              ) : filtered.map((m) => (
-                <TableRow key={m.id}>
-                  <TableCell>
-                    <div className="max-w-[250px]">
-                      <p className="font-medium text-foreground line-clamp-1">{m.title}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">/materials/{m.slug}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell><Badge variant="secondary">{m.category}</Badge></TableCell>
-                  <TableCell><Badge variant="outline" className="uppercase text-xs">{m.file_type}</Badge></TableCell>
-                  <TableCell><Badge variant={m.is_published ? "default" : "outline"}>{m.is_published ? "Published" : "Draft"}</Badge></TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{m.view_count}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{m.download_count}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => copyLink(m.slug)} title="Copy link"><Copy className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => togglePublish(m)} title={m.is_published ? "Unpublish" : "Publish"}>{m.is_published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(m)}><Pencil className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(m.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No materials found</TableCell></TableRow>
+              ) : filtered.map((m) => {
+                const socialCount = getSocialLinkCount(m);
+                return (
+                  <TableRow key={m.id}>
+                    <TableCell>
+                      <div className="max-w-[250px]">
+                        <p className="font-medium text-foreground line-clamp-1">{m.title}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">/materials/{m.slug}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell><Badge variant="secondary">{m.category}</Badge></TableCell>
+                    <TableCell><Badge variant="outline" className="uppercase text-xs">{m.file_type}</Badge></TableCell>
+                    <TableCell><Badge variant={m.is_published ? "default" : "outline"}>{m.is_published ? "Published" : "Draft"}</Badge></TableCell>
+                    <TableCell>
+                      {socialCount > 0 ? (
+                        <div className="flex items-center gap-1">
+                          <Share2 className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-sm text-muted-foreground">{socialCount}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{m.view_count}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{m.download_count}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => copyLink(m.slug)} title="Copy link"><Copy className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => togglePublish(m)} title={m.is_published ? "Unpublish" : "Publish"}>{m.is_published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(m)}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(m.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
@@ -359,6 +469,41 @@ const AdminMaterials = () => {
                 <Label>Email Shareable</Label>
               </div>
             </div>
+
+            {/* Social Media Links Section */}
+            <div className="rounded-lg border border-border p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Share2 className="h-4 w-4 text-primary" />
+                <Label className="text-sm font-semibold">Social Media Links</Label>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">LinkedIn URL</Label>
+                  <Input value={form.linkedin_url} onChange={(e) => setForm({ ...form, linkedin_url: e.target.value })} placeholder="https://linkedin.com/..." />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Facebook URL</Label>
+                  <Input value={form.facebook_url} onChange={(e) => setForm({ ...form, facebook_url: e.target.value })} placeholder="https://facebook.com/..." />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Instagram URL</Label>
+                  <Input value={form.instagram_url} onChange={(e) => setForm({ ...form, instagram_url: e.target.value })} placeholder="https://instagram.com/..." />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">X / Twitter URL</Label>
+                  <Input value={form.twitter_url} onChange={(e) => setForm({ ...form, twitter_url: e.target.value })} placeholder="https://x.com/..." />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">YouTube URL</Label>
+                  <Input value={form.youtube_url} onChange={(e) => setForm({ ...form, youtube_url: e.target.value })} placeholder="https://youtube.com/..." />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">TikTok URL</Label>
+                  <Input value={form.tiktok_url} onChange={(e) => setForm({ ...form, tiktok_url: e.target.value })} placeholder="https://tiktok.com/..." />
+                </div>
+              </div>
+            </div>
+
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
               <Button onClick={handleSave}>{editing ? "Update" : "Create"}</Button>
