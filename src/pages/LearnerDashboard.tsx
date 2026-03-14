@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2 } from "lucide-react";
+import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText } from "lucide-react";
 import LearnerProfile from "@/components/learner/LearnerProfile";
 import LearnerCourses from "@/components/learner/LearnerCourses";
 import LearnerWishlist from "@/components/learner/LearnerWishlist";
@@ -11,6 +11,7 @@ import LearnerReferrals from "@/components/learner/LearnerReferrals";
 import LearnerWebinars from "@/components/learner/LearnerWebinars";
 import LearnerDailyZip from "@/components/learner/LearnerDailyZip";
 import SocialMediaHub from "@/components/shared/SocialMediaHub";
+import DashboardMaterials from "@/components/shared/DashboardMaterials";
 
 const navItems = [
   { label: "My Courses", path: "/learner/courses", icon: <BookOpen className="h-4 w-4" /> },

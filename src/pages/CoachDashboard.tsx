@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard } from "lucide-react";
+import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText } from "lucide-react";
 import CoachProfile from "@/components/coach/CoachProfile";
 import CoachCourses from "@/components/coach/CoachCourses";
 import CoachCourseForm from "@/components/coach/CoachCourseForm";
@@ -11,6 +11,7 @@ import CoachWebinars from "@/components/coach/CoachWebinars";
 import SocialMediaHub from "@/components/shared/SocialMediaHub";
 import CoachCampaigns from "@/components/coach/CoachCampaigns";
 import CoachOverview from "@/components/coach/CoachOverview";
+import DashboardMaterials from "@/components/shared/DashboardMaterials";
 
 const navItems = [
   { label: "Overview", path: "/coach/overview", icon: <LayoutDashboard className="h-4 w-4" /> },
