@@ -16,12 +16,13 @@ import DashboardMaterials from "@/components/shared/DashboardMaterials";
 const navItems = [
   { label: "My Courses", path: "/learner/courses", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Webinars", path: "/learner/webinars", icon: <Video className="h-4 w-4" /> },
+  { label: "Certificates", path: "/learner/certificates", icon: <Award className="h-4 w-4" /> },
+  { label: "Materials", path: "/learner/materials", icon: <FileText className="h-4 w-4" /> },
   { label: "Daily Zip", path: "/learner/daily-zip", icon: <Zap className="h-4 w-4" /> },
   { label: "Social Media", path: "/learner/social", icon: <Share2 className="h-4 w-4" /> },
   { label: "Profile", path: "/learner/profile", icon: <User className="h-4 w-4" /> },
   { label: "Wishlist", path: "/learner/wishlist", icon: <Heart className="h-4 w-4" /> },
   { label: "Payment History", path: "/learner/payments", icon: <History className="h-4 w-4" /> },
-  { label: "Certificates", path: "/learner/certificates", icon: <Award className="h-4 w-4" /> },
   { label: "Referrals", path: "/learner/referrals", icon: <Settings className="h-4 w-4" /> },
 ];
 
