@@ -22,6 +22,7 @@ import AdminSocialMedia from "@/components/admin/AdminSocialMedia";
 import AdminCampaigns from "@/components/admin/AdminCampaigns";
 import AdminWebinarRegistrations from "@/components/admin/AdminWebinarRegistrations";
 import AdminTrafficAnalytics from "@/components/admin/AdminTrafficAnalytics";
+import AdminMaterials from "@/components/admin/AdminMaterials";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
