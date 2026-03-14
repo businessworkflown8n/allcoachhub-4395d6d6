@@ -31,6 +31,7 @@ const navItems = [
   { label: "Learners", path: "/admin/learners", icon: <GraduationCap className="h-4 w-4" /> },
   { label: "Courses", path: "/admin/courses", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Blog Management", path: "/admin/blogs", icon: <BookOpen className="h-4 w-4" /> },
+  { label: "Materials", path: "/admin/materials", icon: <FolderOpen className="h-4 w-4" /> },
   { label: "Webinars", path: "/admin/webinars", icon: <Video className="h-4 w-4" /> },
   { label: "Webinar Registrations", path: "/admin/webinar-registrations", icon: <UserCheck className="h-4 w-4" /> },
   { label: "Enrollments", path: "/admin/enrollments", icon: <ClipboardList className="h-4 w-4" /> },
