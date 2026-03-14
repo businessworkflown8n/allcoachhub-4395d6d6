@@ -236,11 +236,11 @@ const AdminTrafficAnalytics = () => {
                       <TableCell>{d.category ? <Badge variant="secondary">{d.category}</Badge> : "—"}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <code className="max-w-[200px] truncate rounded bg-muted px-2 py-0.5 text-xs">/coach/{d.slug}</code>
+                          <code className="max-w-[200px] truncate rounded bg-muted px-2 py-0.5 text-xs">/coach-profile/{d.slug}</code>
                           <button onClick={() => copyLink(d.slug)} className="text-muted-foreground hover:text-foreground" title="Copy link">
                             <Copy className="h-3.5 w-3.5" />
                           </button>
-                          <a href={`/coach/${d.slug}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground" title="Open page">
+                          <a href={`/coach-profile/${d.slug}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground" title="Open page">
                             <ExternalLink className="h-3.5 w-3.5" />
                           </a>
                         </div>
