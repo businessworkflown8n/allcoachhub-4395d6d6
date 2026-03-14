@@ -2,8 +2,9 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 const LearnerSignupForm = () => {
   const [fullName, setFullName] = useState("");
@@ -16,6 +17,7 @@ const LearnerSignupForm = () => {
   const [country, setCountry] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,14 +55,54 @@ const LearnerSignupForm = () => {
     setSuccess(true);
   };
 
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+    });
+    setResendLoading(false);
+
+    if (error) {
+      toast({
+        title: "Failed to resend",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Email sent!",
+        description: "A new verification link has been sent to your email.",
+      });
+    }
+  };
+
   if (success) {
     return (
-      <div className="py-8 text-center">
+      <div className="py-8 text-center space-y-4">
         <CheckCircle className="mx-auto mb-4 h-12 w-12 text-primary" />
         <h3 className="mb-2 text-lg font-semibold text-foreground">Thank You For Registration!</h3>
         <p className="text-sm text-muted-foreground">
           Please verify your Email ID for further use. We've sent a verification link to <strong className="text-foreground">{email}</strong>.
         </p>
+        <Button
+          onClick={handleResendVerification}
+          disabled={resendLoading}
+          variant="outline"
+          className="mt-4"
+        >
+          {resendLoading ? (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              Resending...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Resend Verification Email
+            </>
+          )}
+        </Button>
       </div>
     );
   }
