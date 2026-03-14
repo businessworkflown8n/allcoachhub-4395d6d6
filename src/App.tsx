@@ -31,6 +31,7 @@ import Webinars from "./pages/Webinars";
 import DailyZip from "./pages/DailyZip";
 import Unsubscribe from "./pages/Unsubscribe";
 import Install from "./pages/Install";
+import CoachLanding from "./pages/CoachLanding";
 import Sitemap from "./pages/Sitemap";
 import AISeoPrompt from "./pages/AISeoPrompt";
 import NotFound from "./pages/NotFound";
