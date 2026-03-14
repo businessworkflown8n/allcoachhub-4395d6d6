@@ -761,9 +761,42 @@ export type Database = {
           },
         ]
       }
+      material_downloads: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          source: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          source?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          source?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_downloads_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       materials: {
         Row: {
           category: string
+          copy_link_clicks: number
           created_at: string
           description: string | null
           download_count: number
@@ -780,6 +813,7 @@ export type Database = {
           is_published: boolean
           linkedin_clicks: number
           linkedin_url: string | null
+          share_count: number
           slug: string | null
           thumbnail_url: string | null
           tiktok_clicks: number
@@ -794,6 +828,7 @@ export type Database = {
         }
         Insert: {
           category?: string
+          copy_link_clicks?: number
           created_at?: string
           description?: string | null
           download_count?: number
@@ -810,6 +845,7 @@ export type Database = {
           is_published?: boolean
           linkedin_clicks?: number
           linkedin_url?: string | null
+          share_count?: number
           slug?: string | null
           thumbnail_url?: string | null
           tiktok_clicks?: number
@@ -824,6 +860,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          copy_link_clicks?: number
           created_at?: string
           description?: string | null
           download_count?: number
@@ -840,6 +877,7 @@ export type Database = {
           is_published?: boolean
           linkedin_clicks?: number
           linkedin_url?: string | null
+          share_count?: number
           slug?: string | null
           thumbnail_url?: string | null
           tiktok_clicks?: number

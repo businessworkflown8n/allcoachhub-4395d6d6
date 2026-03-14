@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Download, Mail, Eye, Search, FileText } from "lucide-react";
+import { Download, Mail, Eye, Search, FileText, Copy, Share2 } from "lucide-react";
 
 const CATEGORIES = ["All", "General", "AI Research", "AI Tools", "Templates", "Guides", "Worksheets", "Case Studies"];
 
@@ -24,8 +24,15 @@ const fileIcon = (type: string) => {
   }
 };
 
+const getSource = (pathname: string) => {
+  if (pathname.startsWith("/learner")) return "learner_dashboard";
+  if (pathname.startsWith("/coach")) return "coach_dashboard";
+  return "public_materials";
+};
+
 const DashboardMaterials = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,6 +42,7 @@ const DashboardMaterials = () => {
   const [recipientEmail, setRecipientEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [settings, setSettings] = useState({ download: true, share: true });
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -75,11 +83,50 @@ const DashboardMaterials = () => {
     return matchCat && matchSearch;
   });
 
-  const handleDownload = async (material: any) => {
-    if (!material?.file_url) return;
-    await supabase.from("materials").update({ download_count: (material.download_count || 0) + 1 }).eq("id", material.id);
-    setMaterials((prev) => prev.map((m) => m.id === material.id ? { ...m, download_count: (m.download_count || 0) + 1 } : m));
-    window.open(material.file_url, "_blank");
+  const handleDownload = useCallback(async (material: any) => {
+    if (!material?.file_url || downloadingId === material.id) return;
+    setDownloadingId(material.id);
+    try {
+      // Log download with source
+      await supabase.from("material_downloads").insert({
+        material_id: material.id,
+        user_id: user?.id || null,
+        source: getSource(location.pathname),
+      });
+      // Increment total count
+      await supabase.from("materials").update({ download_count: (material.download_count || 0) + 1 }).eq("id", material.id);
+      setMaterials((prev) => prev.map((m) => m.id === material.id ? { ...m, download_count: (m.download_count || 0) + 1 } : m));
+      window.open(material.file_url, "_blank");
+    } finally {
+      setTimeout(() => setDownloadingId(null), 2000); // Prevent double-clicks
+    }
+  }, [downloadingId, user, location.pathname]);
+
+  const handleCopyLink = async (material: any) => {
+    const url = `${window.location.origin}/materials/${material.slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied successfully!");
+      // Track copy
+      await supabase.from("materials").update({ copy_link_clicks: (material.copy_link_clicks || 0) + 1 }).eq("id", material.id);
+      setMaterials((prev) => prev.map((m) => m.id === material.id ? { ...m, copy_link_clicks: (m.copy_link_clicks || 0) + 1 } : m));
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
+
+  const handleNativeShare = async (material: any) => {
+    const url = `${window.location.origin}/materials/${material.slug}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: material.title, text: material.description || "", url });
+        toast.success("Material link shared successfully!");
+        await supabase.from("materials").update({ share_count: (material.share_count || 0) + 1 }).eq("id", material.id);
+        setMaterials((prev) => prev.map((m) => m.id === material.id ? { ...m, share_count: (m.share_count || 0) + 1 } : m));
+      } catch { /* user cancelled */ }
+    } else {
+      handleCopyLink(material);
+    }
   };
 
   const openShareDialog = (material: any) => {
@@ -172,17 +219,23 @@ const DashboardMaterials = () => {
                   <Badge variant="outline" className="uppercase text-[10px]">{m.file_type}</Badge>
                 </div>
 
-                <div className="flex gap-2 pt-1">
+                <div className="flex flex-wrap gap-2 pt-1">
                   {settings.download && m.is_downloadable && m.file_url && (
-                    <Button size="sm" variant="default" className="flex-1" onClick={() => handleDownload(m)}>
+                    <Button size="sm" variant="default" onClick={() => handleDownload(m)} disabled={downloadingId === m.id}>
                       <Download className="h-3.5 w-3.5 mr-1.5" /> Download
                     </Button>
                   )}
                   {settings.share && m.is_email_shareable && (
-                    <Button size="sm" variant="outline" className="flex-1" onClick={() => openShareDialog(m)}>
+                    <Button size="sm" variant="outline" onClick={() => openShareDialog(m)}>
                       <Mail className="h-3.5 w-3.5 mr-1.5" /> Email
                     </Button>
                   )}
+                  <Button size="sm" variant="outline" onClick={() => handleCopyLink(m)} title="Copy link">
+                    <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Link
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleNativeShare(m)} title="Share">
+                    <Share2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>

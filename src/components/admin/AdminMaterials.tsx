@@ -40,6 +40,8 @@ type Material = {
   view_count: number;
   download_count: number;
   email_share_count: number;
+  copy_link_clicks: number;
+  share_count: number;
   created_at: string;
   updated_at: string;
   linkedin_url: string | null;
@@ -54,6 +56,13 @@ type Material = {
   twitter_clicks: number;
   youtube_clicks: number;
   tiktok_clicks: number;
+};
+
+type DownloadSourceStats = {
+  learner_dashboard: number;
+  public_materials: number;
+  coach_dashboard: number;
+  material_detail: number;
 };
 
 const emptyForm = {
@@ -76,7 +85,7 @@ const emptyForm = {
 };
 
 const isValidUrl = (url: string) => {
-  if (!url.trim()) return true; // empty is valid (optional)
+  if (!url.trim()) return true;
   try { new URL(url); return true; } catch { return false; }
 };
 
@@ -90,6 +99,8 @@ const AdminMaterials = () => {
   const [filterCategory, setFilterCategory] = useState("All");
   const [uploading, setUploading] = useState(false);
   const [thumbnailUploading, setThumbnailUploading] = useState(false);
+  const [sourceStats, setSourceStats] = useState<Record<string, DownloadSourceStats>>({});
+  const [showSourceBreakdown, setShowSourceBreakdown] = useState<string | null>(null);
   const [globalSettings, setGlobalSettings] = useState<Record<string, boolean>>({
     materials_page_enabled: true,
     materials_download_enabled: true,
@@ -131,17 +142,30 @@ const AdminMaterials = () => {
     }
   };
 
-  useEffect(() => { fetchMaterials(); fetchSettings(); }, []);
+  const fetchDownloadSources = async () => {
+    const { data } = await supabase
+      .from("material_downloads")
+      .select("material_id, source");
+    if (data) {
+      const stats: Record<string, DownloadSourceStats> = {};
+      data.forEach((d: any) => {
+        if (!stats[d.material_id]) stats[d.material_id] = { learner_dashboard: 0, public_materials: 0, coach_dashboard: 0, material_detail: 0 };
+        const src = d.source as keyof DownloadSourceStats;
+        if (stats[d.material_id][src] !== undefined) stats[d.material_id][src]++;
+      });
+      setSourceStats(stats);
+    }
+  };
+
+  useEffect(() => { fetchMaterials(); fetchSettings(); fetchDownloadSources(); }, []);
 
   const updateGlobalSetting = async (key: string, value: boolean) => {
     setGlobalSettings((prev) => ({ ...prev, [key]: value }));
-    // Upsert: try update first, if no rows affected, insert
-    const { error, count } = await supabase
+    const { error } = await supabase
       .from("platform_settings")
       .update({ value: value.toString() })
       .eq("key", key);
     if (error) {
-      // Try insert if key doesn't exist
       await supabase.from("platform_settings").insert({ key, value: value.toString() });
     }
     toast.success("Setting updated");
@@ -193,7 +217,6 @@ const AdminMaterials = () => {
 
   const handleSave = async () => {
     if (!form.title.trim()) { toast.error("Title is required"); return; }
-    // Validate social URLs
     const socialFields = ["linkedin_url", "facebook_url", "instagram_url", "twitter_url", "youtube_url", "tiktok_url"] as const;
     for (const field of socialFields) {
       if (!isValidUrl(form[field])) {
@@ -266,8 +289,17 @@ const AdminMaterials = () => {
 
   const totalViews = materials.reduce((s, m) => s + m.view_count, 0);
   const totalDownloads = materials.reduce((s, m) => s + m.download_count, 0);
-  const totalShares = materials.reduce((s, m) => s + m.email_share_count, 0);
+  const totalEmailShares = materials.reduce((s, m) => s + m.email_share_count, 0);
+  const totalCopyLinks = materials.reduce((s, m) => s + (m.copy_link_clicks || 0), 0);
+  const totalShares = materials.reduce((s, m) => s + (m.share_count || 0), 0);
   const mostViewed = [...materials].sort((a, b) => b.view_count - a.view_count)[0];
+
+  // Source totals
+  const allSourceStats = Object.values(sourceStats);
+  const totalLearnerDl = allSourceStats.reduce((s, v) => s + v.learner_dashboard, 0);
+  const totalPublicDl = allSourceStats.reduce((s, v) => s + v.public_materials, 0);
+  const totalCoachDl = allSourceStats.reduce((s, v) => s + v.coach_dashboard, 0);
+  const totalDetailDl = allSourceStats.reduce((s, v) => s + v.material_detail, 0);
 
   return (
     <div className="space-y-6">
@@ -294,7 +326,6 @@ const AdminMaterials = () => {
             </div>
           </div>
 
-          {/* Platform-level social toggles */}
           {globalSettings.social_media_enabled && (
             <div className="mt-4 pt-4 border-t border-border">
               <p className="text-sm text-muted-foreground mb-3">Enable/disable individual platforms:</p>
@@ -315,12 +346,27 @@ const AdminMaterials = () => {
       </Card>
 
       {/* Analytics */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><FileText className="h-8 w-8 text-primary" /><div><p className="text-2xl font-bold text-foreground">{materials.length}</p><p className="text-sm text-muted-foreground">Total Materials</p></div></div></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><Eye className="h-8 w-8 text-blue-500" /><div><p className="text-2xl font-bold text-foreground">{totalViews}</p><p className="text-sm text-muted-foreground">Total Views</p></div></div></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><Download className="h-8 w-8 text-green-500" /><div><p className="text-2xl font-bold text-foreground">{totalDownloads}</p><p className="text-sm text-muted-foreground">Total Downloads</p></div></div></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><Mail className="h-8 w-8 text-orange-500" /><div><p className="text-2xl font-bold text-foreground">{totalShares}</p><p className="text-sm text-muted-foreground">Email Shares</p></div></div></CardContent></Card>
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><FileText className="h-8 w-8 text-primary" /><div><p className="text-2xl font-bold text-foreground">{materials.length}</p><p className="text-sm text-muted-foreground">Materials</p></div></div></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><Eye className="h-8 w-8 text-blue-500" /><div><p className="text-2xl font-bold text-foreground">{totalViews}</p><p className="text-sm text-muted-foreground">Views</p></div></div></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><Download className="h-8 w-8 text-green-500" /><div><p className="text-2xl font-bold text-foreground">{totalDownloads}</p><p className="text-sm text-muted-foreground">Downloads</p></div></div></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><Mail className="h-8 w-8 text-orange-500" /><div><p className="text-2xl font-bold text-foreground">{totalEmailShares}</p><p className="text-sm text-muted-foreground">Email Shares</p></div></div></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><Copy className="h-8 w-8 text-purple-500" /><div><p className="text-2xl font-bold text-foreground">{totalCopyLinks}</p><p className="text-sm text-muted-foreground">Link Copies</p></div></div></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><Share2 className="h-8 w-8 text-cyan-500" /><div><p className="text-2xl font-bold text-foreground">{totalShares}</p><p className="text-sm text-muted-foreground">Shares</p></div></div></CardContent></Card>
       </div>
+
+      {/* Download Source Breakdown */}
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-sm font-semibold text-foreground mb-3">Download Sources</h3>
+          <div className="flex flex-wrap gap-6 text-sm">
+            <div><span className="text-muted-foreground">Learner Dashboard:</span> <span className="font-medium text-foreground">{totalLearnerDl}</span></div>
+            <div><span className="text-muted-foreground">Public Page:</span> <span className="font-medium text-foreground">{totalPublicDl}</span></div>
+            <div><span className="text-muted-foreground">Coach Dashboard:</span> <span className="font-medium text-foreground">{totalCoachDl}</span></div>
+            <div><span className="text-muted-foreground">Detail Page:</span> <span className="font-medium text-foreground">{totalDetailDl}</span></div>
+          </div>
+        </CardContent>
+      </Card>
 
       {mostViewed && (
         <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><TrendingUp className="h-5 w-5 text-primary" /><span className="text-sm text-muted-foreground">Most Viewed:</span><span className="font-medium text-foreground">{mostViewed.title}</span><Badge variant="secondary">{mostViewed.view_count} views</Badge></div></CardContent></Card>
@@ -357,16 +403,18 @@ const AdminMaterials = () => {
                 <TableHead>Social</TableHead>
                 <TableHead>Views</TableHead>
                 <TableHead>Downloads</TableHead>
+                <TableHead>Shares</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No materials found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No materials found</TableCell></TableRow>
               ) : filtered.map((m) => {
                 const socialCount = getSocialLinkCount(m);
+                const mSource = sourceStats[m.id];
                 return (
                   <TableRow key={m.id}>
                     <TableCell>
@@ -389,7 +437,27 @@ const AdminMaterials = () => {
                       )}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{m.view_count}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{m.download_count}</TableCell>
+                    <TableCell>
+                      <button
+                        className="text-sm text-foreground hover:text-primary transition-colors cursor-pointer underline-offset-2 hover:underline"
+                        onClick={() => setShowSourceBreakdown(showSourceBreakdown === m.id ? null : m.id)}
+                      >
+                        {m.download_count}
+                      </button>
+                      {showSourceBreakdown === m.id && mSource && (
+                        <div className="mt-1 text-[10px] text-muted-foreground space-y-0.5">
+                          <div>Learner: {mSource.learner_dashboard}</div>
+                          <div>Public: {mSource.public_materials}</div>
+                          <div>Coach: {mSource.coach_dashboard}</div>
+                          <div>Detail: {mSource.material_detail}</div>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      <div className="space-y-0.5">
+                        <div>{m.email_share_count + (m.copy_link_clicks || 0) + (m.share_count || 0)}</div>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" onClick={() => copyLink(m.slug)} title="Copy link"><Copy className="h-4 w-4" /></Button>
