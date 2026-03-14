@@ -34,6 +34,8 @@ import Install from "./pages/Install";
 import CoachLanding from "./pages/CoachLanding";
 import Sitemap from "./pages/Sitemap";
 import AISeoPrompt from "./pages/AISeoPrompt";
+import Materials from "./pages/Materials";
+import MaterialDetail from "./pages/MaterialDetail";
 import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 import ChatbotWidget from "./components/ChatbotWidget";
@@ -124,6 +126,8 @@ const App = () => (
             <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/webinars" element={<Webinars />} />
+            <Route path="/materials" element={<Materials />} />
+            <Route path="/materials/:slug" element={<MaterialDetail />} />
             <Route path="/coach/:slug" element={<CoachLanding />} />
             <Route path="/course/:slug" element={<CourseDetail />} />
             <Route path="/enroll/:courseId" element={
