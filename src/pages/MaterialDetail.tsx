@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Download, Mail, ArrowLeft, Eye, Lock, Share2 } from "lucide-react";
+import { Download, Mail, ArrowLeft, Eye, Lock } from "lucide-react";
+import MaterialSocialButtons from "@/components/MaterialSocialButtons";
 
 const MaterialDetail = () => {
   const { slug } = useParams();
@@ -21,7 +22,17 @@ const MaterialDetail = () => {
   const [shareOpen, setShareOpen] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
   const [sending, setSending] = useState(false);
-  const [settings, setSettings] = useState({ download: true, share: true });
+  const [settings, setSettings] = useState<Record<string, boolean>>({
+    download: true,
+    share: true,
+    social_media_enabled: false,
+    social_linkedin_enabled: true,
+    social_facebook_enabled: true,
+    social_instagram_enabled: true,
+    social_twitter_enabled: true,
+    social_youtube_enabled: true,
+    social_tiktok_enabled: true,
+  });
 
   useSEO({
     title: material ? `${material.title} – AI Coach Portal` : "Material – AI Coach Portal",
@@ -33,12 +44,18 @@ const MaterialDetail = () => {
       const { data } = await supabase
         .from("platform_settings")
         .select("key, value")
-        .in("key", ["materials_download_enabled", "materials_email_share_enabled"]);
+        .in("key", [
+          "materials_download_enabled", "materials_email_share_enabled",
+          "social_media_enabled",
+          "social_linkedin_enabled", "social_facebook_enabled", "social_instagram_enabled",
+          "social_twitter_enabled", "social_youtube_enabled", "social_tiktok_enabled",
+        ]);
       if (data) {
-        const s: any = { download: true, share: true };
+        const s: Record<string, boolean> = { ...settings };
         data.forEach((r: any) => {
           if (r.key === "materials_download_enabled") s.download = r.value === "true";
-          if (r.key === "materials_email_share_enabled") s.share = r.value === "true";
+          else if (r.key === "materials_email_share_enabled") s.share = r.value === "true";
+          else s[r.key] = r.value === "true";
         });
         setSettings(s);
       }
@@ -58,7 +75,6 @@ const MaterialDetail = () => {
         .single();
       if (data) {
         setMaterial(data);
-        // Increment view count
         await supabase.from("materials").update({ view_count: (data.view_count || 0) + 1 }).eq("id", data.id);
       }
       setLoading(false);
@@ -68,7 +84,6 @@ const MaterialDetail = () => {
 
   const handleDownload = async () => {
     if (!material?.file_url) return;
-    // Increment download count
     await supabase.from("materials").update({ download_count: (material.download_count || 0) + 1 }).eq("id", material.id);
     setMaterial((prev: any) => ({ ...prev, download_count: (prev.download_count || 0) + 1 }));
     window.open(material.file_url, "_blank");
@@ -88,7 +103,6 @@ const MaterialDetail = () => {
         },
       });
       if (error) throw error;
-      // Increment share count
       await supabase.from("materials").update({ email_share_count: (material.email_share_count || 0) + 1 }).eq("id", material.id);
       setMaterial((prev: any) => ({ ...prev, email_share_count: (prev.email_share_count || 0) + 1 }));
       toast.success("Email sent successfully!");
@@ -165,6 +179,9 @@ const MaterialDetail = () => {
                   <Button variant="outline" onClick={() => setShareOpen(true)}><Mail className="h-4 w-4 mr-2" /> Send via Email</Button>
                 )}
               </div>
+
+              {/* Social Media Buttons */}
+              <MaterialSocialButtons material={material} settings={settings} />
 
               {/* Preview for images/videos */}
               {material.file_type === "video" && material.file_url && (
