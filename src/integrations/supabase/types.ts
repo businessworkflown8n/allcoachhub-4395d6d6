@@ -674,6 +674,63 @@ export type Database = {
           },
         ]
       }
+      materials: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          download_count: number
+          email_share_count: number
+          file_type: string | null
+          file_url: string | null
+          id: string
+          is_downloadable: boolean
+          is_email_shareable: boolean
+          is_published: boolean
+          slug: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          email_share_count?: number
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          is_downloadable?: boolean
+          is_email_shareable?: boolean
+          is_published?: boolean
+          slug?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          email_share_count?: number
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          is_downloadable?: boolean
+          is_email_shareable?: boolean
+          is_published?: boolean
+          slug?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       payment_status_audit: {
         Row: {
           changed_at: string
