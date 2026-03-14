@@ -46,6 +46,21 @@ const CoachProfile = () => {
   return (
     <div className="max-w-2xl space-y-6">
       <h2 className="text-xl font-bold text-foreground">Coach Profile</h2>
+      {profile?.slug && (
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 p-3">
+          <span className="text-sm text-muted-foreground">Your landing page:</span>
+          <code className="rounded bg-background px-2 py-0.5 text-sm">{window.location.origin}/coach/{profile.slug}</code>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(`${window.location.origin}/coach/${profile.slug}`);
+              toast({ title: "Link copied!" });
+            }}
+            className="rounded-md border border-input bg-background px-2 py-1 text-xs hover:bg-accent"
+          >
+            Copy
+          </button>
+        </div>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label className="text-foreground">Full Name</Label>
