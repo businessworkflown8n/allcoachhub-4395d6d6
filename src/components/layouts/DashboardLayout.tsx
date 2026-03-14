@@ -36,8 +36,8 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-border bg-card transition-transform lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="flex h-16 items-center justify-between border-b border-border px-4">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col border-r border-border bg-card transition-transform lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-4">
           <Link to="/" className="flex items-center gap-2">
             <img src={logo} alt="AI Coach Portal" className="h-8 w-8 rounded-lg" />
             <span className="text-sm font-bold text-foreground">{title}</span>
@@ -47,25 +47,27 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
           </button>
         </div>
 
-        <nav className="flex flex-col gap-1 p-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                location.pathname === item.path
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              {item.icon}
-              {item.label}
-            </Link>
-          ))}
+        <nav className="flex-1 overflow-y-auto p-3">
+          <div className="flex flex-col gap-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setSidebarOpen(false)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                  location.pathname === item.path
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                {item.icon}
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 border-t border-border p-3">
+        <div className="shrink-0 border-t border-border p-3">
           <button
             onClick={handleSignOut}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
