@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
@@ -11,17 +11,19 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Download, Mail, ArrowLeft, Eye, Lock } from "lucide-react";
+import { Download, Mail, ArrowLeft, Eye, Lock, Copy, Share2 } from "lucide-react";
 import MaterialSocialButtons from "@/components/MaterialSocialButtons";
 
 const MaterialDetail = () => {
   const { slug } = useParams();
+  const location = useLocation();
   const { user, loading: authLoading } = useAuth();
   const [material, setMaterial] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [shareOpen, setShareOpen] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
   const [sending, setSending] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [settings, setSettings] = useState<Record<string, boolean>>({
     download: true,
     share: true,
@@ -82,11 +84,45 @@ const MaterialDetail = () => {
     fetchMaterial();
   }, [user, slug]);
 
-  const handleDownload = async () => {
-    if (!material?.file_url) return;
-    await supabase.from("materials").update({ download_count: (material.download_count || 0) + 1 }).eq("id", material.id);
-    setMaterial((prev: any) => ({ ...prev, download_count: (prev.download_count || 0) + 1 }));
-    window.open(material.file_url, "_blank");
+  const handleDownload = useCallback(async () => {
+    if (!material?.file_url || downloading) return;
+    setDownloading(true);
+    try {
+      await supabase.from("material_downloads").insert({
+        material_id: material.id,
+        user_id: user?.id || null,
+        source: "material_detail",
+      });
+      await supabase.from("materials").update({ download_count: (material.download_count || 0) + 1 }).eq("id", material.id);
+      setMaterial((prev: any) => ({ ...prev, download_count: (prev.download_count || 0) + 1 }));
+      window.open(material.file_url, "_blank");
+    } finally {
+      setTimeout(() => setDownloading(false), 2000);
+    }
+  }, [material, downloading, user]);
+
+  const handleCopyLink = async () => {
+    const url = `${window.location.origin}/materials/${material.slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied successfully!");
+      await supabase.from("materials").update({ copy_link_clicks: (material.copy_link_clicks || 0) + 1 }).eq("id", material.id);
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
+
+  const handleNativeShare = async () => {
+    const url = `${window.location.origin}/materials/${material.slug}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: material.title, text: material.description || "", url });
+        toast.success("Material link shared successfully!");
+        await supabase.from("materials").update({ share_count: (material.share_count || 0) + 1 }).eq("id", material.id);
+      } catch { /* cancelled */ }
+    } else {
+      handleCopyLink();
+    }
   };
 
   const handleEmailShare = async () => {
@@ -119,6 +155,7 @@ const MaterialDetail = () => {
   }
 
   if (!authLoading && !user) {
+    const redirectUrl = `/materials/${slug}`;
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -126,8 +163,11 @@ const MaterialDetail = () => {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Lock className="h-16 w-16 text-muted-foreground mb-4" />
             <h1 className="text-2xl font-bold text-foreground mb-2">Login Required</h1>
-            <p className="text-muted-foreground mb-6">Please login to access learning materials.</p>
-            <Link to="/auth?mode=login" className="rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">Sign In</Link>
+            <p className="text-muted-foreground mb-6">Please login to access AI learning materials.</p>
+            <div className="flex gap-3">
+              <Link to={`/auth?mode=login&redirect=${encodeURIComponent(redirectUrl)}`} className="rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">Sign In</Link>
+              <Link to={`/auth?mode=signup&redirect=${encodeURIComponent(redirectUrl)}`} className="rounded-lg border border-border px-6 py-3 text-sm font-medium text-foreground hover:bg-accent">Sign Up</Link>
+            </div>
           </div>
         </main>
         <Footer />
@@ -173,11 +213,13 @@ const MaterialDetail = () => {
 
               <div className="flex flex-wrap gap-3 pt-2">
                 {settings.download && material.is_downloadable && material.file_url && (
-                  <Button onClick={handleDownload}><Download className="h-4 w-4 mr-2" /> Download</Button>
+                  <Button onClick={handleDownload} disabled={downloading}><Download className="h-4 w-4 mr-2" /> Download</Button>
                 )}
                 {settings.share && material.is_email_shareable && (
                   <Button variant="outline" onClick={() => setShareOpen(true)}><Mail className="h-4 w-4 mr-2" /> Send via Email</Button>
                 )}
+                <Button variant="outline" onClick={handleCopyLink}><Copy className="h-4 w-4 mr-2" /> Copy Link</Button>
+                <Button variant="ghost" onClick={handleNativeShare}><Share2 className="h-4 w-4 mr-2" /> Share</Button>
               </div>
 
               {/* Social Media Buttons */}
