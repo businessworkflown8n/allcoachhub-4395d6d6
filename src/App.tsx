@@ -31,6 +31,7 @@ import Webinars from "./pages/Webinars";
 import DailyZip from "./pages/DailyZip";
 import Unsubscribe from "./pages/Unsubscribe";
 import Install from "./pages/Install";
+import CoachLanding from "./pages/CoachLanding";
 import Sitemap from "./pages/Sitemap";
 import AISeoPrompt from "./pages/AISeoPrompt";
 import NotFound from "./pages/NotFound";
@@ -123,6 +124,7 @@ const App = () => (
             <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/webinars" element={<Webinars />} />
+            <Route path="/coach/:slug" element={<CoachLanding />} />
             <Route path="/course/:slug" element={<CourseDetail />} />
             <Route path="/enroll/:courseId" element={
               <ProtectedRoute allowedRole="learner">
