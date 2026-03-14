@@ -25,7 +25,7 @@ const CoachLanding = () => {
   useSEO({
     title: coach ? `${coach.full_name} – AI Coach | AI Coach Portal` : "Coach Profile – AI Coach Portal",
     description: coach?.bio?.slice(0, 160) || "Discover expert AI coaching on AI Coach Portal.",
-    canonical: `https://www.aicoachportal.com/coach/${slug}`,
+    canonical: `https://www.aicoachportal.com/coach-profile/${slug}`,
     ogType: "profile",
   });
 

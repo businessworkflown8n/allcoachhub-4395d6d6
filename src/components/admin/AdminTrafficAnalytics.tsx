@@ -114,7 +114,7 @@ const AdminTrafficAnalytics = () => {
   };
 
   const copyLink = (slug: string) => {
-    const url = `${window.location.origin}/coach/${slug}`;
+    const url = `${window.location.origin}/coach-profile/${slug}`;
     navigator.clipboard.writeText(url);
     toast({ title: "Link copied!", description: url });
   };
@@ -122,7 +122,7 @@ const AdminTrafficAnalytics = () => {
   const exportCSV = () => {
     const headers = ["Coach,Category,Slug,Link,Views,Enrollments,Webinar Registrations,Conversion Rate"];
     const rows = filtered.map((d) =>
-      `"${d.full_name}","${d.category || ""}","${d.slug}","${window.location.origin}/coach/${d.slug}",${d.views},${d.enrollments},${d.webinar_registrations},${d.conversion_rate}%`
+      `"${d.full_name}","${d.category || ""}","${d.slug}","${window.location.origin}/coach-profile/${d.slug}",${d.views},${d.enrollments},${d.webinar_registrations},${d.conversion_rate}%`
     );
     const csv = [...headers, ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });

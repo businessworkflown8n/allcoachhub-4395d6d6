@@ -133,7 +133,7 @@ const App = () => (
                 <CoachDashboard />
               </ProtectedRoute>
             } />
-            <Route path="/coach/:slug" element={<CoachLanding />} />
+            <Route path="/coach-profile/:slug" element={<CoachLanding />} />
             <Route path="/course/:slug" element={<CourseDetail />} />
             <Route path="/enroll/:courseId" element={
               <ProtectedRoute allowedRole="learner">
