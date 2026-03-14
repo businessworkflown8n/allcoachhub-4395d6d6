@@ -172,6 +172,39 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_page_views: {
+        Row: {
+          coach_user_id: string
+          id: string
+          referrer: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          viewed_at: string
+          visitor_ip: string | null
+        }
+        Insert: {
+          coach_user_id: string
+          id?: string
+          referrer?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          viewed_at?: string
+          visitor_ip?: string | null
+        }
+        Update: {
+          coach_user_id?: string
+          id?: string
+          referrer?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          viewed_at?: string
+          visitor_ip?: string | null
+        }
+        Relationships: []
+      }
       communication_settings: {
         Row: {
           id: string
@@ -796,6 +829,7 @@ export type Database = {
           last_active_at: string | null
           linkedin_profile: string | null
           marketing_consent: boolean
+          slug: string | null
           social_links: Json | null
           tags: string[] | null
           updated_at: string
@@ -828,6 +862,7 @@ export type Database = {
           last_active_at?: string | null
           linkedin_profile?: string | null
           marketing_consent?: boolean
+          slug?: string | null
           social_links?: Json | null
           tags?: string[] | null
           updated_at?: string
@@ -860,6 +895,7 @@ export type Database = {
           last_active_at?: string | null
           linkedin_profile?: string | null
           marketing_consent?: boolean
+          slug?: string | null
           social_links?: Json | null
           tags?: string[] | null
           updated_at?: string
