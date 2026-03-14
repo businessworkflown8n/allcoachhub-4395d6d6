@@ -216,7 +216,7 @@ const CoachLanding = () => {
                           <Users className="h-3.5 w-3.5" /> {enrollmentCounts[course.id]} students enrolled
                         </p>
                       )}
-                      <p className="text-lg font-bold text-primary">{formatPrice(course.price_usd, course.price_inr)}</p>
+                      <p className="text-lg font-bold text-primary">{symbol}{course[priceKey]}</p>
                     </div>
                     <Link to={`/course/${course.slug}`}>
                       <Button className="w-full">View & Enroll</Button>
