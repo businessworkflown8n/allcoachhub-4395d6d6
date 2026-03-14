@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2 } from "lucide-react";
+import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText } from "lucide-react";
 import LearnerProfile from "@/components/learner/LearnerProfile";
 import LearnerCourses from "@/components/learner/LearnerCourses";
 import LearnerWishlist from "@/components/learner/LearnerWishlist";
@@ -11,16 +11,18 @@ import LearnerReferrals from "@/components/learner/LearnerReferrals";
 import LearnerWebinars from "@/components/learner/LearnerWebinars";
 import LearnerDailyZip from "@/components/learner/LearnerDailyZip";
 import SocialMediaHub from "@/components/shared/SocialMediaHub";
+import DashboardMaterials from "@/components/shared/DashboardMaterials";
 
 const navItems = [
   { label: "My Courses", path: "/learner/courses", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Webinars", path: "/learner/webinars", icon: <Video className="h-4 w-4" /> },
+  { label: "Certificates", path: "/learner/certificates", icon: <Award className="h-4 w-4" /> },
+  { label: "Materials", path: "/learner/materials", icon: <FileText className="h-4 w-4" /> },
   { label: "Daily Zip", path: "/learner/daily-zip", icon: <Zap className="h-4 w-4" /> },
   { label: "Social Media", path: "/learner/social", icon: <Share2 className="h-4 w-4" /> },
   { label: "Profile", path: "/learner/profile", icon: <User className="h-4 w-4" /> },
   { label: "Wishlist", path: "/learner/wishlist", icon: <Heart className="h-4 w-4" /> },
   { label: "Payment History", path: "/learner/payments", icon: <History className="h-4 w-4" /> },
-  { label: "Certificates", path: "/learner/certificates", icon: <Award className="h-4 w-4" /> },
   { label: "Referrals", path: "/learner/referrals", icon: <Settings className="h-4 w-4" /> },
 ];
 
@@ -37,12 +39,13 @@ const LearnerDashboard = () => {
       <Routes>
         <Route path="courses" element={<LearnerCourses />} />
         <Route path="webinars" element={<LearnerWebinars />} />
+        <Route path="certificates" element={<LearnerCertificates />} />
+        <Route path="materials" element={<DashboardMaterials />} />
         <Route path="daily-zip" element={<LearnerDailyZip />} />
         <Route path="social" element={<SocialMediaHub />} />
         <Route path="profile" element={<LearnerProfile />} />
         <Route path="wishlist" element={<LearnerWishlist />} />
         <Route path="payments" element={<LearnerPayments />} />
-        <Route path="certificates" element={<LearnerCertificates />} />
         <Route path="referrals" element={<LearnerReferrals />} />
         <Route path="*" element={<Navigate to="courses" replace />} />
       </Routes>
