@@ -34,6 +34,8 @@ import Install from "./pages/Install";
 import CoachLanding from "./pages/CoachLanding";
 import Sitemap from "./pages/Sitemap";
 import AISeoPrompt from "./pages/AISeoPrompt";
+import Materials from "./pages/Materials";
+import MaterialDetail from "./pages/MaterialDetail";
 import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 import ChatbotWidget from "./components/ChatbotWidget";
