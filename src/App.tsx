@@ -128,6 +128,11 @@ const App = () => (
             <Route path="/webinars" element={<Webinars />} />
             <Route path="/materials" element={<Materials />} />
             <Route path="/materials/:slug" element={<MaterialDetail />} />
+            <Route path="/coach/*" element={
+              <ProtectedRoute allowedRole="coach">
+                <CoachDashboard />
+              </ProtectedRoute>
+            } />
             <Route path="/coach/:slug" element={<CoachLanding />} />
             <Route path="/course/:slug" element={<CourseDetail />} />
             <Route path="/enroll/:courseId" element={
@@ -138,11 +143,6 @@ const App = () => (
             <Route path="/learner/*" element={
               <ProtectedRoute allowedRole="learner">
                 <LearnerDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/coach/*" element={
-              <ProtectedRoute allowedRole="coach">
-                <CoachDashboard />
               </ProtectedRoute>
             } />
             <Route path="/admin/*" element={
