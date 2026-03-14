@@ -14,7 +14,7 @@ import { GraduationCap, Video, MapPin, Briefcase, ExternalLink, Star, Clock, Use
 const CoachLanding = () => {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
-  const { formatPrice } = useCurrency();
+  const { symbol, priceKey } = useCurrency();
   const [coach, setCoach] = useState<any>(null);
   const [courses, setCourses] = useState<any[]>([]);
   const [webinars, setWebinars] = useState<any[]>([]);
