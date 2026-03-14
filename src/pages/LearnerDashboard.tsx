@@ -39,12 +39,13 @@ const LearnerDashboard = () => {
       <Routes>
         <Route path="courses" element={<LearnerCourses />} />
         <Route path="webinars" element={<LearnerWebinars />} />
+        <Route path="certificates" element={<LearnerCertificates />} />
+        <Route path="materials" element={<DashboardMaterials />} />
         <Route path="daily-zip" element={<LearnerDailyZip />} />
         <Route path="social" element={<SocialMediaHub />} />
         <Route path="profile" element={<LearnerProfile />} />
         <Route path="wishlist" element={<LearnerWishlist />} />
         <Route path="payments" element={<LearnerPayments />} />
-        <Route path="certificates" element={<LearnerCertificates />} />
         <Route path="referrals" element={<LearnerReferrals />} />
         <Route path="*" element={<Navigate to="courses" replace />} />
       </Routes>

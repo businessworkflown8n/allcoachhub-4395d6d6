@@ -41,9 +41,10 @@ const CoachDashboard = () => {
         <Route path="courses/new" element={<CoachCourseForm />} />
         <Route path="courses/:id/edit" element={<CoachCourseForm />} />
         <Route path="webinars" element={<CoachWebinars />} />
+        <Route path="enrollments" element={<CoachEnrollments />} />
+        <Route path="materials" element={<DashboardMaterials />} />
         <Route path="social" element={<SocialMediaHub />} />
         <Route path="campaigns" element={<CoachCampaigns />} />
-        <Route path="enrollments" element={<CoachEnrollments />} />
         <Route path="earnings" element={<CoachEarnings />} />
         <Route path="profile" element={<CoachProfile />} />
         <Route path="overview" element={<CoachOverview />} />
