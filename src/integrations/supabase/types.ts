@@ -768,17 +768,29 @@ export type Database = {
           description: string | null
           download_count: number
           email_share_count: number
+          facebook_clicks: number
+          facebook_url: string | null
           file_type: string | null
           file_url: string | null
           id: string
+          instagram_clicks: number
+          instagram_url: string | null
           is_downloadable: boolean
           is_email_shareable: boolean
           is_published: boolean
+          linkedin_clicks: number
+          linkedin_url: string | null
           slug: string | null
           thumbnail_url: string | null
+          tiktok_clicks: number
+          tiktok_url: string | null
           title: string
+          twitter_clicks: number
+          twitter_url: string | null
           updated_at: string
           view_count: number
+          youtube_clicks: number
+          youtube_url: string | null
         }
         Insert: {
           category?: string
@@ -786,17 +798,29 @@ export type Database = {
           description?: string | null
           download_count?: number
           email_share_count?: number
+          facebook_clicks?: number
+          facebook_url?: string | null
           file_type?: string | null
           file_url?: string | null
           id?: string
+          instagram_clicks?: number
+          instagram_url?: string | null
           is_downloadable?: boolean
           is_email_shareable?: boolean
           is_published?: boolean
+          linkedin_clicks?: number
+          linkedin_url?: string | null
           slug?: string | null
           thumbnail_url?: string | null
+          tiktok_clicks?: number
+          tiktok_url?: string | null
           title: string
+          twitter_clicks?: number
+          twitter_url?: string | null
           updated_at?: string
           view_count?: number
+          youtube_clicks?: number
+          youtube_url?: string | null
         }
         Update: {
           category?: string
@@ -804,17 +828,29 @@ export type Database = {
           description?: string | null
           download_count?: number
           email_share_count?: number
+          facebook_clicks?: number
+          facebook_url?: string | null
           file_type?: string | null
           file_url?: string | null
           id?: string
+          instagram_clicks?: number
+          instagram_url?: string | null
           is_downloadable?: boolean
           is_email_shareable?: boolean
           is_published?: boolean
+          linkedin_clicks?: number
+          linkedin_url?: string | null
           slug?: string | null
           thumbnail_url?: string | null
+          tiktok_clicks?: number
+          tiktok_url?: string | null
           title?: string
+          twitter_clicks?: number
+          twitter_url?: string | null
           updated_at?: string
           view_count?: number
+          youtube_clicks?: number
+          youtube_url?: string | null
         }
         Relationships: []
       }
