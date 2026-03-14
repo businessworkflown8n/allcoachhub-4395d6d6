@@ -44,6 +44,7 @@ const CoachDashboard = () => {
         <Route path="enrollments" element={<CoachEnrollments />} />
         <Route path="earnings" element={<CoachEarnings />} />
         <Route path="profile" element={<CoachProfile />} />
+        <Route path="overview" element={<CoachOverview />} />
         <Route path="*" element={<Navigate to="overview" replace />} />
       </Routes>
     </DashboardLayout>
