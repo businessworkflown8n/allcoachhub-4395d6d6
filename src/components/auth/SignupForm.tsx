@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowRight, CheckCircle, GraduationCap, Users } from "lucide-react";
+import { ArrowRight, CheckCircle, GraduationCap, Users, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 const SignupForm = () => {
   const [fullName, setFullName] = useState("");
