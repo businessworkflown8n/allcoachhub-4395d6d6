@@ -124,6 +124,7 @@ const App = () => (
             <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/webinars" element={<Webinars />} />
+            <Route path="/coach/:slug" element={<CoachLanding />} />
             <Route path="/course/:slug" element={<CourseDetail />} />
             <Route path="/enroll/:courseId" element={
               <ProtectedRoute allowedRole="learner">

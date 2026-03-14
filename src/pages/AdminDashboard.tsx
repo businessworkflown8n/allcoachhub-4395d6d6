@@ -58,6 +58,7 @@ const AdminDashboard = () => {
     <DashboardLayout navItems={navItems} title="Admin Dashboard">
       <Routes>
         <Route index element={<AdminOverview />} />
+        <Route path="traffic" element={<AdminTrafficAnalytics />} />
         <Route path="coaches" element={<AdminCoaches />} />
         <Route path="learners" element={<AdminLearners />} />
         <Route path="courses" element={<AdminCourses />} />
