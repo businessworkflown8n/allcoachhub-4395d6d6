@@ -21,9 +21,11 @@ import AdminEmailTools from "@/components/admin/AdminEmailTools";
 import AdminSocialMedia from "@/components/admin/AdminSocialMedia";
 import AdminCampaigns from "@/components/admin/AdminCampaigns";
 import AdminWebinarRegistrations from "@/components/admin/AdminWebinarRegistrations";
+import AdminTrafficAnalytics from "@/components/admin/AdminTrafficAnalytics";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
+  { label: "Traffic Analytics", path: "/admin/traffic", icon: <MousePointerClick className="h-4 w-4" /> },
   { label: "Coaches", path: "/admin/coaches", icon: <Shield className="h-4 w-4" /> },
   { label: "Learners", path: "/admin/learners", icon: <GraduationCap className="h-4 w-4" /> },
   { label: "Courses", path: "/admin/courses", icon: <BookOpen className="h-4 w-4" /> },
