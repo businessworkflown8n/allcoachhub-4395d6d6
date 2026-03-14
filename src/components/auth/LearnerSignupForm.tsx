@@ -55,14 +55,54 @@ const LearnerSignupForm = () => {
     setSuccess(true);
   };
 
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+    });
+    setResendLoading(false);
+
+    if (error) {
+      toast({
+        title: "Failed to resend",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Email sent!",
+        description: "A new verification link has been sent to your email.",
+      });
+    }
+  };
+
   if (success) {
     return (
-      <div className="py-8 text-center">
+      <div className="py-8 text-center space-y-4">
         <CheckCircle className="mx-auto mb-4 h-12 w-12 text-primary" />
         <h3 className="mb-2 text-lg font-semibold text-foreground">Thank You For Registration!</h3>
         <p className="text-sm text-muted-foreground">
           Please verify your Email ID for further use. We've sent a verification link to <strong className="text-foreground">{email}</strong>.
         </p>
+        <Button
+          onClick={handleResendVerification}
+          disabled={resendLoading}
+          variant="outline"
+          className="mt-4"
+        >
+          {resendLoading ? (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              Resending...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Resend Verification Email
+            </>
+          )}
+        </Button>
       </div>
     );
   }
