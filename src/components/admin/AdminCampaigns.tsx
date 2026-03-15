@@ -15,7 +15,7 @@ import { format } from "date-fns";
 import {
   Mail, Send, Users, Plus, Pencil, Trash2, Eye, Clock, MessageCircle, Phone,
   Megaphone, Instagram, Facebook, Linkedin, Twitter, Youtube, Globe,
-  Filter, UserPlus, UserCheck, BarChart3, Upload, Database, AlertTriangle
+  Filter, UserPlus, UserCheck, BarChart3, Upload, Database, AlertTriangle, CheckCircle
 } from "lucide-react";
 import { CampaignContactImport, type ImportedContact, type ImportSummary } from "./CampaignContactImport";
 import CampaignReport from "./CampaignReport";
