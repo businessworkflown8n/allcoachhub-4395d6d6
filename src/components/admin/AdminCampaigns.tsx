@@ -15,8 +15,10 @@ import { format } from "date-fns";
 import {
   Mail, Send, Users, Plus, Pencil, Trash2, Eye, Clock, MessageCircle, Phone,
   Megaphone, Instagram, Facebook, Linkedin, Twitter, Youtube, Globe,
-  Filter, UserPlus, UserCheck
+  Filter, UserPlus, UserCheck, BarChart3, Upload, Database, AlertTriangle, CheckCircle
 } from "lucide-react";
+import { CampaignContactImport, type ImportedContact, type ImportSummary } from "./CampaignContactImport";
+import CampaignReport from "./CampaignReport";
 
 type Campaign = {
   id: string;
@@ -28,12 +30,28 @@ type Campaign = {
   cta_link: string | null;
   audience_type: string;
   audience_filter: any;
+  audience_source: string;
   status: string;
   template_name: string | null;
   scheduled_at: string | null;
   sent_at: string | null;
   total_recipients: number;
   total_sent: number;
+  total_delivered: number;
+  total_failed: number;
+  total_opened: number;
+  total_clicked: number;
+  total_replied: number;
+  total_bounced: number;
+  total_unsubscribed: number;
+  total_imported: number;
+  total_valid: number;
+  total_invalid: number;
+  total_duplicates_removed: number;
+  open_rate: number;
+  click_rate: number;
+  delivery_rate: number;
+  attached_file_name: string | null;
   created_at: string;
   channel: string;
   coach_id: string | null;
@@ -46,6 +64,12 @@ const AUDIENCE_TYPES = [
   { value: "learners", label: "Learners Only" },
   { value: "coaches", label: "Coaches Only" },
   { value: "uploaded", label: "Uploaded Contacts Only" },
+];
+
+const AUDIENCE_SOURCES = [
+  { value: "platform", label: "Platform Audience Only" },
+  { value: "imported", label: "Imported Database Only" },
+  { value: "both", label: "Platform + Imported Database" },
 ];
 
 const CAMPAIGN_PLATFORMS = [
@@ -69,6 +93,7 @@ const emptyForm = {
   cta_text: "",
   cta_link: "/courses",
   audience_type: "all",
+  audience_source: "platform",
   scheduled_at: "",
   channel: "email",
 };
@@ -87,10 +112,19 @@ const AdminCampaigns = () => {
   const [sending, setSending] = useState(false);
   const [channelFilter, setChannelFilter] = useState("all");
   const [ownerFilter, setOwnerFilter] = useState("all");
-  // Assignment state
   const [assignCampaign, setAssignCampaign] = useState<Campaign | null>(null);
   const [selectedCoaches, setSelectedCoaches] = useState<string[]>([]);
   const [assigning, setAssigning] = useState(false);
+  // Import state
+  const [showImport, setShowImport] = useState(false);
+  const [importedContacts, setImportedContacts] = useState<ImportedContact[]>([]);
+  const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
+  // Report state
+  const [reportCampaign, setReportCampaign] = useState<Campaign | null>(null);
+  // Confirmation dialog
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmCampaign, setConfirmCampaign] = useState<Campaign | null>(null);
+  const [platformAudienceCount, setPlatformAudienceCount] = useState(0);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -132,6 +166,9 @@ const AdminCampaigns = () => {
   const openCreate = (channel = "email") => {
     setEditing(null);
     setForm({ ...emptyForm, channel });
+    setImportedContacts([]);
+    setImportSummary(null);
+    setShowImport(false);
     setDialogOpen(true);
   };
 
@@ -145,9 +182,13 @@ const AdminCampaigns = () => {
       cta_text: c.cta_text || "",
       cta_link: c.cta_link || "/courses",
       audience_type: c.audience_type,
+      audience_source: c.audience_source || "platform",
       scheduled_at: c.scheduled_at?.slice(0, 16) || "",
       channel: c.channel || "email",
     });
+    setImportedContacts([]);
+    setImportSummary(null);
+    setShowImport(false);
     setDialogOpen(true);
   };
 
@@ -161,22 +202,65 @@ const AdminCampaigns = () => {
       cta_text: form.cta_text || null,
       cta_link: form.cta_link || null,
       audience_type: form.audience_type,
+      audience_source: form.audience_source,
       status,
       channel: form.channel,
       scheduled_at: form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null,
       updated_at: new Date().toISOString(),
       coach_id: null,
     };
+
+    if (importSummary) {
+      payload.total_imported = importSummary.totalRows;
+      payload.total_valid = importSummary.validContacts;
+      payload.total_invalid = importSummary.invalidContacts;
+      payload.total_duplicates_removed = importSummary.duplicateContacts;
+      payload.attached_file_name = "imported_contacts";
+    }
+
+    let campaignId = editing;
     if (editing) {
       const { error } = await supabase.from("email_campaigns").update(payload).eq("id", editing);
       if (error) { toast.error("Failed to update"); return; }
       toast.success("Campaign updated");
     } else {
-      const { error } = await supabase.from("email_campaigns").insert(payload);
+      const { data, error } = await supabase.from("email_campaigns").insert(payload).select("id").single();
       if (error) { toast.error("Failed to create"); return; }
+      campaignId = data.id;
       toast.success(status === "draft" ? "Draft saved" : "Campaign created");
     }
+
+    // Save imported contacts if any
+    if (campaignId && importedContacts.length > 0) {
+      const validContacts = importedContacts.filter(c => c.is_valid && !c.is_duplicate);
+      if (validContacts.length > 0) {
+        const inserts = validContacts.map(c => ({
+          campaign_id: campaignId!,
+          first_name: c.first_name || null,
+          last_name: c.last_name || null,
+          full_name: c.full_name || null,
+          email: c.email || null,
+          phone: c.phone || null,
+          country_code: c.country_code || null,
+          whatsapp_number: c.whatsapp_number || null,
+          company: c.company || null,
+          role: c.role || null,
+          tags: c.tags || [],
+          source: "csv_upload",
+          is_valid: true,
+          is_duplicate: false,
+          validation_errors: [],
+        }));
+        // Batch insert in chunks
+        for (let i = 0; i < inserts.length; i += 500) {
+          await supabase.from("campaign_contacts").insert(inserts.slice(i, i + 500));
+        }
+      }
+    }
+
     setDialogOpen(false);
+    setImportedContacts([]);
+    setImportSummary(null);
     fetchAll();
   };
 
@@ -187,62 +271,132 @@ const AdminCampaigns = () => {
     fetchAll();
   };
 
-  const getRecipients = async (audienceType: string, channel: string) => {
-    const recipients: { email: string; name?: string; phone?: string }[] = [];
-    if (audienceType === "all" || audienceType === "learners" || audienceType === "coaches") {
-      const roleFilter = audienceType === "learners" ? "learner" : audienceType === "coaches" ? "coach" : undefined;
-      if (roleFilter) {
-        const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", roleFilter);
-        if (roles) {
-          const { data: profiles } = await supabase.from("profiles").select("email, full_name, whatsapp_number, contact_number").in("user_id", roles.map((r: any) => r.user_id));
-          profiles?.forEach((p: any) => { if (p.email) recipients.push({ email: p.email, name: p.full_name, phone: p.whatsapp_number || p.contact_number }); });
+  const getRecipients = async (audienceType: string, channel: string, campaignId?: string, audienceSource?: string) => {
+    const recipients: { email: string; name?: string; phone?: string; source: string }[] = [];
+    const src = audienceSource || "platform";
+
+    // Platform audience
+    if (src === "platform" || src === "both") {
+      if (audienceType === "all" || audienceType === "learners" || audienceType === "coaches") {
+        const roleFilter = audienceType === "learners" ? "learner" : audienceType === "coaches" ? "coach" : undefined;
+        if (roleFilter) {
+          const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", roleFilter);
+          if (roles) {
+            const { data: profiles } = await supabase.from("profiles").select("email, full_name, whatsapp_number, contact_number").in("user_id", roles.map((r: any) => r.user_id));
+            profiles?.forEach((p: any) => { if (p.email) recipients.push({ email: p.email, name: p.full_name, phone: p.whatsapp_number || p.contact_number, source: "platform" }); });
+          }
+        } else {
+          const { data: profiles } = await supabase.from("profiles").select("email, full_name, whatsapp_number, contact_number");
+          profiles?.forEach((p: any) => { if (p.email) recipients.push({ email: p.email, name: p.full_name, phone: p.whatsapp_number || p.contact_number, source: "platform" }); });
         }
-      } else {
-        const { data: profiles } = await supabase.from("profiles").select("email, full_name, whatsapp_number, contact_number");
-        profiles?.forEach((p: any) => { if (p.email) recipients.push({ email: p.email, name: p.full_name, phone: p.whatsapp_number || p.contact_number }); });
-      }
-      if (audienceType === "all") {
+        if (audienceType === "all") {
+          const { data: uploaded } = await supabase.from("email_contacts").select("email, name, whatsapp_number, phone").eq("is_unsubscribed", false);
+          (uploaded as any[])?.forEach((c) => {
+            if (c.email && !recipients.find(r => r.email === c.email)) recipients.push({ email: c.email, name: c.name, phone: c.whatsapp_number || c.phone, source: "uploaded" });
+          });
+        }
+      } else if (audienceType === "uploaded") {
         const { data: uploaded } = await supabase.from("email_contacts").select("email, name, whatsapp_number, phone").eq("is_unsubscribed", false);
-        (uploaded as any[])?.forEach((c) => {
-          if (c.email && !recipients.find(r => r.email === c.email)) recipients.push({ email: c.email, name: c.name, phone: c.whatsapp_number || c.phone });
-        });
+        (uploaded as any[])?.forEach((c) => { if (c.email) recipients.push({ email: c.email, name: c.name, phone: c.whatsapp_number || c.phone, source: "uploaded" }); });
       }
-    } else if (audienceType === "uploaded") {
-      const { data: uploaded } = await supabase.from("email_contacts").select("email, name, whatsapp_number, phone").eq("is_unsubscribed", false);
-      (uploaded as any[])?.forEach((c) => { if (c.email) recipients.push({ email: c.email, name: c.name, phone: c.whatsapp_number || c.phone }); });
     }
+
+    // Imported contacts from campaign_contacts
+    if ((src === "imported" || src === "both") && campaignId) {
+      const { data: imported } = await supabase.from("campaign_contacts").select("*").eq("campaign_id", campaignId).eq("is_valid", true).eq("is_duplicate", false);
+      (imported as any[])?.forEach((c) => {
+        const email = c.email || "";
+        const phone = c.whatsapp_number || c.phone || "";
+        const name = c.full_name || [c.first_name, c.last_name].filter(Boolean).join(" ") || "";
+        if ((channel === "email" && email) || (channel !== "email" && phone)) {
+          if (!recipients.find(r => (channel === "email" ? r.email === email : (r.phone === phone)))) {
+            recipients.push({ email, name, phone, source: "imported" });
+          }
+        }
+      });
+    }
+
     const seen = new Set<string>();
     return recipients.filter(r => {
       const key = channel === "email" ? r.email : (r.phone || r.email);
-      if (seen.has(key)) return false;
+      if (!key || seen.has(key)) return false;
       seen.add(key);
       if (channel !== "email" && !r.phone) return false;
       return true;
     });
   };
 
-  const sendCampaign = async (campaign: Campaign) => {
+  const openSendConfirmation = async (campaign: Campaign) => {
+    setSending(true);
+    try {
+      const recipients = await getRecipients(campaign.audience_type, campaign.channel, campaign.id, campaign.audience_source);
+      setPlatformAudienceCount(recipients.length);
+      setConfirmCampaign(campaign);
+      setConfirmOpen(true);
+    } catch { toast.error("Failed to calculate audience"); }
+    setSending(false);
+  };
+
+  const sendCampaign = async () => {
+    if (!confirmCampaign) return;
+    const campaign = confirmCampaign;
     const ch = campaign.channel || "email";
-    if (!confirm(`Send "${campaign.subject}" via ${ch.toUpperCase()}?`)) return;
+    setConfirmOpen(false);
     setSending(true);
     try {
       if (ch === "email") {
-        const recipients = await getRecipients(campaign.audience_type, ch);
+        const recipients = await getRecipients(campaign.audience_type, ch, campaign.id, campaign.audience_source);
         if (!recipients.length) { toast.error("No recipients found"); setSending(false); return; }
-        toast.info(`Sending to ${recipients.length} recipients...`);
-        const { data, error } = await supabase.functions.invoke("send-campaign-emails", { body: { campaignId: campaign.id, recipients } });
+
+        // Log activity
+        const activityInserts = recipients.map(r => ({
+          campaign_id: campaign.id,
+          contact_email: r.email,
+          contact_name: r.name || null,
+          source: r.source,
+          channel: ch,
+          status: "queued",
+        }));
+        for (let i = 0; i < activityInserts.length; i += 500) {
+          await supabase.from("campaign_activity_log").insert(activityInserts.slice(i, i + 500));
+        }
+
+        // Apply personalization
+        const personalizedRecipients = recipients.map(r => ({
+          email: r.email,
+          name: r.name || "",
+        }));
+
+        toast.info(`Sending to ${personalizedRecipients.length} recipients...`);
+        const { data, error } = await supabase.functions.invoke("send-campaign-emails", {
+          body: { campaignId: campaign.id, recipients: personalizedRecipients },
+        });
         if (error) toast.error("Failed: " + error.message);
-        else toast.success(`Sent ${data.sent}/${data.total} emails`);
+        else {
+          toast.success(`Sent ${data.sent}/${data.total} emails`);
+          // Update campaign stats
+          await supabase.from("email_campaigns").update({
+            total_sent: data.sent || 0,
+            total_recipients: data.total || 0,
+            total_delivered: data.sent || 0,
+            delivery_rate: data.total > 0 ? ((data.sent / data.total) * 100) : 0,
+          }).eq("id", campaign.id);
+          // Update activity logs
+          await supabase.from("campaign_activity_log")
+            .update({ status: "sent", sent_at: new Date().toISOString() })
+            .eq("campaign_id", campaign.id)
+            .eq("status", "queued");
+        }
       } else {
         await supabase.from("email_campaigns").update({ status: "sent", sent_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", campaign.id);
         toast.success(`${ch} campaign marked as sent. Use the platform's native tools to publish.`);
       }
     } catch (e: any) { toast.error(e.message); }
     setSending(false);
+    setConfirmCampaign(null);
     fetchAll();
   };
 
-  // Assign campaign to selected coaches (duplicate campaign for each coach)
   const openAssignDialog = (campaign: Campaign) => {
     setAssignCampaign(campaign);
     setSelectedCoaches([]);
@@ -250,37 +404,21 @@ const AdminCampaigns = () => {
   };
 
   const toggleCoach = (coachId: string) => {
-    setSelectedCoaches(prev =>
-      prev.includes(coachId) ? prev.filter(id => id !== coachId) : [...prev, coachId]
-    );
+    setSelectedCoaches(prev => prev.includes(coachId) ? prev.filter(id => id !== coachId) : [...prev, coachId]);
   };
 
   const assignToCoaches = async () => {
-    if (!assignCampaign || selectedCoaches.length === 0) {
-      toast.error("Select at least one coach");
-      return;
-    }
+    if (!assignCampaign || selectedCoaches.length === 0) { toast.error("Select at least one coach"); return; }
     setAssigning(true);
     const inserts = selectedCoaches.map(coachId => ({
-      subject: assignCampaign.subject,
-      sender_name: assignCampaign.sender_name,
-      sender_email: assignCampaign.sender_email,
-      content: assignCampaign.content,
-      cta_text: assignCampaign.cta_text,
-      cta_link: assignCampaign.cta_link,
-      audience_type: "my_learners",
-      status: "draft",
-      channel: assignCampaign.channel,
-      scheduled_at: assignCampaign.scheduled_at,
-      coach_id: coachId,
+      subject: assignCampaign.subject, sender_name: assignCampaign.sender_name, sender_email: assignCampaign.sender_email,
+      content: assignCampaign.content, cta_text: assignCampaign.cta_text, cta_link: assignCampaign.cta_link,
+      audience_type: "my_learners", status: "draft", channel: assignCampaign.channel,
+      scheduled_at: assignCampaign.scheduled_at, coach_id: coachId,
     }));
-
     const { error } = await supabase.from("email_campaigns").insert(inserts);
-    if (error) {
-      toast.error("Failed to assign: " + error.message);
-    } else {
-      toast.success(`Campaign assigned to ${selectedCoaches.length} coach(es)`);
-    }
+    if (error) toast.error("Failed to assign: " + error.message);
+    else toast.success(`Campaign assigned to ${selectedCoaches.length} coach(es)`);
     setAssigning(false);
     setAssignOpen(false);
     fetchAll();
@@ -302,7 +440,24 @@ const AdminCampaigns = () => {
 
   const getPlatformInfo = (channel: string) => CAMPAIGN_PLATFORMS.find(p => p.value === channel) || CAMPAIGN_PLATFORMS[0];
 
+  const handleImportComplete = (contacts: ImportedContact[], summary: ImportSummary) => {
+    setImportedContacts(contacts);
+    setImportSummary(summary);
+    setShowImport(false);
+    if (form.audience_source === "platform") {
+      setForm(prev => ({ ...prev, audience_source: "both" }));
+    }
+    toast.success(`${summary.validContacts} valid contacts imported`);
+  };
+
+  // Show report view
+  if (reportCampaign) {
+    return <CampaignReport campaign={reportCampaign as any} onBack={() => setReportCampaign(null)} />;
+  }
+
   if (loading) return <div className="flex justify-center p-8"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
+
+  const showImportable = ["email", "whatsapp", "sms"].includes(form.channel);
 
   return (
     <div className="space-y-6">
@@ -367,7 +522,7 @@ const AdminCampaigns = () => {
                 <TableHead>Platform</TableHead>
                 <TableHead>Subject</TableHead>
                 <TableHead>Owner</TableHead>
-                <TableHead>Audience</TableHead>
+                <TableHead>Source</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Sent</TableHead>
                 <TableHead>Date</TableHead>
@@ -384,7 +539,7 @@ const AdminCampaigns = () => {
                 return (
                   <TableRow key={c.id}>
                     <TableCell><Badge variant="outline" className="gap-1"><PIcon className={`h-3 w-3 ${platform.color}`} />{platform.label}</Badge></TableCell>
-                    <TableCell className="font-medium max-w-[200px] truncate">{c.subject}</TableCell>
+                    <TableCell className="font-medium max-w-[180px] truncate">{c.subject}</TableCell>
                     <TableCell>
                       {c.coach_id ? (
                         <Badge variant="secondary" className="text-xs">{coachProfiles[c.coach_id] || "Coach"}</Badge>
@@ -392,7 +547,15 @@ const AdminCampaigns = () => {
                         <Badge className="text-xs bg-primary/10 text-primary">Admin</Badge>
                       )}
                     </TableCell>
-                    <TableCell className="capitalize text-sm">{c.audience_type}</TableCell>
+                    <TableCell>
+                      {c.audience_source === "both" ? (
+                        <Badge variant="outline" className="text-xs gap-1"><Database className="h-2.5 w-2.5" />Both</Badge>
+                      ) : c.audience_source === "imported" ? (
+                        <Badge variant="outline" className="text-xs gap-1"><Upload className="h-2.5 w-2.5" />Imported</Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Platform</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={c.status === "sent" ? "default" : c.status === "draft" ? "secondary" : "outline"}>
                         {c.status}
@@ -404,13 +567,14 @@ const AdminCampaigns = () => {
                       <div className="flex gap-1">
                         <Button size="icon" variant="ghost" onClick={() => { setPreviewContent(c.content); setPreviewOpen(true); }}><Eye className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost" onClick={() => openEdit(c)}><Pencil className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => setReportCampaign(c)} title="View Report"><BarChart3 className="h-4 w-4 text-primary" /></Button>
                         {!c.coach_id && (
                           <Button size="icon" variant="ghost" onClick={() => openAssignDialog(c)} title="Assign to Coaches">
                             <UserPlus className="h-4 w-4 text-blue-500" />
                           </Button>
                         )}
                         {c.status !== "sent" && (
-                          <Button size="icon" variant="ghost" onClick={() => sendCampaign(c)} disabled={sending}><Send className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" onClick={() => openSendConfirmation(c)} disabled={sending}><Send className="h-4 w-4" /></Button>
                         )}
                         <Button size="icon" variant="ghost" onClick={() => deleteCampaign(c.id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
                       </div>
@@ -425,7 +589,7 @@ const AdminCampaigns = () => {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {(() => { const p = getPlatformInfo(form.channel); const I = p.icon; return <I className={`h-5 w-5 ${p.color}`} />; })()}
@@ -447,7 +611,11 @@ const AdminCampaigns = () => {
                 <div><Label>Sender Email</Label><Input value={form.sender_email} onChange={e => setForm({ ...form, sender_email: e.target.value })} /></div>
               </div>
             )}
-            <div><Label>Content / Message</Label><Textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} rows={6} placeholder="Use {Name} and {Email} for personalization..." /></div>
+            <div>
+              <Label>Content / Message</Label>
+              <Textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} rows={6} placeholder="Use {Name}, {FirstName}, {Company}, {Role} for personalization. Fallback: {Name|there}" />
+              <p className="text-xs text-muted-foreground mt-1">Personalization tags: {"{Name}"}, {"{FirstName}"}, {"{LastName}"}, {"{Email}"}, {"{Company}"}, {"{Role}"} — Fallback: {"{Name|Friend}"}</p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div><Label>CTA Text</Label><Input value={form.cta_text} onChange={e => setForm({ ...form, cta_text: e.target.value })} placeholder="e.g., Join Now" /></div>
               <div><Label>CTA Link</Label><Input value={form.cta_link} onChange={e => setForm({ ...form, cta_link: e.target.value })} placeholder="/courses" /></div>
@@ -462,6 +630,54 @@ const AdminCampaigns = () => {
               </div>
               <div><Label>Schedule (optional)</Label><Input type="datetime-local" value={form.scheduled_at} onChange={e => setForm({ ...form, scheduled_at: e.target.value })} /></div>
             </div>
+
+            {/* Audience Source */}
+            {showImportable && (
+              <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold flex items-center gap-2"><Database className="h-4 w-4 text-primary" /> Audience Source</Label>
+                </div>
+                <Select value={form.audience_source} onValueChange={v => setForm({ ...form, audience_source: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{AUDIENCE_SOURCES.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}</SelectContent>
+                </Select>
+
+                {(form.audience_source === "imported" || form.audience_source === "both") && (
+                  <>
+                    {!showImport && !importSummary && (
+                      <Button variant="outline" className="w-full gap-2" onClick={() => setShowImport(true)}>
+                        <Upload className="h-4 w-4" /> Attach Database / Import Contacts
+                      </Button>
+                    )}
+                    {showImport && (
+                      <CampaignContactImport
+                        channel={form.channel}
+                        onImportComplete={handleImportComplete}
+                        onCancel={() => setShowImport(false)}
+                      />
+                    )}
+                    {importSummary && !showImport && (
+                      <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500" /> Contacts Imported
+                          </p>
+                          <Button variant="ghost" size="sm" onClick={() => { setShowImport(true); setImportSummary(null); setImportedContacts([]); }}>
+                            Re-import
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                          <div><p className="text-lg font-bold text-green-500">{importSummary.validContacts}</p><p className="text-xs text-muted-foreground">Valid</p></div>
+                          <div><p className="text-lg font-bold text-red-500">{importSummary.invalidContacts}</p><p className="text-xs text-muted-foreground">Invalid</p></div>
+                          <div><p className="text-lg font-bold text-yellow-500">{importSummary.duplicateContacts}</p><p className="text-xs text-muted-foreground">Duplicates</p></div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
             <div className="flex gap-2 justify-end pt-4">
               <Button variant="outline" onClick={() => saveCampaign("draft")}><Clock className="h-4 w-4 mr-2" /> Save Draft</Button>
               <Button onClick={() => saveCampaign("ready")}><Send className="h-4 w-4 mr-2" /> Save & Ready</Button>
@@ -470,13 +686,34 @@ const AdminCampaigns = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Send Confirmation Dialog */}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-yellow-500" /> Confirm Send</DialogTitle></DialogHeader>
+          {confirmCampaign && (
+            <div className="space-y-4">
+              <div className="bg-muted rounded-lg p-4 space-y-2">
+                <p className="text-sm"><strong>Campaign:</strong> {confirmCampaign.subject}</p>
+                <p className="text-sm"><strong>Channel:</strong> {getPlatformInfo(confirmCampaign.channel).label}</p>
+                <p className="text-sm"><strong>Audience Source:</strong> {confirmCampaign.audience_source || "platform"}</p>
+                <p className="text-sm"><strong>Total Valid Recipients:</strong> <span className="text-primary font-bold">{platformAudienceCount}</span></p>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+                <Button onClick={sendCampaign} disabled={sending} className="gap-2">
+                  <Send className="h-4 w-4" /> {sending ? "Sending..." : "Confirm & Send"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Assign to Coaches Dialog */}
       <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5 text-primary" /> Assign Campaign to Coaches
-            </DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><UserPlus className="h-5 w-5 text-primary" /> Assign Campaign to Coaches</DialogTitle>
           </DialogHeader>
           {assignCampaign && (
             <div className="space-y-4">
@@ -484,7 +721,6 @@ const AdminCampaigns = () => {
                 <p className="text-sm font-medium">{assignCampaign.subject}</p>
                 <p className="text-xs text-muted-foreground mt-1">Platform: {getPlatformInfo(assignCampaign.channel).label}</p>
               </div>
-
               <div>
                 <Label className="text-sm font-medium mb-2 block">Select Coaches ({selectedCoaches.length} selected)</Label>
                 <div className="flex gap-2 mb-3">
@@ -494,35 +730,22 @@ const AdminCampaigns = () => {
                 <div className="space-y-2 max-h-[300px] overflow-y-auto border rounded-lg p-3">
                   {coaches.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No coaches found</p>}
                   {coaches.map(coach => (
-                    <label
-                      key={coach.user_id}
-                      className="flex items-center gap-3 p-2 rounded-md hover:bg-accent cursor-pointer transition-colors"
-                    >
-                      <Checkbox
-                        checked={selectedCoaches.includes(coach.user_id)}
-                        onCheckedChange={() => toggleCoach(coach.user_id)}
-                      />
+                    <label key={coach.user_id} className="flex items-center gap-3 p-2 rounded-md hover:bg-accent cursor-pointer transition-colors">
+                      <Checkbox checked={selectedCoaches.includes(coach.user_id)} onCheckedChange={() => toggleCoach(coach.user_id)} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{coach.full_name || "Unnamed Coach"}</p>
                         <p className="text-xs text-muted-foreground truncate">{coach.email}</p>
                       </div>
-                      {selectedCoaches.includes(coach.user_id) && (
-                        <UserCheck className="h-4 w-4 text-green-500 shrink-0" />
-                      )}
+                      {selectedCoaches.includes(coach.user_id) && <UserCheck className="h-4 w-4 text-green-500 shrink-0" />}
                     </label>
                   ))}
                 </div>
               </div>
-
-              <p className="text-xs text-muted-foreground">
-                A copy of this campaign will be created for each selected coach. Coaches can then customize and send it to their own learners.
-              </p>
-
+              <p className="text-xs text-muted-foreground">A copy of this campaign will be created for each selected coach.</p>
               <div className="flex gap-2 justify-end pt-2">
                 <Button variant="outline" onClick={() => setAssignOpen(false)}>Cancel</Button>
                 <Button onClick={assignToCoaches} disabled={assigning || selectedCoaches.length === 0} className="gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  {assigning ? "Assigning..." : `Assign to ${selectedCoaches.length} Coach(es)`}
+                  <UserPlus className="h-4 w-4" /> {assigning ? "Assigning..." : `Assign to ${selectedCoaches.length} Coach(es)`}
                 </Button>
               </div>
             </div>

@@ -80,6 +80,142 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_activity_log: {
+        Row: {
+          campaign_id: string
+          channel: string
+          clicked_at: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          delivered_at: string | null
+          failed_at: string | null
+          failure_reason: string | null
+          id: string
+          opened_at: string | null
+          replied_at: string | null
+          sent_at: string | null
+          source: string | null
+          status: string
+        }
+        Insert: {
+          campaign_id: string
+          channel?: string
+          clicked_at?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          opened_at?: string | null
+          replied_at?: string | null
+          sent_at?: string | null
+          source?: string | null
+          status?: string
+        }
+        Update: {
+          campaign_id?: string
+          channel?: string
+          clicked_at?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          opened_at?: string | null
+          replied_at?: string | null
+          sent_at?: string | null
+          source?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_activity_log_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_contacts: {
+        Row: {
+          campaign_id: string
+          company: string | null
+          country_code: string | null
+          created_at: string
+          custom_fields: Json | null
+          email: string | null
+          first_name: string | null
+          full_name: string | null
+          id: string
+          is_duplicate: boolean
+          is_valid: boolean
+          last_name: string | null
+          phone: string | null
+          role: string | null
+          source: string
+          tags: string[] | null
+          validation_errors: string[] | null
+          whatsapp_number: string | null
+        }
+        Insert: {
+          campaign_id: string
+          company?: string | null
+          country_code?: string | null
+          created_at?: string
+          custom_fields?: Json | null
+          email?: string | null
+          first_name?: string | null
+          full_name?: string | null
+          id?: string
+          is_duplicate?: boolean
+          is_valid?: boolean
+          last_name?: string | null
+          phone?: string | null
+          role?: string | null
+          source?: string
+          tags?: string[] | null
+          validation_errors?: string[] | null
+          whatsapp_number?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          company?: string | null
+          country_code?: string | null
+          created_at?: string
+          custom_fields?: Json | null
+          email?: string | null
+          first_name?: string | null
+          full_name?: string | null
+          id?: string
+          is_duplicate?: boolean
+          is_valid?: boolean
+          last_name?: string | null
+          phone?: string | null
+          role?: string | null
+          source?: string
+          tags?: string[] | null
+          validation_errors?: string[] | null
+          whatsapp_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_contacts_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_history: {
         Row: {
           content: string
@@ -437,15 +573,21 @@ export type Database = {
       }
       email_campaigns: {
         Row: {
+          attached_file_name: string | null
           audience_filter: Json | null
+          audience_source: string | null
           audience_type: string
           channel: string
+          click_rate: number | null
           coach_id: string | null
           content: string
           created_at: string
           cta_link: string | null
           cta_text: string | null
+          delivery_rate: number | null
           id: string
+          import_mapping: Json | null
+          open_rate: number | null
           scheduled_at: string | null
           sender_email: string | null
           sender_name: string | null
@@ -453,20 +595,37 @@ export type Database = {
           status: string
           subject: string
           template_name: string | null
+          total_bounced: number | null
+          total_clicked: number | null
+          total_delivered: number | null
+          total_duplicates_removed: number | null
+          total_failed: number | null
+          total_imported: number | null
+          total_invalid: number | null
+          total_opened: number | null
           total_recipients: number | null
+          total_replied: number | null
           total_sent: number | null
+          total_unsubscribed: number | null
+          total_valid: number | null
           updated_at: string
         }
         Insert: {
+          attached_file_name?: string | null
           audience_filter?: Json | null
+          audience_source?: string | null
           audience_type?: string
           channel?: string
+          click_rate?: number | null
           coach_id?: string | null
           content: string
           created_at?: string
           cta_link?: string | null
           cta_text?: string | null
+          delivery_rate?: number | null
           id?: string
+          import_mapping?: Json | null
+          open_rate?: number | null
           scheduled_at?: string | null
           sender_email?: string | null
           sender_name?: string | null
@@ -474,20 +633,37 @@ export type Database = {
           status?: string
           subject: string
           template_name?: string | null
+          total_bounced?: number | null
+          total_clicked?: number | null
+          total_delivered?: number | null
+          total_duplicates_removed?: number | null
+          total_failed?: number | null
+          total_imported?: number | null
+          total_invalid?: number | null
+          total_opened?: number | null
           total_recipients?: number | null
+          total_replied?: number | null
           total_sent?: number | null
+          total_unsubscribed?: number | null
+          total_valid?: number | null
           updated_at?: string
         }
         Update: {
+          attached_file_name?: string | null
           audience_filter?: Json | null
+          audience_source?: string | null
           audience_type?: string
           channel?: string
+          click_rate?: number | null
           coach_id?: string | null
           content?: string
           created_at?: string
           cta_link?: string | null
           cta_text?: string | null
+          delivery_rate?: number | null
           id?: string
+          import_mapping?: Json | null
+          open_rate?: number | null
           scheduled_at?: string | null
           sender_email?: string | null
           sender_name?: string | null
@@ -495,8 +671,19 @@ export type Database = {
           status?: string
           subject?: string
           template_name?: string | null
+          total_bounced?: number | null
+          total_clicked?: number | null
+          total_delivered?: number | null
+          total_duplicates_removed?: number | null
+          total_failed?: number | null
+          total_imported?: number | null
+          total_invalid?: number | null
+          total_opened?: number | null
           total_recipients?: number | null
+          total_replied?: number | null
           total_sent?: number | null
+          total_unsubscribed?: number | null
+          total_valid?: number | null
           updated_at?: string
         }
         Relationships: []
