@@ -258,6 +258,7 @@ export type Database = {
           id: string
           industry: string | null
           name: string
+          user_id: string | null
           user_type: string
           whatsapp: string
         }
@@ -270,6 +271,7 @@ export type Database = {
           id?: string
           industry?: string | null
           name: string
+          user_id?: string | null
           user_type: string
           whatsapp: string
         }
@@ -282,6 +284,7 @@ export type Database = {
           id?: string
           industry?: string | null
           name?: string
+          user_id?: string | null
           user_type?: string
           whatsapp?: string
         }
