@@ -788,6 +788,7 @@ const ChatbotWidget = () => {
     stopVoiceMode();
     interruptCurrentResponse();
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_DATA_KEY);
     setLeadId(null);
     setLeadName("");
     setMessages([]);
