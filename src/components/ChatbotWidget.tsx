@@ -27,6 +27,7 @@ const COACH_FIELDS = [
 
 const WHATSAPP_AGENT_URL = "https://api.whatsapp.com/send?phone=919852411280&text=Hi%2C%20I%20want%20to%20know%20more%20about%20AI%20Coach%20Portal.";
 const STORAGE_KEY = "chatbot_lead_id";
+const STORAGE_DATA_KEY = "chatbot_lead_data";
 
 const LANG_MAP: Record<string, string> = {
   hi: "hi-IN", en: "en-US", ta: "ta-IN", te: "te-IN", bn: "bn-IN", mr: "mr-IN",
