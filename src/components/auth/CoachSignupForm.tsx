@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SocialAuthButtons from "./SocialAuthButtons";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -190,6 +191,8 @@ const CoachSignupForm = () => {
         {loading ? "Creating account..." : "Create Coach Account"}
         {!loading && <ArrowRight className="h-4 w-4" />}
       </button>
+
+      <SocialAuthButtons />
     </form>
   );
 };
