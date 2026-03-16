@@ -159,6 +159,8 @@ const LearnerSignupForm = () => {
         {loading ? "Creating account..." : "Create Learner Account"}
         {!loading && <ArrowRight className="h-4 w-4" />}
       </button>
+
+      <SocialAuthButtons />
     </form>
   );
 };
