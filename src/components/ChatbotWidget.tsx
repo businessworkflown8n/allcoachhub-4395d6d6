@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { X, Send, Bot, User, MessageSquare, RotateCcw, Mic, MicOff, Volume2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
+import { useAuth } from "@/hooks/useAuth";
 
 type Step = "loading" | "welcome" | "collecting" | "chat";
 type UserType = "learner" | "coach";
@@ -26,6 +27,7 @@ const COACH_FIELDS = [
 
 const WHATSAPP_AGENT_URL = "https://api.whatsapp.com/send?phone=919852411280&text=Hi%2C%20I%20want%20to%20know%20more%20about%20AI%20Coach%20Portal.";
 const STORAGE_KEY = "chatbot_lead_id";
+const STORAGE_DATA_KEY = "chatbot_lead_data";
 
 const LANG_MAP: Record<string, string> = {
   hi: "hi-IN", en: "en-US", ta: "ta-IN", te: "te-IN", bn: "bn-IN", mr: "mr-IN",
@@ -175,6 +177,7 @@ function autoCorrelate(buf: Float32Array, sampleRate: number): number {
 }
 
 const ChatbotWidget = () => {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("loading");
   const [userType, setUserType] = useState<UserType | null>(null);
@@ -224,23 +227,31 @@ const ChatbotWidget = () => {
     initializedRef.current = true;
 
     const storedLeadId = localStorage.getItem(STORAGE_KEY);
+    const storedDataStr = localStorage.getItem(STORAGE_DATA_KEY);
 
-    if (storedLeadId) {
-      const { data: lead } = await supabase
-        .from("chatbot_leads")
-        .select("id, name, user_type")
-        .eq("id", storedLeadId)
-        .maybeSingle();
+    if (storedLeadId && storedDataStr) {
+      try {
+        const storedData = JSON.parse(storedDataStr);
+        const leadName = storedData.name || "";
+        const leadType = storedData.user_type || "AI Learner";
 
-      if (lead) {
-        setLeadId(lead.id);
-        setLeadName(lead.name);
-        setUserType(lead.user_type === "AI Coach" ? "coach" : "learner");
+        setLeadId(storedLeadId);
+        setLeadName(leadName);
+        setUserType(leadType === "AI Coach" ? "coach" : "learner");
+
+        // Link to authenticated user if not already linked
+        if (user?.id) {
+          supabase
+            .from("chatbot_leads")
+            .update({ user_id: user.id } as any)
+            .eq("id", storedLeadId)
+            .then(() => {});
+        }
 
         const { data: history } = await supabase
-          .from("chat_history" as any)
+          .from("chat_history")
           .select("role, content")
-          .eq("lead_id", lead.id)
+          .eq("lead_id", storedLeadId)
           .order("created_at", { ascending: true });
 
         const prevMessages: Msg[] = (history as any[])?.map((h: any) => ({
@@ -252,18 +263,24 @@ const ChatbotWidget = () => {
           setMessages(prevMessages);
         } else {
           setMessages([
-            { role: "assistant", content: `Welcome back, ${lead.name}! 🎉 How can I help you today?\n\nYou can also **chat with a live agent** anytime using the button below.` },
+            { role: "assistant", content: `Welcome back, ${leadName}! 🎉 How can I help you today?\n\nYou can also **chat with a live agent** anytime using the button below.` },
           ]);
         }
         setStep("chat");
         return;
-      } else {
+      } catch {
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_DATA_KEY);
       }
     }
 
+    // Clean up orphaned storage
+    if (storedLeadId && !storedDataStr) {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
     setStep("welcome");
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (open) initializeChat();
@@ -312,23 +329,32 @@ const ChatbotWidget = () => {
     if (fieldIndex < fields.length - 1) {
       setFieldIndex(fieldIndex + 1);
     } else {
-      const { data: existingLead } = await supabase
-        .from("chatbot_leads")
-        .select("id, name")
-        .or(`email.eq.${updated.email},whatsapp.eq.${updated.whatsapp?.replace(/\s/g, "")}`)
-        .maybeSingle();
+      const userTypeLabel = userType === "learner" ? "AI Learner" : "AI Coach";
 
-      let currentLeadId: string;
-      let currentName: string;
+      // Check for existing lead by email/whatsapp
+      let currentLeadId: string | null = null;
+      let currentName: string = updated.name || "";
 
-      if (existingLead) {
-        currentLeadId = existingLead.id;
-        currentName = existingLead.name;
-      } else {
-        const lead: Record<string, string> = {
-          user_type: userType === "learner" ? "AI Learner" : "AI Coach",
+      try {
+        const { data: existingLead } = await supabase
+          .from("chatbot_leads")
+          .select("id, name")
+          .or(`email.eq.${updated.email},whatsapp.eq.${updated.whatsapp?.replace(/\s/g, "")}`)
+          .maybeSingle();
+
+        if (existingLead) {
+          currentLeadId = existingLead.id;
+          currentName = existingLead.name;
+        }
+      } catch {
+        // SELECT may fail for anon users if RLS is restrictive - continue to insert
+      }
+
+      if (!currentLeadId) {
+        const lead: Record<string, any> = {
+          user_type: userTypeLabel,
           name: updated.name || "",
-          whatsapp: updated.whatsapp || "",
+          whatsapp: (updated.whatsapp || "").replace(/\s/g, ""),
           email: updated.email || "",
         };
         if (userType === "learner") {
@@ -338,22 +364,44 @@ const ChatbotWidget = () => {
           lead.company = updated.company || "";
           lead.country = updated.country || "";
         }
-        const { data: newLead } = await supabase
-          .from("chatbot_leads" as any)
+        // Link to authenticated user
+        if (user?.id) {
+          lead.user_id = user.id;
+        }
+        const { data: newLead, error: insertError } = await supabase
+          .from("chatbot_leads")
           .insert(lead as any)
           .select("id")
           .single();
 
+        if (insertError) {
+          console.error("Failed to save lead:", insertError);
+        }
         currentLeadId = (newLead as any)?.id;
-        currentName = updated.name || "";
+      } else if (user?.id) {
+        // Link existing lead to authenticated user
+        supabase
+          .from("chatbot_leads")
+          .update({ user_id: user.id } as any)
+          .eq("id", currentLeadId)
+          .then(() => {});
       }
 
+      if (!currentLeadId) {
+        // Fallback: proceed without lead persistence
+        setStep("chat");
+        setMessages([{ role: "assistant", content: `Thanks ${currentName}! 🎉 Ask me anything about our courses, coaches, webinars, or blogs!` }]);
+        return;
+      }
+
+      // Store lead data in localStorage for faster return visits
       localStorage.setItem(STORAGE_KEY, currentLeadId);
+      localStorage.setItem(STORAGE_DATA_KEY, JSON.stringify({ name: currentName, user_type: userTypeLabel }));
       setLeadId(currentLeadId);
       setLeadName(currentName);
 
       const { data: history } = await supabase
-        .from("chat_history" as any)
+        .from("chat_history")
         .select("role, content")
         .eq("lead_id", currentLeadId)
         .order("created_at", { ascending: true });
@@ -740,6 +788,7 @@ const ChatbotWidget = () => {
     stopVoiceMode();
     interruptCurrentResponse();
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_DATA_KEY);
     setLeadId(null);
     setLeadName("");
     setMessages([]);
