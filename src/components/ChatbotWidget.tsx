@@ -227,23 +227,31 @@ const ChatbotWidget = () => {
     initializedRef.current = true;
 
     const storedLeadId = localStorage.getItem(STORAGE_KEY);
+    const storedDataStr = localStorage.getItem(STORAGE_DATA_KEY);
 
-    if (storedLeadId) {
-      const { data: lead } = await supabase
-        .from("chatbot_leads")
-        .select("id, name, user_type")
-        .eq("id", storedLeadId)
-        .maybeSingle();
+    if (storedLeadId && storedDataStr) {
+      try {
+        const storedData = JSON.parse(storedDataStr);
+        const leadName = storedData.name || "";
+        const leadType = storedData.user_type || "AI Learner";
 
-      if (lead) {
-        setLeadId(lead.id);
-        setLeadName(lead.name);
-        setUserType(lead.user_type === "AI Coach" ? "coach" : "learner");
+        setLeadId(storedLeadId);
+        setLeadName(leadName);
+        setUserType(leadType === "AI Coach" ? "coach" : "learner");
+
+        // Link to authenticated user if not already linked
+        if (user?.id) {
+          supabase
+            .from("chatbot_leads")
+            .update({ user_id: user.id } as any)
+            .eq("id", storedLeadId)
+            .then(() => {});
+        }
 
         const { data: history } = await supabase
-          .from("chat_history" as any)
+          .from("chat_history")
           .select("role, content")
-          .eq("lead_id", lead.id)
+          .eq("lead_id", storedLeadId)
           .order("created_at", { ascending: true });
 
         const prevMessages: Msg[] = (history as any[])?.map((h: any) => ({
@@ -255,18 +263,24 @@ const ChatbotWidget = () => {
           setMessages(prevMessages);
         } else {
           setMessages([
-            { role: "assistant", content: `Welcome back, ${lead.name}! 🎉 How can I help you today?\n\nYou can also **chat with a live agent** anytime using the button below.` },
+            { role: "assistant", content: `Welcome back, ${leadName}! 🎉 How can I help you today?\n\nYou can also **chat with a live agent** anytime using the button below.` },
           ]);
         }
         setStep("chat");
         return;
-      } else {
+      } catch {
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_DATA_KEY);
       }
     }
 
+    // Clean up orphaned storage
+    if (storedLeadId && !storedDataStr) {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
     setStep("welcome");
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (open) initializeChat();
