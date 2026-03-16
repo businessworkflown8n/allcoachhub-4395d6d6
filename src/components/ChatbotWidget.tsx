@@ -370,7 +370,7 @@ const ChatbotWidget = () => {
         }
         const { data: newLead, error: insertError } = await supabase
           .from("chatbot_leads")
-          .insert(lead)
+          .insert(lead as any)
           .select("id")
           .single();
 
