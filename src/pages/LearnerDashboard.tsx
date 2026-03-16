@@ -43,6 +43,7 @@ const LearnerDashboard = () => {
         <Route path="webinars" element={<LearnerWebinars />} />
         <Route path="certificates" element={<LearnerCertificates />} />
         <Route path="materials" element={<DashboardMaterials />} />
+        <Route path="chat-history" element={<LearnerChatHistory />} />
         <Route path="daily-zip" element={<LearnerDailyZip />} />
         <Route path="social" element={<SocialMediaHub />} />
         <Route path="profile" element={<LearnerProfile />} />
