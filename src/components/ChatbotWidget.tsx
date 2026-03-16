@@ -329,23 +329,32 @@ const ChatbotWidget = () => {
     if (fieldIndex < fields.length - 1) {
       setFieldIndex(fieldIndex + 1);
     } else {
-      const { data: existingLead } = await supabase
-        .from("chatbot_leads")
-        .select("id, name")
-        .or(`email.eq.${updated.email},whatsapp.eq.${updated.whatsapp?.replace(/\s/g, "")}`)
-        .maybeSingle();
+      const userTypeLabel = userType === "learner" ? "AI Learner" : "AI Coach";
 
-      let currentLeadId: string;
-      let currentName: string;
+      // Check for existing lead by email/whatsapp
+      let currentLeadId: string | null = null;
+      let currentName: string = updated.name || "";
 
-      if (existingLead) {
-        currentLeadId = existingLead.id;
-        currentName = existingLead.name;
-      } else {
-        const lead: Record<string, string> = {
-          user_type: userType === "learner" ? "AI Learner" : "AI Coach",
+      try {
+        const { data: existingLead } = await supabase
+          .from("chatbot_leads")
+          .select("id, name")
+          .or(`email.eq.${updated.email},whatsapp.eq.${updated.whatsapp?.replace(/\s/g, "")}`)
+          .maybeSingle();
+
+        if (existingLead) {
+          currentLeadId = existingLead.id;
+          currentName = existingLead.name;
+        }
+      } catch {
+        // SELECT may fail for anon users if RLS is restrictive - continue to insert
+      }
+
+      if (!currentLeadId) {
+        const lead: Record<string, any> = {
+          user_type: userTypeLabel,
           name: updated.name || "",
-          whatsapp: updated.whatsapp || "",
+          whatsapp: (updated.whatsapp || "").replace(/\s/g, ""),
           email: updated.email || "",
         };
         if (userType === "learner") {
@@ -355,22 +364,44 @@ const ChatbotWidget = () => {
           lead.company = updated.company || "";
           lead.country = updated.country || "";
         }
-        const { data: newLead } = await supabase
-          .from("chatbot_leads" as any)
-          .insert(lead as any)
+        // Link to authenticated user
+        if (user?.id) {
+          lead.user_id = user.id;
+        }
+        const { data: newLead, error: insertError } = await supabase
+          .from("chatbot_leads")
+          .insert(lead)
           .select("id")
           .single();
 
+        if (insertError) {
+          console.error("Failed to save lead:", insertError);
+        }
         currentLeadId = (newLead as any)?.id;
-        currentName = updated.name || "";
+      } else if (user?.id) {
+        // Link existing lead to authenticated user
+        supabase
+          .from("chatbot_leads")
+          .update({ user_id: user.id } as any)
+          .eq("id", currentLeadId)
+          .then(() => {});
       }
 
+      if (!currentLeadId) {
+        // Fallback: proceed without lead persistence
+        setStep("chat");
+        setMessages([{ role: "assistant", content: `Thanks ${currentName}! 🎉 Ask me anything about our courses, coaches, webinars, or blogs!` }]);
+        return;
+      }
+
+      // Store lead data in localStorage for faster return visits
       localStorage.setItem(STORAGE_KEY, currentLeadId);
+      localStorage.setItem(STORAGE_DATA_KEY, JSON.stringify({ name: currentName, user_type: userTypeLabel }));
       setLeadId(currentLeadId);
       setLeadName(currentName);
 
       const { data: history } = await supabase
-        .from("chat_history" as any)
+        .from("chat_history")
         .select("role, content")
         .eq("lead_id", currentLeadId)
         .order("created_at", { ascending: true });
