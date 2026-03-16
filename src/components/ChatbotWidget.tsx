@@ -177,6 +177,7 @@ function autoCorrelate(buf: Float32Array, sampleRate: number): number {
 }
 
 const ChatbotWidget = () => {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("loading");
   const [userType, setUserType] = useState<UserType | null>(null);
