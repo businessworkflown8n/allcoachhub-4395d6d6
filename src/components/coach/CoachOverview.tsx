@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { BookOpen, Users, Video, UserCheck } from "lucide-react";
+import GrowthTools from "./GrowthTools";
 
 const CoachOverview = () => {
   const { user } = useAuth();
