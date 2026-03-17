@@ -80,6 +80,42 @@ export type Database = {
         }
         Relationships: []
       }
+      bundle_items: {
+        Row: {
+          bundle_id: string
+          course_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          bundle_id: string
+          course_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          bundle_id?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bundle_items_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "program_bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bundle_items_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_activity_log: {
         Row: {
           campaign_id: string
@@ -364,6 +400,59 @@ export type Database = {
           value?: string
         }
         Relationships: []
+      }
+      coupons: {
+        Row: {
+          coach_id: string
+          code: string
+          course_id: string | null
+          created_at: string
+          discount_percent: number
+          expiry_date: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          revenue_generated: number
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          coach_id: string
+          code: string
+          course_id?: string | null
+          created_at?: string
+          discount_percent?: number
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          revenue_generated?: number
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          coach_id?: string
+          code?: string
+          course_id?: string | null
+          created_at?: string
+          discount_percent?: number
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          revenue_generated?: number
+          updated_at?: string
+          usage_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       courses: {
         Row: {
@@ -1312,6 +1401,48 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           whatsapp_number?: string | null
+        }
+        Relationships: []
+      }
+      program_bundles: {
+        Row: {
+          bundle_price_inr: number
+          bundle_price_usd: number
+          coach_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          revenue_generated: number
+          sales_count: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bundle_price_inr?: number
+          bundle_price_usd?: number
+          coach_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          revenue_generated?: number
+          sales_count?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          bundle_price_inr?: number
+          bundle_price_usd?: number
+          coach_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          revenue_generated?: number
+          sales_count?: number
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.process-email-queue]
 verify_jwt = true
+
+[functions.content-review]
+verify_jwt = false
+
+[functions.demand-insights]
+verify_jwt = false
