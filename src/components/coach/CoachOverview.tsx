@@ -59,6 +59,7 @@ const CoachOverview = () => {
           </div>
         ))}
       </div>
+      <GrowthTools />
     </div>
   );
 };
