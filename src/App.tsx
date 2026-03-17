@@ -36,6 +36,7 @@ import Sitemap from "./pages/Sitemap";
 import AISeoPrompt from "./pages/AISeoPrompt";
 import Materials from "./pages/Materials";
 import MaterialDetail from "./pages/MaterialDetail";
+import CategoryPage from "./pages/CategoryPage";
 import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 import ChatbotWidget from "./components/ChatbotWidget";
