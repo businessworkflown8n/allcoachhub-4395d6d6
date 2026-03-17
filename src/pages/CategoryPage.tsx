@@ -23,7 +23,10 @@ const categoryMap: Record<string, { name: string; emoji: string; description: st
 };
 
 const CategoryPage = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const location = useLocation();
+  // Support both /category/:slug and direct routes like /prompt-engineering
+  const slug = paramSlug || location.pathname.replace("/", "");
   const cat = categoryMap[slug || ""];
   const { symbol, priceKey, originalPriceKey } = useCurrency();
   const [courses, setCourses] = useState<any[]>([]);
