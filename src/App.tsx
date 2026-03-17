@@ -36,6 +36,7 @@ import Sitemap from "./pages/Sitemap";
 import AISeoPrompt from "./pages/AISeoPrompt";
 import Materials from "./pages/Materials";
 import MaterialDetail from "./pages/MaterialDetail";
+import CategoryPage from "./pages/CategoryPage";
 import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 import ChatbotWidget from "./components/ChatbotWidget";
@@ -128,6 +129,14 @@ const App = () => (
             <Route path="/webinars" element={<Webinars />} />
             <Route path="/materials" element={<Materials />} />
             <Route path="/materials/:slug" element={<MaterialDetail />} />
+            <Route path="/prompt-engineering" element={<CategoryPage />} />
+            <Route path="/ai-agents" element={<CategoryPage />} />
+            <Route path="/llms-fine-tuning" element={<CategoryPage />} />
+            <Route path="/ai-automation" element={<CategoryPage />} />
+            <Route path="/no-code-ai" element={<CategoryPage />} />
+            <Route path="/ai-marketing" element={<CategoryPage />} />
+            <Route path="/generative-ai-for-developers" element={<CategoryPage />} />
+            <Route path="/ai-business" element={<CategoryPage />} />
             <Route path="/coach/*" element={
               <ProtectedRoute allowedRole="coach">
                 <CoachDashboard />

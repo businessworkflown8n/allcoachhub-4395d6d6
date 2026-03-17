@@ -1,60 +1,62 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Clock } from "lucide-react";
+import { X, Clock, ArrowRight } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/i18n/TranslationProvider";
+import { trackEvent } from "@/lib/analytics";
 
 const categories = [
-  { emoji: "✨", name: "Prompt Engineering", count: 42 },
-  { emoji: "🤖", name: "AI Agents", count: 28 },
-  { emoji: "🧠", name: "LLMs & Fine-tuning", count: 35 },
-  { emoji: "⚡", name: "AI Automation", count: 31 },
-  { emoji: "🔧", name: "No-Code AI", count: 24 },
-  { emoji: "📈", name: "AI for Marketing", count: 19 },
-  { emoji: "💻", name: "Gen AI for Devs", count: 38 },
-  { emoji: "🏢", name: "AI for Business", count: 22 },
+  { emoji: "✨", name: "Prompt Engineering", slug: "prompt-engineering", count: 42 },
+  { emoji: "🤖", name: "AI Agents", slug: "ai-agents", count: 28 },
+  { emoji: "🧠", name: "LLMs & Fine-tuning", slug: "llms-fine-tuning", count: 35 },
+  { emoji: "⚡", name: "AI Automation", slug: "ai-automation", count: 31 },
+  { emoji: "🔧", name: "No-Code AI", slug: "no-code-ai", count: 24 },
+  { emoji: "📈", name: "AI for Marketing", slug: "ai-marketing", count: 19 },
+  { emoji: "💻", name: "Gen AI for Devs", slug: "generative-ai-for-developers", count: 38 },
+  { emoji: "🏢", name: "AI for Business", slug: "ai-business", count: 22 },
 ];
 
 const staticCoursesByCategory: Record<string, any[]> = {
   "Prompt Engineering": [
-    { id: "s1", title: "Master Prompt Engineering: Zero to Expert", level: "Beginner", duration_hours: 8, price_usd: 49, price_inr: 3999, original_price_usd: 99, original_price_inr: 7999, discount_percent: 51 },
-    { id: "s2", title: "Advanced Prompt Patterns for ChatGPT & Claude", level: "Advanced", duration_hours: 6, price_usd: 59, price_inr: 4799, original_price_usd: null, original_price_inr: null, discount_percent: null },
-    { id: "s3", title: "Prompt Engineering for Business Teams", level: "Intermediate", duration_hours: 5, price_usd: 39, price_inr: 3199, original_price_usd: 79, original_price_inr: 6499, discount_percent: 51 },
+    { id: "s1", title: "Master Prompt Engineering: Zero to Expert", coach_name: "Expert Coach", level: "Beginner", duration_hours: 8, price_usd: 49, price_inr: 3999, original_price_usd: 99, original_price_inr: 7999, discount_percent: 51 },
+    { id: "s2", title: "Advanced Prompt Patterns for ChatGPT & Claude", coach_name: "Expert Coach", level: "Advanced", duration_hours: 6, price_usd: 59, price_inr: 4799, original_price_usd: null, original_price_inr: null, discount_percent: null },
+    { id: "s3", title: "Prompt Engineering for Business Teams", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 5, price_usd: 39, price_inr: 3199, original_price_usd: 79, original_price_inr: 6499, discount_percent: 51 },
   ],
   "AI Agents": [
-    { id: "s4", title: "Build AI Agents with No Code", level: "Intermediate", duration_hours: 12, price_usd: 69, price_inr: 5699, original_price_usd: 129, original_price_inr: 10699, discount_percent: 47 },
-    { id: "s5", title: "Autonomous AI Agents Masterclass", level: "Advanced", duration_hours: 14, price_usd: 89, price_inr: 7399, original_price_usd: null, original_price_inr: null, discount_percent: null },
+    { id: "s4", title: "Build AI Agents with No Code", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 12, price_usd: 69, price_inr: 5699, original_price_usd: 129, original_price_inr: 10699, discount_percent: 47 },
+    { id: "s5", title: "Autonomous AI Agents Masterclass", coach_name: "Expert Coach", level: "Advanced", duration_hours: 14, price_usd: 89, price_inr: 7399, original_price_usd: null, original_price_inr: null, discount_percent: null },
   ],
   "LLMs & Fine-tuning": [
-    { id: "s6", title: "Fine-Tune Your Own LLM", level: "Advanced", duration_hours: 16, price_usd: 99, price_inr: 8199, original_price_usd: 199, original_price_inr: 16499, discount_percent: 50 },
-    { id: "s7", title: "Understanding Large Language Models", level: "Beginner", duration_hours: 10, price_usd: 49, price_inr: 3999, original_price_usd: null, original_price_inr: null, discount_percent: null },
+    { id: "s6", title: "Fine-Tune Your Own LLM", coach_name: "Expert Coach", level: "Advanced", duration_hours: 16, price_usd: 99, price_inr: 8199, original_price_usd: 199, original_price_inr: 16499, discount_percent: 50 },
+    { id: "s7", title: "Understanding Large Language Models", coach_name: "Expert Coach", level: "Beginner", duration_hours: 10, price_usd: 49, price_inr: 3999, original_price_usd: null, original_price_inr: null, discount_percent: null },
   ],
   "AI Automation": [
-    { id: "s8", title: "AI Automation Bootcamp", level: "Intermediate", duration_hours: 10, price_usd: 59, price_inr: 4799, original_price_usd: 99, original_price_inr: 7999, discount_percent: 40 },
-    { id: "s9", title: "Automate Everything with AI & Zapier", level: "Beginner", duration_hours: 6, price_usd: 39, price_inr: 3199, original_price_usd: null, original_price_inr: null, discount_percent: null },
+    { id: "s8", title: "AI Automation Bootcamp", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 10, price_usd: 59, price_inr: 4799, original_price_usd: 99, original_price_inr: 7999, discount_percent: 40 },
+    { id: "s9", title: "Automate Everything with AI & Zapier", coach_name: "Expert Coach", level: "Beginner", duration_hours: 6, price_usd: 39, price_inr: 3199, original_price_usd: null, original_price_inr: null, discount_percent: null },
   ],
   "No-Code AI": [
-    { id: "s10", title: "No-Code AI Tools Masterclass", level: "Beginner", duration_hours: 8, price_usd: 39, price_inr: 3199, original_price_usd: 69, original_price_inr: 5699, discount_percent: 43 },
-    { id: "s11", title: "Build AI Apps Without Coding", level: "Intermediate", duration_hours: 10, price_usd: 59, price_inr: 4799, original_price_usd: null, original_price_inr: null, discount_percent: null },
+    { id: "s10", title: "No-Code AI Tools Masterclass", coach_name: "Expert Coach", level: "Beginner", duration_hours: 8, price_usd: 39, price_inr: 3199, original_price_usd: 69, original_price_inr: 5699, discount_percent: 43 },
+    { id: "s11", title: "Build AI Apps Without Coding", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 10, price_usd: 59, price_inr: 4799, original_price_usd: null, original_price_inr: null, discount_percent: null },
   ],
   "AI for Marketing": [
-    { id: "s12", title: "AI-Powered Marketing Masterclass", level: "Beginner", duration_hours: 6, price_usd: 39, price_inr: 3199, original_price_usd: null, original_price_inr: null, discount_percent: null },
-    { id: "s13", title: "Content Creation with Generative AI", level: "Intermediate", duration_hours: 8, price_usd: 49, price_inr: 3999, original_price_usd: 89, original_price_inr: 7399, discount_percent: 45 },
+    { id: "s12", title: "AI-Powered Marketing Masterclass", coach_name: "Expert Coach", level: "Beginner", duration_hours: 6, price_usd: 39, price_inr: 3199, original_price_usd: null, original_price_inr: null, discount_percent: null },
+    { id: "s13", title: "Content Creation with Generative AI", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 8, price_usd: 49, price_inr: 3999, original_price_usd: 89, original_price_inr: 7399, discount_percent: 45 },
   ],
   "Gen AI for Devs": [
-    { id: "s14", title: "Generative AI for Software Developers", level: "Intermediate", duration_hours: 12, price_usd: 69, price_inr: 5699, original_price_usd: 129, original_price_inr: 10699, discount_percent: 47 },
-    { id: "s15", title: "Building with OpenAI & LangChain", level: "Advanced", duration_hours: 14, price_usd: 89, price_inr: 7399, original_price_usd: null, original_price_inr: null, discount_percent: null },
+    { id: "s14", title: "Generative AI for Software Developers", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 12, price_usd: 69, price_inr: 5699, original_price_usd: 129, original_price_inr: 10699, discount_percent: 47 },
+    { id: "s15", title: "Building with OpenAI & LangChain", coach_name: "Expert Coach", level: "Advanced", duration_hours: 14, price_usd: 89, price_inr: 7399, original_price_usd: null, original_price_inr: null, discount_percent: null },
   ],
   "AI for Business": [
-    { id: "s16", title: "AI Strategy for Business Leaders", level: "Beginner", duration_hours: 5, price_usd: 49, price_inr: 3999, original_price_usd: null, original_price_inr: null, discount_percent: null },
-    { id: "s17", title: "Implementing AI in Your Organization", level: "Intermediate", duration_hours: 8, price_usd: 59, price_inr: 4799, original_price_usd: 99, original_price_inr: 7999, discount_percent: 40 },
+    { id: "s16", title: "AI Strategy for Business Leaders", coach_name: "Expert Coach", level: "Beginner", duration_hours: 5, price_usd: 49, price_inr: 3999, original_price_usd: null, original_price_inr: null, discount_percent: null },
+    { id: "s17", title: "Implementing AI in Your Organization", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 8, price_usd: 59, price_inr: 4799, original_price_usd: 99, original_price_inr: 7999, discount_percent: 40 },
   ],
 };
 
 const CategoriesSection = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [dbCourses, setDbCourses] = useState<any[]>([]);
+  const [coaches, setCoaches] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const { symbol, priceKey, originalPriceKey } = useCurrency();
   const { t } = useTranslation();
@@ -62,18 +64,39 @@ const CategoriesSection = () => {
   useEffect(() => {
     if (!activeCategory) return;
     setLoading(true);
-    supabase
-      .from("courses")
-      .select("*")
-      .eq("is_published", true)
-      .eq("category", activeCategory)
-      .then(({ data }) => {
-        setDbCourses(data || []);
-        setLoading(false);
-      });
+    trackEvent("category_click", { category: activeCategory });
+
+    const fetchCourses = async () => {
+      const { data } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("is_published", true)
+        .eq("category", activeCategory)
+        .limit(3);
+
+      const list = data || [];
+      setDbCourses(list);
+
+      // Fetch coach names
+      const coachIds = [...new Set(list.map(c => c.coach_id))];
+      if (coachIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", coachIds);
+        const map: Record<string, string> = {};
+        (profiles || []).forEach(p => { map[p.user_id] = p.full_name || "Coach"; });
+        setCoaches(map);
+      }
+
+      setLoading(false);
+    };
+    fetchCourses();
   }, [activeCategory]);
 
-  const displayCourses = dbCourses.length > 0 ? dbCourses : (staticCoursesByCategory[activeCategory || ""] || []);
+  const activeCatObj = categories.find(c => c.name === activeCategory);
+  const staticList = (staticCoursesByCategory[activeCategory || ""] || []).slice(0, 3);
+  const displayCourses = dbCourses.length > 0 ? dbCourses : staticList;
 
   return (
     <section className="py-12 sm:py-24">
@@ -99,17 +122,25 @@ const CategoriesSection = () => {
           ))}
         </div>
 
-        {activeCategory && (
+        {activeCategory && activeCatObj && (
           <div className="mx-auto mt-8 max-w-5xl animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="rounded-xl border border-border bg-card p-6">
               <div className="mb-5 flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-foreground">{activeCategory}</h3>
-                  <p className="text-xs text-muted-foreground">{displayCourses.length} {t("categories.courses")} {t("categories.available")}</p>
+                  <p className="text-xs text-muted-foreground">Top {t("categories.courses")}</p>
                 </div>
-                <button onClick={() => setActiveCategory(null)} className="rounded-full p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground">
-                  <X className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-3">
+                  <Link
+                    to={`/${activeCatObj.slug}`}
+                    className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-all hover:brightness-110"
+                  >
+                    View All <ArrowRight className="h-3 w-3" />
+                  </Link>
+                  <button onClick={() => setActiveCategory(null)} className="rounded-full p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
 
               {loading ? (
@@ -124,10 +155,12 @@ const CategoriesSection = () => {
                     const isStatic = course.id?.startsWith("s");
                     const price = Number(course[priceKey] || course.price_usd);
                     const originalPrice = Number(course[originalPriceKey] || course.original_price_usd || 0);
+                    const coachName = course.coach_name || coaches[course.coach_id] || "";
                     return (
                       <Link
                         to={isStatic ? "#" : `/course/${course.slug || course.id}`}
                         key={course.id}
+                        onClick={() => !isStatic && trackEvent("course_click", { course: course.title, coach: coachName })}
                         className="group/card flex flex-col rounded-lg border border-border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-md"
                       >
                         <div className="mb-2 flex items-center gap-2">
@@ -136,7 +169,10 @@ const CategoriesSection = () => {
                             <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-semibold text-primary">{Number(course.discount_percent)}% {t("common.off")}</span>
                           )}
                         </div>
-                        <h4 className="mb-3 text-sm font-bold leading-snug text-foreground">{course.title}</h4>
+                        <h4 className="mb-1 text-sm font-bold leading-snug text-foreground">{course.title}</h4>
+                        {coachName && (
+                          <p className="mb-3 text-xs text-muted-foreground">by {coachName}</p>
+                        )}
                         <div className="mt-auto flex items-center justify-between border-t border-border pt-3">
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Clock className="h-3 w-3" />
