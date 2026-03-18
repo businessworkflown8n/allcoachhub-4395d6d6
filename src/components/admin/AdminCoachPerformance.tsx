@@ -72,9 +72,12 @@ const AdminCoachPerformance = () => {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold text-foreground">Coach Performance Report</h2>
-        <button onClick={exportCSV} className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:border-primary transition-colors">
-          <Download className="h-3.5 w-3.5" /> Export CSV
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
+          <button onClick={exportCSV} className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:border-primary transition-colors">
+            <Download className="h-3.5 w-3.5" /> Export CSV
+          </button>
+        </div>
       </div>
 
       <div className="relative w-full max-w-xs">
