@@ -27,6 +27,7 @@ const CoachEarnings = () => {
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
   const { rate: usdToInr } = useExchangeRate();
+  const { dateRange, setDateRange, dateFrom, dateTo } = useDateRange("last30");
 
   useEffect(() => {
     if (!user) return;

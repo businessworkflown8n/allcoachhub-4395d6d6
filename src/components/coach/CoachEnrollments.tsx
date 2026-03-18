@@ -141,7 +141,8 @@ const CoachEnrollments = () => {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold text-foreground">Enrollment Analytics</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search by name, email, course..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 w-64" />
