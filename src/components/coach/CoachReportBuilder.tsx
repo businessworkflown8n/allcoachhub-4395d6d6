@@ -400,11 +400,9 @@ const CoachReportBuilder = () => {
                 <label className="text-xs text-muted-foreground">Country</label>
                 <Input value={countryFilter} onChange={e => setCountryFilter(e.target.value)} placeholder="Search country..." className="mt-1" />
               </div>
-              {(selectedPlatforms.length > 0 || dateFrom || dateTo || campaignFilter || countryFilter) && (
+              {(selectedPlatforms.length > 0 || campaignFilter || countryFilter) && (
                 <Button variant="ghost" size="sm" className="w-full" onClick={() => {
                   setSelectedPlatforms([]);
-                  setDateFrom("");
-                  setDateTo("");
                   setCampaignFilter("");
                   setCountryFilter("");
                 }}>

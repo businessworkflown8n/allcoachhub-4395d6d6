@@ -236,15 +236,11 @@ const CoachCampaignInsights = () => {
           </Select>
         </div>
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">From</label>
-          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[150px]" />
+          <label className="text-xs text-muted-foreground mb-1 block">Date Range</label>
+          <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
         </div>
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">To</label>
-          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[150px]" />
-        </div>
-        {(platformFilter !== "all" || dateFrom || dateTo) && (
-          <Button variant="ghost" size="sm" onClick={() => { setPlatformFilter("all"); setDateFrom(""); setDateTo(""); }}>Clear</Button>
+        {(platformFilter !== "all") && (
+          <Button variant="ghost" size="sm" onClick={() => { setPlatformFilter("all"); }}>Clear</Button>
         )}
       </div>
 
