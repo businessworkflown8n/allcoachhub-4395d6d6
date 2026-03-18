@@ -83,6 +83,9 @@ const AdminDashboard = () => {
         <Route path="email-tools" element={<AdminEmailTools />} />
         <Route path="social" element={<AdminSocialMedia />} />
         <Route path="campaigns" element={<AdminCampaigns />} />
+        <Route path="coach-campaigns" element={<AdminCoachCampaigns />} />
+        <Route path="integrations" element={<AdminIntegrationsHub />} />
+        <Route path="sharing" element={<AdminSharingRequests />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="locale" element={<AdminLocaleSettings />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
