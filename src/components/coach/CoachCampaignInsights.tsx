@@ -445,6 +445,9 @@ const CoachCampaignInsights = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Platform Selector */}
+      <CoachPlatformSelector open={platformSelectorOpen} onOpenChange={setPlatformSelectorOpen} />
     </div>
   );
 };

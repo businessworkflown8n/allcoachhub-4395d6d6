@@ -123,6 +123,27 @@ const AdminIntegrationsHub = () => {
         </TabsList>
 
         <TabsContent value="connections" className="space-y-6 mt-4">
+          {/* Coach Selector */}
+          <div className="flex flex-wrap items-end gap-4">
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Connect on behalf of Coach</label>
+              <Select value={selectedCoachId} onValueChange={setSelectedCoachId}>
+                <SelectTrigger className="w-[240px]"><SelectValue placeholder="All coaches" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Coaches</SelectItem>
+                  {coaches.map(c => (
+                    <SelectItem key={c.user_id} value={c.user_id}>{c.full_name || c.user_id}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {selectedCoachId !== "all" && (
+              <Badge variant="secondary" className="h-8 flex items-center gap-1">
+                Acting as: {coaches.find(c => c.user_id === selectedCoachId)?.full_name || "Coach"}
+              </Badge>
+            )}
+          </div>
+
           {/* Summary */}
           <div className="grid grid-cols-3 gap-4">
             <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-primary">{connectedCount}</p><p className="text-xs text-muted-foreground">Connected</p></CardContent></Card>
