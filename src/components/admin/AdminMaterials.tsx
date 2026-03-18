@@ -10,8 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Download, Mail, Search, Link2, TrendingUp, Copy, Share2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Download, Mail, Search, Link2, TrendingUp, Copy, Share2, BarChart3 } from "lucide-react";
+import AdminMaterialInsights from "./AdminMaterialInsights";
 
 const CATEGORIES = ["General", "AI Research", "AI Tools", "Templates", "Guides", "Worksheets", "Case Studies"];
 const FILE_TYPES = ["pdf", "doc", "xls", "image", "video"];
