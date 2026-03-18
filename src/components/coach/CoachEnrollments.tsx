@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import GlobalDateRangePicker, { useDateRange } from "@/components/shared/GlobalDateRangePicker";
 
 const USD_TO_INR_FALLBACK = 83.5;
 
@@ -34,6 +35,7 @@ const CoachEnrollments = () => {
   const [search, setSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const { rate: usdToInr } = useExchangeRate();
+  const { dateRange, setDateRange, dateFrom, dateTo } = useDateRange("last30");
 
   useEffect(() => {
     if (!user) return;
@@ -85,6 +87,9 @@ const CoachEnrollments = () => {
 
   const filtered = enrollments.filter((e) => {
     const q = search.toLowerCase();
+    const d = e.enrolled_at?.slice(0, 10);
+    if (dateFrom && d < dateFrom) return false;
+    if (dateTo && d > dateTo) return false;
     return !q || e.full_name?.toLowerCase().includes(q) || e.email?.toLowerCase().includes(q) || e.contact_number?.includes(q) || (e.courses as any)?.title?.toLowerCase().includes(q) || e.country?.toLowerCase().includes(q);
   });
 
@@ -134,7 +139,8 @@ const CoachEnrollments = () => {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold text-foreground">Enrollment Analytics</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search by name, email, course..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 w-64" />

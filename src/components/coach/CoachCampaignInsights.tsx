@@ -17,6 +17,7 @@ import {
   Zap, Plug
 } from "lucide-react";
 import CoachPlatformSelector from "./CoachPlatformSelector";
+import GlobalDateRangePicker, { useDateRange } from "@/components/shared/GlobalDateRangePicker";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell
@@ -62,8 +63,7 @@ const CoachCampaignInsights = () => {
   const [metrics, setMetrics] = useState<CampaignMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [platformFilter, setPlatformFilter] = useState("all");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const { dateRange, setDateRange, dateFrom, dateTo } = useDateRange("last30");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [platformSelectorOpen, setPlatformSelectorOpen] = useState(false);
@@ -236,15 +236,11 @@ const CoachCampaignInsights = () => {
           </Select>
         </div>
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">From</label>
-          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[150px]" />
+          <label className="text-xs text-muted-foreground mb-1 block">Date Range</label>
+          <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
         </div>
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">To</label>
-          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[150px]" />
-        </div>
-        {(platformFilter !== "all" || dateFrom || dateTo) && (
-          <Button variant="ghost" size="sm" onClick={() => { setPlatformFilter("all"); setDateFrom(""); setDateTo(""); }}>Clear</Button>
+        {(platformFilter !== "all") && (
+          <Button variant="ghost" size="sm" onClick={() => { setPlatformFilter("all"); }}>Clear</Button>
         )}
       </div>
 

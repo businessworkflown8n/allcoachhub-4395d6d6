@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { DollarSign, IndianRupee, TrendingUp, Clock, ArrowUpRight, Users, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import GlobalDateRangePicker, { useDateRange } from "@/components/shared/GlobalDateRangePicker";
 
 const USD_TO_INR_FALLBACK = 83.5;
 
@@ -26,6 +27,7 @@ const CoachEarnings = () => {
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
   const { rate: usdToInr } = useExchangeRate();
+  const { dateRange, setDateRange, dateFrom, dateTo } = useDateRange("last30");
 
   useEffect(() => {
     if (!user) return;
@@ -81,7 +83,10 @@ const CoachEarnings = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-foreground">Earnings</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h2 className="text-xl font-bold text-foreground">Earnings</h2>
+        <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
+      </div>
 
       <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         <div className="rounded-xl border border-border bg-card p-4">

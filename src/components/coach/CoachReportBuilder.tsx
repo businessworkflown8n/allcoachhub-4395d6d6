@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import GlobalDateRangePicker, { useDateRange } from "@/components/shared/GlobalDateRangePicker";
 import {
   LayoutGrid, Download, Save, FileBarChart, Sparkles, Filter,
   BarChart3, ChevronDown, ChevronUp
@@ -137,8 +138,7 @@ const CoachReportBuilder = () => {
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(["spend", "revenue", "roas"]);
   const [selectedDimension, setSelectedDimension] = useState("campaign_name");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const { dateRange, setDateRange, dateFrom, dateTo } = useDateRange("last30");
   const [campaignFilter, setCampaignFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
 
@@ -388,9 +388,8 @@ const CoachReportBuilder = () => {
               <Separator />
               <div>
                 <label className="text-xs text-muted-foreground">Date Range</label>
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} placeholder="From" />
-                  <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} placeholder="To" />
+                <div className="mt-1">
+                  <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
                 </div>
               </div>
               <div>
@@ -401,11 +400,9 @@ const CoachReportBuilder = () => {
                 <label className="text-xs text-muted-foreground">Country</label>
                 <Input value={countryFilter} onChange={e => setCountryFilter(e.target.value)} placeholder="Search country..." className="mt-1" />
               </div>
-              {(selectedPlatforms.length > 0 || dateFrom || dateTo || campaignFilter || countryFilter) && (
+              {(selectedPlatforms.length > 0 || campaignFilter || countryFilter) && (
                 <Button variant="ghost" size="sm" className="w-full" onClick={() => {
                   setSelectedPlatforms([]);
-                  setDateFrom("");
-                  setDateTo("");
                   setCampaignFilter("");
                   setCountryFilter("");
                 }}>
