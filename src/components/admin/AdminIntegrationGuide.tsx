@@ -23,7 +23,7 @@ const GUIDES = [
   {
     platform: "Meta Ads",
     steps: [
-      "Click "Connect" on Meta Ads",
+      "Click 'Connect' on Meta Ads",
       "Enter your Ad Account ID (found in Meta Business Settings → Ad Accounts, format: act_123456789)",
       "Enter a display name",
       "Grant read-only permissions for campaign data",
