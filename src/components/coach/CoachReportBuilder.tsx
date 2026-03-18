@@ -138,8 +138,7 @@ const CoachReportBuilder = () => {
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(["spend", "revenue", "roas"]);
   const [selectedDimension, setSelectedDimension] = useState("campaign_name");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const { dateRange, setDateRange, dateFrom, dateTo } = useDateRange("last30");
   const [campaignFilter, setCampaignFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
 
