@@ -148,6 +148,7 @@ const CourseDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {courseJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd) }} />}
       <div className="container mx-auto px-4 py-8 pt-24">
         <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Back

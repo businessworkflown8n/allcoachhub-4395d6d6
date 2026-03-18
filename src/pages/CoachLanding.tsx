@@ -168,6 +168,7 @@ const CoachLanding = () => {
   return (
     <>
       <Navbar />
+      {coachJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(coachJsonLd) }} />}
       <main className="min-h-screen bg-background">
         {/* Hero Section */}
         <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/10 py-16 lg:py-24">
