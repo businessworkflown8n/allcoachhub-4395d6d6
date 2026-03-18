@@ -66,6 +66,7 @@ const CoachCampaignInsights = () => {
   const [dateTo, setDateTo] = useState("");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [platformSelectorOpen, setPlatformSelectorOpen] = useState(false);
   const [shareForm, setShareForm] = useState({ name: "", email: "", role: "viewer" });
   const [newMetric, setNewMetric] = useState({
     platform: "google_ads", campaign_name: "", date: format(new Date(), "yyyy-MM-dd"),
