@@ -218,10 +218,11 @@ const CoachCampaignInsights = () => {
           </h2>
           <p className="text-muted-foreground text-sm mt-1">Unified multi-platform campaign performance</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1"><Download className="h-4 w-4" /> Export</Button>
           <Button variant="outline" size="sm" onClick={() => setShareDialogOpen(true)} className="gap-1"><Share2 className="h-4 w-4" /> Share</Button>
-          <Button size="sm" onClick={() => setAddDialogOpen(true)} className="gap-1"><Plus className="h-4 w-4" /> Add Data</Button>
+          <Button variant="outline" size="sm" onClick={() => setAddDialogOpen(true)} className="gap-1"><Plus className="h-4 w-4" /> Add Data</Button>
+          <Button size="sm" onClick={() => setPlatformSelectorOpen(true)} className="gap-1"><Plug className="h-4 w-4" /> Add Platform</Button>
         </div>
       </div>
 
