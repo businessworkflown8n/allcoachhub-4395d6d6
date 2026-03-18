@@ -48,7 +48,7 @@ const GUIDES = [
   {
     platform: "LinkedIn Ads",
     steps: [
-      "Click "Connect" on LinkedIn Ads",
+      "Click 'Connect' on LinkedIn Ads",
       "Enter your LinkedIn Campaign Manager Account ID",
       "Authorize read-only access to campaigns",
       "Select data types to sync",
