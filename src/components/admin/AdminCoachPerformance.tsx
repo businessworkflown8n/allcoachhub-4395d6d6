@@ -13,6 +13,7 @@ const AdminCoachPerformance = () => {
   const [webinarRegs, setWebinarRegs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const { dateRange, setDateRange } = useDateRange("last30");
 
   useEffect(() => {
     const fetchAll = async () => {
