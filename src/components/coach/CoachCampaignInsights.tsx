@@ -63,8 +63,7 @@ const CoachCampaignInsights = () => {
   const [metrics, setMetrics] = useState<CampaignMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [platformFilter, setPlatformFilter] = useState("all");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const { dateRange, setDateRange, dateFrom, dateTo } = useDateRange("last30");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [platformSelectorOpen, setPlatformSelectorOpen] = useState(false);
