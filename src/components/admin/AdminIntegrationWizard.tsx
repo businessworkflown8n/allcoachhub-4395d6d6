@@ -18,6 +18,7 @@ type Props = {
   platformId: string;
   platformName: string;
   onConnected: () => void;
+  coachId?: string; // Admin can connect on behalf of a coach
 };
 
 const STEPS = [
