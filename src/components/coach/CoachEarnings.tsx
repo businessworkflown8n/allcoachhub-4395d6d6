@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { DollarSign, IndianRupee, TrendingUp, Clock, ArrowUpRight, Users, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import GlobalDateRangePicker, { useDateRange } from "@/components/shared/GlobalDateRangePicker";
 
 const USD_TO_INR_FALLBACK = 83.5;
 
