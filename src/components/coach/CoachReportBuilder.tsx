@@ -194,7 +194,7 @@ const CoachReportBuilder = () => {
     });
 
     // Derive calculated metrics
-    return Array.from(map.values()).map(r => ({
+    return Array.from(map.values()).map((r): MetricRow => ({
       ...r,
       cpc: r.clicks > 0 ? r.spend / r.clicks : 0,
       cpm: r.impressions > 0 ? (r.spend / r.impressions) * 1000 : 0,
