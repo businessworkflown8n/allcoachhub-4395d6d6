@@ -36,7 +36,7 @@ const DATA_OPTIONS = [
   { key: "conversions", label: "Conversion Data", desc: "Conversion events and tracking" },
 ];
 
-const AdminIntegrationWizard = ({ open, onOpenChange, platformId, platformName, onConnected }: Props) => {
+const AdminIntegrationWizard = ({ open, onOpenChange, platformId, platformName, onConnected, coachId }: Props) => {
   const [step, setStep] = useState(0);
   const [connecting, setConnecting] = useState(false);
 
