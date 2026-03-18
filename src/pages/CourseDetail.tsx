@@ -20,12 +20,58 @@ const CourseDetail = () => {
   useSEO({
     title: course ? `${course.title} – AI Course by ${coach?.full_name || 'Expert Coach'}` : "Course Details – AI Coach Portal",
     description: course?.description?.substring(0, 155) || "Learn AI skills from expert coaches with hands-on courses in prompt engineering, AI agents, automation, and more.",
-    canonical: `https://www.aicoachportal.com/courses/${slug}`,
+    canonical: `https://www.aicoachportal.com/course/${slug}`,
     ogTitle: course?.title,
     ogDescription: course?.description?.substring(0, 155),
     ogImage: course?.thumbnail_url,
     ogType: "article",
   });
+
+  // Push dataLayer event for GTM/Looker Studio
+  useEffect(() => {
+    if (course && coach) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'course_view',
+        course_id: course.id,
+        course_name: course.title,
+        course_category: course.category,
+        course_level: course.level,
+        course_price_usd: Number(course.price_usd),
+        coach_name: coach.full_name,
+      });
+    }
+  }, [course, coach]);
+
+  const courseJsonLd = course ? {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": course.title,
+    "description": course.description || "",
+    "provider": {
+      "@type": "Organization",
+      "name": "AI Coach Portal",
+      "sameAs": "https://www.aicoachportal.com"
+    },
+    "instructor": coach ? {
+      "@type": "Person",
+      "name": coach.full_name,
+      "jobTitle": coach.job_title || "AI Coach",
+    } : undefined,
+    "educationalLevel": course.level,
+    "inLanguage": course.language,
+    "offers": {
+      "@type": "Offer",
+      "price": Number(course.price_usd),
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "url": `https://www.aicoachportal.com/course/${course.slug || course.id}`
+    },
+    "image": course.thumbnail_url,
+    "url": `https://www.aicoachportal.com/course/${course.slug || course.id}`,
+    "timeRequired": `PT${Number(course.duration_hours)}H`,
+    "courseMode": "online",
+  } : null;
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -102,6 +148,7 @@ const CourseDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {courseJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd) }} />}
       <div className="container mx-auto px-4 py-8 pt-24">
         <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Back

@@ -5,9 +5,28 @@ Disallow: /admin/*
 Disallow: /learner/*
 Disallow: /coach/*
 Disallow: /reset-password
+Disallow: /enroll/*
 
 User-agent: Googlebot
 Allow: /
+Allow: /courses
+Allow: /course/*
+Allow: /coach-profile/*
+Allow: /ai-blogs
+Allow: /ai-blogs/*
+Allow: /ai-jobs-news/*
+Allow: /webinars
+Allow: /materials
+Allow: /materials/*
+Allow: /daily-zip
+Allow: /prompt-engineering
+Allow: /ai-agents
+Allow: /llms-fine-tuning
+Allow: /ai-automation
+Allow: /no-code-ai
+Allow: /ai-marketing
+Allow: /generative-ai-for-developers
+Allow: /ai-business
 
 User-agent: Bingbot
 Allow: /

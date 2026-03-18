@@ -8,11 +8,21 @@ declare global {
   }
 }
 
+// Data Layer push for GTM / Looker Studio
+export const pushDataLayer = (data: Record<string, any>) => {
+  if (typeof window !== "undefined") {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(data);
+  }
+};
+
 // Core gtag event sender
 export const trackEvent = (eventName: string, params?: Record<string, any>) => {
   if (typeof window !== "undefined" && window.gtag) {
     window.gtag("event", eventName, params);
   }
+  // Also push to dataLayer for GTM/Looker Studio
+  pushDataLayer({ event: eventName, ...params });
 };
 
 // ==========================================

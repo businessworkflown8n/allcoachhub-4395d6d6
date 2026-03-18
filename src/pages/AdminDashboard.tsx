@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck } from "lucide-react";
+import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search } from "lucide-react";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminCoaches from "@/components/admin/AdminCoaches";
 import AdminLearners from "@/components/admin/AdminLearners";
@@ -26,6 +26,7 @@ import AdminMaterials from "@/components/admin/AdminMaterials";
 import AdminIntegrationsHub from "@/components/admin/AdminIntegrationsHub";
 import AdminCoachCampaigns from "@/components/admin/AdminCoachCampaigns";
 import AdminSharingRequests from "@/components/admin/AdminSharingRequests";
+import AdminSEODashboard from "@/components/admin/AdminSEODashboard";
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
   { label: "Traffic Analytics", path: "/admin/traffic", icon: <MousePointerClick className="h-4 w-4" /> },
@@ -49,6 +50,7 @@ const navItems = [
   { label: "Coach Campaigns", path: "/admin/coach-campaigns", icon: <TrendingUp className="h-4 w-4" /> },
   { label: "Integrations", path: "/admin/integrations", icon: <Plug className="h-4 w-4" /> },
   { label: "Sharing Requests", path: "/admin/sharing", icon: <FileCheck className="h-4 w-4" /> },
+  { label: "SEO Dashboard", path: "/admin/seo", icon: <Search className="h-4 w-4" /> },
   { label: "Settings", path: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
   { label: "Locale & Currency", path: "/admin/locale", icon: <Globe className="h-4 w-4" /> },
 ];
@@ -86,6 +88,7 @@ const AdminDashboard = () => {
         <Route path="coach-campaigns" element={<AdminCoachCampaigns />} />
         <Route path="integrations" element={<AdminIntegrationsHub />} />
         <Route path="sharing" element={<AdminSharingRequests />} />
+        <Route path="seo" element={<AdminSEODashboard />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="locale" element={<AdminLocaleSettings />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />

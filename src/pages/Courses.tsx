@@ -33,7 +33,7 @@ const jsonLd = {
   "@type": "ItemList",
   name: "AI Courses",
   description: "Browse all AI courses on AI Coach Portal — prompt engineering, AI agents, automation & more.",
-  url: "https://allcoachhub.lovable.app/courses",
+  url: "https://www.aicoachportal.com/courses",
 };
 
 const Courses = () => {

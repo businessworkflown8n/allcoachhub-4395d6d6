@@ -29,6 +29,35 @@ const CoachLanding = () => {
     ogType: "profile",
   });
 
+  const coachJsonLd = coach ? {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": coach.full_name,
+    "jobTitle": coach.job_title || "AI Coach",
+    "description": coach.bio || "",
+    "url": `https://www.aicoachportal.com/coach-profile/${slug}`,
+    "image": coach.avatar_url,
+    "worksFor": {
+      "@type": "Organization",
+      "name": "AI Coach Portal"
+    },
+    ...(coach.linkedin_profile ? { "sameAs": [coach.linkedin_profile] } : {}),
+    ...(coach.country ? { "address": { "@type": "PostalAddress", "addressCountry": coach.country, ...(coach.city ? { "addressLocality": coach.city } : {}) } } : {}),
+  } : null;
+
+  // Push dataLayer event for GTM/Looker Studio
+  useEffect(() => {
+    if (coach) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'coach_profile_view',
+        coach_name: coach.full_name,
+        coach_category: coach.category,
+        coach_country: coach.country,
+      });
+    }
+  }, [coach]);
+
   useEffect(() => {
     if (!slug) return;
     const load = async () => {
@@ -139,6 +168,7 @@ const CoachLanding = () => {
   return (
     <>
       <Navbar />
+      {coachJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(coachJsonLd) }} />}
       <main className="min-h-screen bg-background">
         {/* Hero Section */}
         <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/10 py-16 lg:py-24">
