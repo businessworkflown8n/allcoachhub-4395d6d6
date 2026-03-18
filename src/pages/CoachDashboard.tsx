@@ -44,6 +44,7 @@ const CoachDashboard = () => {
         <Route path="courses/:id/edit" element={<CoachCourseForm />} />
         <Route path="webinars" element={<CoachWebinars />} />
         <Route path="enrollments" element={<CoachEnrollments />} />
+        <Route path="insights" element={<CoachCampaignInsights />} />
         <Route path="materials" element={<DashboardMaterials />} />
         <Route path="social" element={<SocialMediaHub />} />
         <Route path="campaigns" element={<CoachCampaigns />} />
