@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DollarSign } from "lucide-react";
+import GlobalDateRangePicker, { useDateRange } from "@/components/shared/GlobalDateRangePicker";
 
 const LearnerPayments = () => {
   const { user } = useAuth();
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { dateRange, setDateRange, dateFrom, dateTo } = useDateRange("last30");
 
   useEffect(() => {
     if (!user) return;
@@ -17,15 +19,27 @@ const LearnerPayments = () => {
     });
   }, [user]);
 
+  const filtered = useMemo(() => {
+    return payments.filter(p => {
+      const d = p.created_at?.slice(0, 10);
+      if (dateFrom && d < dateFrom) return false;
+      if (dateTo && d > dateTo) return false;
+      return true;
+    });
+  }, [payments, dateFrom, dateTo]);
+
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-foreground">Payment History</h2>
-      {payments.length === 0 ? (
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h2 className="text-xl font-bold text-foreground">Payment History</h2>
+        <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
+      </div>
+      {filtered.length === 0 ? (
         <div className="text-center py-16">
           <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No payments yet</p>
+          <p className="text-muted-foreground">No payments found for this period</p>
         </div>
       ) : (
         <div className="rounded-xl border border-border">
@@ -39,7 +53,7 @@ const LearnerPayments = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {payments.map((p) => (
+              {filtered.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell className="text-foreground">{(p.enrollments as any)?.courses?.title || "—"}</TableCell>
                   <TableCell className="text-foreground">{p.currency} {Number(p.amount)}</TableCell>
