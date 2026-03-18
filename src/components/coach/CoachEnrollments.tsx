@@ -36,8 +36,6 @@ const CoachEnrollments = () => {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const { rate: usdToInr } = useExchangeRate();
   const { dateRange, setDateRange, dateFrom, dateTo } = useDateRange("last30");
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const { rate: usdToInr } = useExchangeRate();
 
   useEffect(() => {
     if (!user) return;
