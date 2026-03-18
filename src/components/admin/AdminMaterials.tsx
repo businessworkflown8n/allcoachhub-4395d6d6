@@ -304,6 +304,12 @@ const AdminMaterials = () => {
   const totalDetailDl = allSourceStats.reduce((s, v) => s + v.material_detail, 0);
 
   return (
+    <Tabs defaultValue="manage" className="space-y-6">
+      <TabsList>
+        <TabsTrigger value="manage"><FileText className="h-4 w-4 mr-1.5" /> Manage</TabsTrigger>
+        <TabsTrigger value="insights"><BarChart3 className="h-4 w-4 mr-1.5" /> Insights</TabsTrigger>
+      </TabsList>
+      <TabsContent value="manage">
     <div className="space-y-6">
       {/* Global Toggles */}
       <Card>
