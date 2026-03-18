@@ -89,6 +89,9 @@ const CoachEnrollments = () => {
 
   const filtered = enrollments.filter((e) => {
     const q = search.toLowerCase();
+    const d = e.enrolled_at?.slice(0, 10);
+    if (dateFrom && d < dateFrom) return false;
+    if (dateTo && d > dateTo) return false;
     return !q || e.full_name?.toLowerCase().includes(q) || e.email?.toLowerCase().includes(q) || e.contact_number?.includes(q) || (e.courses as any)?.title?.toLowerCase().includes(q) || e.country?.toLowerCase().includes(q);
   });
 
