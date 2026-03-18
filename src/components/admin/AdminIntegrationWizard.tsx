@@ -65,6 +65,7 @@ const AdminIntegrationWizard = ({ open, onOpenChange, platformId, platformName, 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
+      const targetCoachId = coachId || user.id;
 
       const { error } = await supabase.from("ad_platform_connections").insert({
         platform: platformId,
