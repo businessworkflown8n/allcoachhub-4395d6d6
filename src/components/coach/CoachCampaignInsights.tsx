@@ -17,6 +17,7 @@ import {
   Zap, Plug
 } from "lucide-react";
 import CoachPlatformSelector from "./CoachPlatformSelector";
+import GlobalDateRangePicker, { useDateRange } from "@/components/shared/GlobalDateRangePicker";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell
