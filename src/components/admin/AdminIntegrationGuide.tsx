@@ -36,7 +36,7 @@ const GUIDES = [
   {
     platform: "TikTok Ads",
     steps: [
-      "Click "Connect" on TikTok Ads",
+      "Click 'Connect' on TikTok Ads",
       "Enter your TikTok Advertiser ID",
       "Grant campaign data access permissions",
       "Select which data to sync",
