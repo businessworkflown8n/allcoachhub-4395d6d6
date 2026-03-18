@@ -131,8 +131,8 @@ const AdminIntegrationsHub = () => {
                 <SelectTrigger className="w-[240px]"><SelectValue placeholder="All coaches" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Coaches</SelectItem>
-                  {coaches.map(c => (
-                    <SelectItem key={c.user_id} value={c.user_id}>{c.full_name || c.user_id}</SelectItem>
+                  {coaches.filter(c => c.full_name).map(c => (
+                    <SelectItem key={c.user_id} value={c.user_id}>{c.full_name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
