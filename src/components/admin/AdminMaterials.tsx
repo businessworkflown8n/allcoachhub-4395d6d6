@@ -588,6 +588,11 @@ const AdminMaterials = () => {
         </DialogContent>
       </Dialog>
     </div>
+      </TabsContent>
+      <TabsContent value="insights">
+        <AdminMaterialInsights />
+      </TabsContent>
+    </Tabs>
   );
 };
 
