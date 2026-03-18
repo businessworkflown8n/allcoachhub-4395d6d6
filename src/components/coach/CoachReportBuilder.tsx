@@ -388,9 +388,8 @@ const CoachReportBuilder = () => {
               <Separator />
               <div>
                 <label className="text-xs text-muted-foreground">Date Range</label>
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} placeholder="From" />
-                  <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} placeholder="To" />
+                <div className="mt-1">
+                  <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
                 </div>
               </div>
               <div>
