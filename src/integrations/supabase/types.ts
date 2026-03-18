@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_platform_connections: {
+        Row: {
+          coach_id: string
+          created_at: string
+          credentials_encrypted: Json | null
+          error_log: string | null
+          id: string
+          last_sync_at: string | null
+          platform: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          credentials_encrypted?: Json | null
+          error_log?: string | null
+          id?: string
+          last_sync_at?: string | null
+          platform: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          credentials_encrypted?: Json | null
+          error_log?: string | null
+          id?: string
+          last_sync_at?: string | null
+          platform?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_blogs: {
         Row: {
           author: string | null
@@ -251,6 +287,105 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      campaign_metrics: {
+        Row: {
+          add_to_cart: number | null
+          campaign_id_external: string | null
+          campaign_name: string
+          checkouts: number | null
+          clicks: number
+          coach_id: string
+          conversions: number
+          country: string | null
+          cpa: number | null
+          cpc: number | null
+          created_at: string
+          ctr: number | null
+          date: string
+          device: string | null
+          gross_revenue: number | null
+          id: string
+          impressions: number
+          leads: number
+          net_revenue: number | null
+          platform: string
+          product_category: string | null
+          product_name: string | null
+          product_sku: string | null
+          purchases: number | null
+          refunds: number | null
+          revenue: number
+          roas: number | null
+          source: string | null
+          spend: number
+          updated_at: string
+        }
+        Insert: {
+          add_to_cart?: number | null
+          campaign_id_external?: string | null
+          campaign_name: string
+          checkouts?: number | null
+          clicks?: number
+          coach_id: string
+          conversions?: number
+          country?: string | null
+          cpa?: number | null
+          cpc?: number | null
+          created_at?: string
+          ctr?: number | null
+          date: string
+          device?: string | null
+          gross_revenue?: number | null
+          id?: string
+          impressions?: number
+          leads?: number
+          net_revenue?: number | null
+          platform: string
+          product_category?: string | null
+          product_name?: string | null
+          product_sku?: string | null
+          purchases?: number | null
+          refunds?: number | null
+          revenue?: number
+          roas?: number | null
+          source?: string | null
+          spend?: number
+          updated_at?: string
+        }
+        Update: {
+          add_to_cart?: number | null
+          campaign_id_external?: string | null
+          campaign_name?: string
+          checkouts?: number | null
+          clicks?: number
+          coach_id?: string
+          conversions?: number
+          country?: string | null
+          cpa?: number | null
+          cpc?: number | null
+          created_at?: string
+          ctr?: number | null
+          date?: string
+          device?: string | null
+          gross_revenue?: number | null
+          id?: string
+          impressions?: number
+          leads?: number
+          net_revenue?: number | null
+          platform?: string
+          product_category?: string | null
+          product_name?: string | null
+          product_sku?: string | null
+          purchases?: number | null
+          refunds?: number | null
+          revenue?: number
+          roas?: number | null
+          source?: string | null
+          spend?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       chat_history: {
         Row: {
@@ -1523,6 +1658,84 @@ export type Database = {
           referrer_id?: string
           referrer_role?: string
           status?: string
+        }
+        Relationships: []
+      }
+      report_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          resource_id: string | null
+          resource_type: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      report_sharing_requests: {
+        Row: {
+          access_token: string | null
+          admin_notes: string | null
+          approved_at: string | null
+          coach_id: string
+          created_at: string
+          id: string
+          recipient_email: string
+          recipient_name: string
+          recipient_role: string | null
+          rejected_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          access_token?: string | null
+          admin_notes?: string | null
+          approved_at?: string | null
+          coach_id: string
+          created_at?: string
+          id?: string
+          recipient_email: string
+          recipient_name: string
+          recipient_role?: string | null
+          rejected_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string | null
+          admin_notes?: string | null
+          approved_at?: string | null
+          coach_id?: string
+          created_at?: string
+          id?: string
+          recipient_email?: string
+          recipient_name?: string
+          recipient_role?: string | null
+          rejected_at?: string | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
