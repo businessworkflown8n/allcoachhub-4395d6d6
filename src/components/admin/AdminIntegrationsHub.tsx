@@ -215,6 +215,7 @@ const AdminIntegrationsHub = () => {
         platformId={wizardPlatform.id}
         platformName={wizardPlatform.name}
         onConnected={fetchConnections}
+        coachId={selectedCoachId !== "all" ? selectedCoachId : undefined}
       />
     </div>
   );
