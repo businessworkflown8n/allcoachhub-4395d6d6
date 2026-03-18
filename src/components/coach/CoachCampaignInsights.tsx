@@ -14,8 +14,9 @@ import { format } from "date-fns";
 import {
   DollarSign, TrendingUp, MousePointerClick, Eye, Target, BarChart3,
   FileText, Download, Share2, Plus, Filter, ArrowUpRight, ArrowDownRight,
-  Zap
+  Zap, Plug
 } from "lucide-react";
+import CoachPlatformSelector from "./CoachPlatformSelector";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell

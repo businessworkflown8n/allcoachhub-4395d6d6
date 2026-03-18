@@ -48,11 +48,16 @@ const INTEGRATIONS = [
   ]},
 ];
 
+type Coach = { id: string; user_id: string; full_name: string | null };
+
 const AdminIntegrationsHub = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [loading, setLoading] = useState(true);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardPlatform, setWizardPlatform] = useState({ id: "", name: "" });
+  const [coaches, setCoaches] = useState<Coach[]>([]);
+  const [selectedCoachId, setSelectedCoachId] = useState<string>("all");
+  const [coachFilterForConnect, setCoachFilterForConnect] = useState<string>("");
 
   const fetchConnections = async () => {
     const { data } = await supabase.from("ad_platform_connections").select("*").order("created_at", { ascending: false });
