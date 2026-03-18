@@ -1043,6 +1043,7 @@ export type Database = {
       material_downloads: {
         Row: {
           created_at: string
+          email: string | null
           id: string
           material_id: string
           source: string
@@ -1050,6 +1051,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email?: string | null
           id?: string
           material_id: string
           source?: string
@@ -1057,6 +1059,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email?: string | null
           id?: string
           material_id?: string
           source?: string
@@ -1065,6 +1068,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "material_downloads_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      material_links: {
+        Row: {
+          click_count: number
+          created_at: string
+          download_count: number
+          expiry_date: string | null
+          id: string
+          is_active: boolean
+          material_id: string
+          token: string
+        }
+        Insert: {
+          click_count?: number
+          created_at?: string
+          download_count?: number
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          material_id: string
+          token: string
+        }
+        Update: {
+          click_count?: number
+          created_at?: string
+          download_count?: number
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          material_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_links_material_id_fkey"
             columns: ["material_id"]
             isOneToOne: false
             referencedRelation: "materials"
