@@ -61,12 +61,20 @@ const AdminIntegrationsHub = () => {
   const [coachFilterForConnect, setCoachFilterForConnect] = useState<string>("");
 
   const fetchConnections = async () => {
-    const { data } = await supabase.from("ad_platform_connections").select("*").order("created_at", { ascending: false });
+    let query = supabase.from("ad_platform_connections").select("*").order("created_at", { ascending: false });
+    if (selectedCoachId !== "all") query = query.eq("coach_id", selectedCoachId);
+    const { data } = await query;
     if (data) setConnections(data as unknown as Connection[]);
     setLoading(false);
   };
 
-  useEffect(() => { fetchConnections(); }, []);
+  const fetchCoaches = async () => {
+    const { data } = await supabase.from("profiles").select("id, user_id, full_name");
+    if (data) setCoaches(data as Coach[]);
+  };
+
+  useEffect(() => { fetchConnections(); fetchCoaches(); }, []);
+  useEffect(() => { fetchConnections(); }, [selectedCoachId]);
 
   const getConnectionStatus = (platformId: string) => connections.find(c => c.platform === platformId);
 
