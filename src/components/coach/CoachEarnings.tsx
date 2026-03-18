@@ -83,7 +83,10 @@ const CoachEarnings = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-foreground">Earnings</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h2 className="text-xl font-bold text-foreground">Earnings</h2>
+        <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
+      </div>
 
       <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         <div className="rounded-xl border border-border bg-card p-4">
