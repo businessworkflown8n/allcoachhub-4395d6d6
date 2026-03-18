@@ -10,7 +10,7 @@ const GUIDES = [
     platform: "Google Ads",
     steps: [
       "Go to Integrations Hub",
-      "Click "Connect" on Google Ads",
+      "Click 'Connect' on Google Ads",
       "Enter your Google Ads Account ID (found in top-right of Google Ads dashboard, format: 123-456-7890)",
       "Enter your account name for identification",
       "Review & grant read-only permissions",
