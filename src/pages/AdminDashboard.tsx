@@ -26,6 +26,7 @@ import AdminMaterials from "@/components/admin/AdminMaterials";
 import AdminIntegrationsHub from "@/components/admin/AdminIntegrationsHub";
 import AdminCoachCampaigns from "@/components/admin/AdminCoachCampaigns";
 import AdminSharingRequests from "@/components/admin/AdminSharingRequests";
+import AdminSEODashboard from "@/components/admin/AdminSEODashboard";
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
   { label: "Traffic Analytics", path: "/admin/traffic", icon: <MousePointerClick className="h-4 w-4" /> },
