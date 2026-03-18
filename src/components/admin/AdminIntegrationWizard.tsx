@@ -18,6 +18,7 @@ type Props = {
   platformId: string;
   platformName: string;
   onConnected: () => void;
+  coachId?: string; // Admin can connect on behalf of a coach
 };
 
 const STEPS = [
@@ -35,7 +36,7 @@ const DATA_OPTIONS = [
   { key: "conversions", label: "Conversion Data", desc: "Conversion events and tracking" },
 ];
 
-const AdminIntegrationWizard = ({ open, onOpenChange, platformId, platformName, onConnected }: Props) => {
+const AdminIntegrationWizard = ({ open, onOpenChange, platformId, platformName, onConnected, coachId }: Props) => {
   const [step, setStep] = useState(0);
   const [connecting, setConnecting] = useState(false);
 
@@ -64,10 +65,11 @@ const AdminIntegrationWizard = ({ open, onOpenChange, platformId, platformName, 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
+      const targetCoachId = coachId || user.id;
 
       const { error } = await supabase.from("ad_platform_connections").insert({
         platform: platformId,
-        coach_id: user.id,
+        coach_id: targetCoachId,
         status: "connected",
         credentials_encrypted: {
           account_id: accountId,

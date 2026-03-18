@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import {
@@ -48,19 +49,32 @@ const INTEGRATIONS = [
   ]},
 ];
 
+type Coach = { id: string; user_id: string; full_name: string | null };
+
 const AdminIntegrationsHub = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [loading, setLoading] = useState(true);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardPlatform, setWizardPlatform] = useState({ id: "", name: "" });
+  const [coaches, setCoaches] = useState<Coach[]>([]);
+  const [selectedCoachId, setSelectedCoachId] = useState<string>("all");
+  const [coachFilterForConnect, setCoachFilterForConnect] = useState<string>("");
 
   const fetchConnections = async () => {
-    const { data } = await supabase.from("ad_platform_connections").select("*").order("created_at", { ascending: false });
+    let query = supabase.from("ad_platform_connections").select("*").order("created_at", { ascending: false });
+    if (selectedCoachId !== "all") query = query.eq("coach_id", selectedCoachId);
+    const { data } = await query;
     if (data) setConnections(data as unknown as Connection[]);
     setLoading(false);
   };
 
-  useEffect(() => { fetchConnections(); }, []);
+  const fetchCoaches = async () => {
+    const { data } = await supabase.from("profiles").select("id, user_id, full_name");
+    if (data) setCoaches(data as Coach[]);
+  };
+
+  useEffect(() => { fetchConnections(); fetchCoaches(); }, []);
+  useEffect(() => { fetchConnections(); }, [selectedCoachId]);
 
   const getConnectionStatus = (platformId: string) => connections.find(c => c.platform === platformId);
 
@@ -109,6 +123,27 @@ const AdminIntegrationsHub = () => {
         </TabsList>
 
         <TabsContent value="connections" className="space-y-6 mt-4">
+          {/* Coach Selector */}
+          <div className="flex flex-wrap items-end gap-4">
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Connect on behalf of Coach</label>
+              <Select value={selectedCoachId} onValueChange={setSelectedCoachId}>
+                <SelectTrigger className="w-[240px]"><SelectValue placeholder="All coaches" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Coaches</SelectItem>
+                  {coaches.map(c => (
+                    <SelectItem key={c.user_id} value={c.user_id}>{c.full_name || c.user_id}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {selectedCoachId !== "all" && (
+              <Badge variant="secondary" className="h-8 flex items-center gap-1">
+                Acting as: {coaches.find(c => c.user_id === selectedCoachId)?.full_name || "Coach"}
+              </Badge>
+            )}
+          </div>
+
           {/* Summary */}
           <div className="grid grid-cols-3 gap-4">
             <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-primary">{connectedCount}</p><p className="text-xs text-muted-foreground">Connected</p></CardContent></Card>
@@ -180,6 +215,7 @@ const AdminIntegrationsHub = () => {
         platformId={wizardPlatform.id}
         platformName={wizardPlatform.name}
         onConnected={fetchConnections}
+        coachId={selectedCoachId !== "all" ? selectedCoachId : undefined}
       />
     </div>
   );

@@ -14,8 +14,9 @@ import { format } from "date-fns";
 import {
   DollarSign, TrendingUp, MousePointerClick, Eye, Target, BarChart3,
   FileText, Download, Share2, Plus, Filter, ArrowUpRight, ArrowDownRight,
-  Zap
+  Zap, Plug
 } from "lucide-react";
+import CoachPlatformSelector from "./CoachPlatformSelector";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell
@@ -65,6 +66,7 @@ const CoachCampaignInsights = () => {
   const [dateTo, setDateTo] = useState("");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [platformSelectorOpen, setPlatformSelectorOpen] = useState(false);
   const [shareForm, setShareForm] = useState({ name: "", email: "", role: "viewer" });
   const [newMetric, setNewMetric] = useState({
     platform: "google_ads", campaign_name: "", date: format(new Date(), "yyyy-MM-dd"),
@@ -216,10 +218,11 @@ const CoachCampaignInsights = () => {
           </h2>
           <p className="text-muted-foreground text-sm mt-1">Unified multi-platform campaign performance</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1"><Download className="h-4 w-4" /> Export</Button>
           <Button variant="outline" size="sm" onClick={() => setShareDialogOpen(true)} className="gap-1"><Share2 className="h-4 w-4" /> Share</Button>
-          <Button size="sm" onClick={() => setAddDialogOpen(true)} className="gap-1"><Plus className="h-4 w-4" /> Add Data</Button>
+          <Button variant="outline" size="sm" onClick={() => setAddDialogOpen(true)} className="gap-1"><Plus className="h-4 w-4" /> Add Data</Button>
+          <Button size="sm" onClick={() => setPlatformSelectorOpen(true)} className="gap-1"><Plug className="h-4 w-4" /> Add Platform</Button>
         </div>
       </div>
 
@@ -442,6 +445,9 @@ const CoachCampaignInsights = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Platform Selector */}
+      <CoachPlatformSelector open={platformSelectorOpen} onOpenChange={setPlatformSelectorOpen} />
     </div>
   );
 };
