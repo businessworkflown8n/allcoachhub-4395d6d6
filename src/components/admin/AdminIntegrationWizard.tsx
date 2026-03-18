@@ -69,7 +69,7 @@ const AdminIntegrationWizard = ({ open, onOpenChange, platformId, platformName, 
 
       const { error } = await supabase.from("ad_platform_connections").insert({
         platform: platformId,
-        coach_id: user.id,
+        coach_id: targetCoachId,
         status: "connected",
         credentials_encrypted: {
           account_id: accountId,
