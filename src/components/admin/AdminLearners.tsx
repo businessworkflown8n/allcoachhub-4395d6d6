@@ -221,8 +221,8 @@ const AdminLearners = () => {
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "learners_report.csv"; a.click();
   };
 
-  const clearFilters = () => { setSearch(""); setCountryFilter("all"); setCategoryFilter("all"); setWebinarFilter("all"); setStatusFilter("all"); setSpendSort("none"); };
-  const hasFilters = search || countryFilter !== "all" || categoryFilter !== "all" || webinarFilter !== "all" || statusFilter !== "all" || spendSort !== "none";
+  const clearFilters = () => { setSearch(""); setCountryFilter("all"); setCategoryFilter("all"); setWebinarFilter("all"); setStatusFilter("all"); setSortField("last_active"); setSortDir("desc"); };
+  const hasFilters = search || countryFilter !== "all" || categoryFilter !== "all" || webinarFilter !== "all" || statusFilter !== "all" || sortField !== "last_active";
 
   // Metrics
   const totalSpend = useMemo(() => learners.reduce((s, l) => s + getLearnerStats(l.user_id).totalSpent, 0), [learners, getLearnerStats]);
