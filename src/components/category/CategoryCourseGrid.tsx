@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Clock, Users, Star, TrendingUp, Sparkles } from "lucide-react";
+import { Clock, Users, TrendingUp, Sparkles } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 interface Props {
@@ -12,18 +12,19 @@ interface Props {
   originalPriceKey: string;
   categoryName: string;
   trendingCourses: any[];
+  isOthers?: boolean;
 }
 
 const isNewCourse = (createdAt: string) => {
   const diff = Date.now() - new Date(createdAt).getTime();
-  return diff < 14 * 24 * 60 * 60 * 1000; // 14 days
+  return diff < 7 * 24 * 60 * 60 * 1000; // 7 days
 };
 
 const CategoryCourseGrid = ({
   courses, coaches, enrollCounts, loading,
-  symbol, priceKey, originalPriceKey, categoryName, trendingCourses,
+  symbol, priceKey, originalPriceKey, categoryName, trendingCourses, isOthers,
 }: Props) => {
-  const trendingIds = new Set(trendingCourses.filter(c => (enrollCounts[c.id] || 0) > 0).map(c => c.id));
+  const trendingIds = new Set(trendingCourses.filter((c) => (enrollCounts[c.id] || 0) > 0).map((c) => c.id));
 
   return (
     <section className="container mx-auto px-4 py-12">
@@ -33,8 +34,10 @@ const CategoryCourseGrid = ({
         </div>
       ) : courses.length === 0 ? (
         <div className="py-16 text-center">
-          <p className="text-lg text-muted-foreground">No courses match your filters.</p>
-          <Link to="/courses" className="mt-4 inline-block text-primary hover:underline">Browse all courses →</Link>
+          <p className="text-lg text-muted-foreground">No courses available yet. Be the first coach to create one!</p>
+          <Link to="/auth?mode=signup" className="mt-4 inline-block rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110">
+            + Create Course
+          </Link>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -71,9 +74,7 @@ const CategoryCourseGrid = ({
                 {course.thumbnail_url ? (
                   <img src={course.thumbnail_url} alt={course.title} className="h-44 w-full rounded-t-xl object-cover" loading="lazy" />
                 ) : (
-                  <div className="flex h-44 items-center justify-center rounded-t-xl bg-secondary text-4xl">
-                    🎓
-                  </div>
+                  <div className="flex h-44 items-center justify-center rounded-t-xl bg-secondary text-4xl">🎓</div>
                 )}
 
                 <div className="flex flex-1 flex-col p-5">
@@ -86,9 +87,13 @@ const CategoryCourseGrid = ({
                         {Number(course.discount_percent)}% OFF
                       </span>
                     )}
+                    {isOthers && (
+                      <span className="rounded-full bg-accent/50 px-2.5 py-0.5 text-xs font-medium text-accent-foreground">
+                        {course.category}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Title */}
                   <h2 className="mb-2 text-sm font-bold leading-snug text-foreground line-clamp-2">{course.title}</h2>
 
                   {/* Coach Attribution */}
@@ -124,7 +129,6 @@ const CategoryCourseGrid = ({
                       )}
                     </div>
 
-                    {/* Price & CTA */}
                     <div className="flex items-center justify-between border-t border-border pt-3">
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-bold text-foreground">{price === 0 ? "Free" : `${symbol}${price}`}</span>
