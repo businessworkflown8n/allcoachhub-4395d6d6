@@ -24,6 +24,7 @@ const Materials = () => {
 
   const { user, loading: authLoading } = useAuth();
   const location = useLocation();
+  const { displayViews, displayDownloads, isTrending, isPopular } = useEngagementMultiplier();
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
