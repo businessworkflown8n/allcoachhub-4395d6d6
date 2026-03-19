@@ -11,8 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Download, Mail, ArrowLeft, Eye, Lock, Copy, Share2 } from "lucide-react";
+import { Download, Mail, ArrowLeft, Eye, Lock, Copy, Share2, TrendingUp, Flame } from "lucide-react";
 import MaterialSocialButtons from "@/components/MaterialSocialButtons";
+import { useEngagementMultiplier } from "@/hooks/useEngagementMultiplier";
 
 const MaterialDetail = () => {
   const { slug } = useParams();
