@@ -215,10 +215,12 @@ const DashboardMaterials = () => {
                   {m.description && <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{m.description}</p>}
                 </div>
 
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {m.view_count}</span>
-                  <span className="flex items-center gap-1"><Download className="h-3 w-3" /> {m.download_count}</span>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                  <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {displayViews(m.view_count)}</span>
+                  <span className="flex items-center gap-1"><Download className="h-3 w-3" /> {displayDownloads(m.download_count)}</span>
                   <Badge variant="outline" className="uppercase text-[10px]">{m.file_type}</Badge>
+                  {isTrending(m.view_count) && <Badge variant="secondary" className="text-[10px] gap-0.5"><TrendingUp className="h-2.5 w-2.5" /> Trending</Badge>}
+                  {isPopular(m.download_count) && <Badge variant="default" className="text-[10px] gap-0.5"><Flame className="h-2.5 w-2.5" /> Popular</Badge>}
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-1">
