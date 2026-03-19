@@ -188,7 +188,7 @@ const AdminLearners = () => {
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginatedLearners = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-  useEffect(() => { setCurrentPage(1); }, [search, countryFilter, categoryFilter, webinarFilter, statusFilter, spendSort]);
+  useEffect(() => { setCurrentPage(1); }, [search, countryFilter, categoryFilter, webinarFilter, statusFilter, sortField, sortDir]);
 
   const toggleSelectAll = () => {
     if (selectedIds.size === filtered.length) setSelectedIds(new Set());
