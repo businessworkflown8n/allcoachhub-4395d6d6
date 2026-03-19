@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { GraduationCap, Search, Download, Eye, BookOpen, DollarSign, Trash2, Tag, Mail, X, ArrowUpDown, Users, Filter, Video, Activity, Clock, TrendingUp, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { GraduationCap, Search, Download, Eye, BookOpen, DollarSign, Trash2, Tag, Mail, X, ArrowUpDown, Users, Filter, Video, Activity, Clock, TrendingUp, AlertTriangle, ChevronLeft, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +31,8 @@ const AdminLearners = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [webinarFilter, setWebinarFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [spendSort, setSpendSort] = useState<"none" | "asc" | "desc">("none");
+  const [sortField, setSortField] = useState<string>("last_active");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
   const [isLive, setIsLive] = useState(true);
@@ -142,6 +143,11 @@ const AdminLearners = () => {
   const allCategories = useMemo(() => [...new Set(courses.map(c => c.category).filter(Boolean))].sort(), [courses]);
   const allWebinars = useMemo(() => webinars.map(w => ({ id: w.id, title: w.title })), [webinars]);
 
+  const toggleSort = (field: string) => {
+    if (sortField === field) setSortDir(prev => prev === "asc" ? "desc" : "asc");
+    else { setSortField(field); setSortDir("desc"); }
+  };
+
   const filtered = useMemo(() => {
     let result = learners.filter((l) => {
       const matchesSearch = !search || [l.full_name, l.email, l.country, l.industry, l.city, l.contact_number].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
@@ -157,20 +163,32 @@ const AdminLearners = () => {
       })();
       return matchesSearch && matchesCountry && matchesCategory && matchesWebinar && matchesStatus;
     });
-    if (spendSort !== "none") {
-      result = [...result].sort((a, b) => {
-        const sa = getLearnerStats(a.user_id).totalSpent;
-        const sb = getLearnerStats(b.user_id).totalSpent;
-        return spendSort === "asc" ? sa - sb : sb - sa;
-      });
-    }
+    result = [...result].sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      const sa = getLearnerStats(a.user_id);
+      const sb = getLearnerStats(b.user_id);
+      switch (sortField) {
+        case "name": return dir * (a.full_name || "").localeCompare(b.full_name || "");
+        case "email": return dir * (a.email || "").localeCompare(b.email || "");
+        case "phone": return dir * (a.contact_number || "").localeCompare(b.contact_number || "");
+        case "country": return dir * (a.country || "").localeCompare(b.country || "");
+        case "courses": return dir * (sa.enrolled - sb.enrolled);
+        case "webinars": return dir * (sa.webinarCount - sb.webinarCount);
+        case "spend": return dir * (sa.totalSpent - sb.totalSpent);
+        case "progress": return dir * (sa.avgProgress - sb.avgProgress);
+        case "tags": return dir * ((a.tags || []).join(",")).localeCompare((b.tags || []).join(","));
+        case "last_active": return dir * (new Date(a.last_active_at || 0).getTime() - new Date(b.last_active_at || 0).getTime());
+        case "joined": return dir * (new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
+        default: return 0;
+      }
+    });
     return result;
-  }, [learners, search, countryFilter, categoryFilter, webinarFilter, statusFilter, spendSort, enrollments, courses, webinarRegs, getLearnerStats]);
+  }, [learners, search, countryFilter, categoryFilter, webinarFilter, statusFilter, sortField, sortDir, enrollments, courses, webinarRegs, getLearnerStats]);
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginatedLearners = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-  useEffect(() => { setCurrentPage(1); }, [search, countryFilter, categoryFilter, webinarFilter, statusFilter, spendSort]);
+  useEffect(() => { setCurrentPage(1); }, [search, countryFilter, categoryFilter, webinarFilter, statusFilter, sortField, sortDir]);
 
   const toggleSelectAll = () => {
     if (selectedIds.size === filtered.length) setSelectedIds(new Set());
@@ -203,8 +221,8 @@ const AdminLearners = () => {
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "learners_report.csv"; a.click();
   };
 
-  const clearFilters = () => { setSearch(""); setCountryFilter("all"); setCategoryFilter("all"); setWebinarFilter("all"); setStatusFilter("all"); setSpendSort("none"); };
-  const hasFilters = search || countryFilter !== "all" || categoryFilter !== "all" || webinarFilter !== "all" || statusFilter !== "all" || spendSort !== "none";
+  const clearFilters = () => { setSearch(""); setCountryFilter("all"); setCategoryFilter("all"); setWebinarFilter("all"); setStatusFilter("all"); setSortField("last_active"); setSortDir("desc"); };
+  const hasFilters = search || countryFilter !== "all" || categoryFilter !== "all" || webinarFilter !== "all" || statusFilter !== "all" || sortField !== "last_active";
 
   // Metrics
   const totalSpend = useMemo(() => learners.reduce((s, l) => s + getLearnerStats(l.user_id).totalSpent, 0), [learners, getLearnerStats]);
@@ -603,9 +621,6 @@ const AdminLearners = () => {
             <SelectTrigger className="w-40 bg-secondary border-border"><SelectValue placeholder="Webinar" /></SelectTrigger>
             <SelectContent><SelectItem value="all">All Webinars</SelectItem>{allWebinars.map(w => <SelectItem key={w.id} value={w.id}>{w.title}</SelectItem>)}</SelectContent>
           </Select>
-          <Button size="sm" variant={spendSort !== "none" ? "default" : "outline"} onClick={() => setSpendSort(prev => prev === "none" ? "desc" : prev === "desc" ? "asc" : "none")} className="gap-1">
-            <ArrowUpDown className="h-3.5 w-3.5" /> Spend {spendSort === "desc" ? "↓" : spendSort === "asc" ? "↑" : ""}
-          </Button>
           {hasFilters && <Button size="sm" variant="ghost" onClick={clearFilters} className="gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" /> Clear</Button>}
         </div>
       </div>
@@ -619,18 +634,33 @@ const AdminLearners = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10"><Checkbox checked={selectedIds.size === filtered.length && filtered.length > 0} onCheckedChange={toggleSelectAll} /></TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Country</TableHead>
-                  <TableHead>Courses</TableHead>
-                  <TableHead>Webinars</TableHead>
-                  <TableHead>Spend</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>Tags</TableHead>
-                  <TableHead>Last Active</TableHead>
-                  <TableHead>Joined</TableHead>
+                  {[
+                    { label: "Name", field: "name" },
+                    { label: "Email", field: "email" },
+                    { label: "Phone", field: "phone" },
+                    { label: "Country", field: "country" },
+                    { label: "Courses", field: "courses" },
+                    { label: "Webinars", field: "webinars" },
+                    { label: "Spend", field: "spend" },
+                    { label: "Payment", field: null },
+                    { label: "Progress", field: "progress" },
+                    { label: "Tags", field: "tags" },
+                    { label: "Last Active", field: "last_active" },
+                    { label: "Joined", field: "joined" },
+                  ].map(col => (
+                    <TableHead key={col.label}>
+                      {col.field ? (
+                        <button onClick={() => toggleSort(col.field)} className="flex items-center gap-1 hover:text-foreground transition-colors group">
+                          {col.label}
+                          {sortField === col.field ? (
+                            sortDir === "asc" ? <ArrowUp className="h-3 w-3 text-primary" /> : <ArrowDown className="h-3 w-3 text-primary" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                          )}
+                        </button>
+                      ) : col.label}
+                    </TableHead>
+                  ))}
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>

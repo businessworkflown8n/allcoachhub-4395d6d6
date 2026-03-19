@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Shield, Search, Download, Eye, BookOpen, DollarSign, Users, Ban, CheckCircle, Trash2, Tag, Mail, X, ArrowUpDown, Filter, Video, Activity, Clock, TrendingUp, Star, AlertTriangle, ChevronLeft, ChevronRight, Trophy } from "lucide-react";
+import { Shield, Search, Download, Eye, BookOpen, DollarSign, Users, Ban, CheckCircle, Trash2, Tag, Mail, X, ArrowUpDown, Filter, Video, Activity, Clock, TrendingUp, Star, AlertTriangle, ChevronLeft, ChevronRight, Trophy, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +30,8 @@ const AdminCoaches = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
-  const [revenueSort, setRevenueSort] = useState<"none" | "asc" | "desc">("none");
+  const [sortField, setSortField] = useState<string>("last_active");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [enrollSearch, setEnrollSearch] = useState("");
   const [enrollPaymentFilter, setEnrollPaymentFilter] = useState<string>("all");
@@ -152,6 +153,11 @@ const AdminCoaches = () => {
   const countries = useMemo(() => [...new Set(coaches.map(c => c.country).filter(Boolean))].sort(), [coaches]);
   const cities = useMemo(() => [...new Set(coaches.map(c => c.city).filter(Boolean))].sort(), [coaches]);
 
+  const toggleSort = (field: string) => {
+    if (sortField === field) setSortDir(prev => prev === "asc" ? "desc" : "asc");
+    else { setSortField(field); setSortDir("desc"); }
+  };
+
   const filtered = useMemo(() => {
     let result = coaches.filter((c) => {
       const matchesSearch = !search || [c.full_name, c.email, c.category, c.country, c.city, c.company_name, c.contact_number].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
@@ -160,19 +166,32 @@ const AdminCoaches = () => {
       const matchesCity = cityFilter === "all" || c.city === cityFilter;
       return matchesSearch && matchesStatus && matchesCountry && matchesCity;
     });
-    if (revenueSort !== "none") {
-      result = [...result].sort((a, b) => {
-        const ra = getCoachStats(a.user_id).revenue;
-        const rb = getCoachStats(b.user_id).revenue;
-        return revenueSort === "asc" ? ra - rb : rb - ra;
-      });
-    }
+    result = [...result].sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      const sa = getCoachStats(a.user_id);
+      const sb = getCoachStats(b.user_id);
+      switch (sortField) {
+        case "name": return dir * (a.full_name || "").localeCompare(b.full_name || "");
+        case "email": return dir * (a.email || "").localeCompare(b.email || "");
+        case "company": return dir * (a.company_name || "").localeCompare(b.company_name || "");
+        case "country": return dir * (a.country || "").localeCompare(b.country || "");
+        case "status": return dir * (Number(a.is_suspended) - Number(b.is_suspended));
+        case "courses": return dir * (sa.courses - sb.courses);
+        case "students": return dir * (sa.totalStudents - sb.totalStudents);
+        case "rating": return dir * (sa.avgRating - sb.avgRating);
+        case "revenue": return dir * (sa.revenue - sb.revenue);
+        case "tags": return dir * ((a.tags || []).join(",")).localeCompare((b.tags || []).join(","));
+        case "last_active": return dir * (new Date(a.last_active_at || 0).getTime() - new Date(b.last_active_at || 0).getTime());
+        case "registered": return dir * (new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
+        default: return 0;
+      }
+    });
     return result;
-  }, [coaches, search, statusFilter, countryFilter, cityFilter, revenueSort, getCoachStats]);
+  }, [coaches, search, statusFilter, countryFilter, cityFilter, sortField, sortDir, getCoachStats]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginatedCoaches = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-  useEffect(() => { setCurrentPage(1); }, [search, statusFilter, countryFilter, cityFilter, revenueSort]);
+  useEffect(() => { setCurrentPage(1); }, [search, statusFilter, countryFilter, cityFilter, sortField, sortDir]);
 
   const toggleSelectAll = () => {
     if (selectedIds.size === filtered.length) setSelectedIds(new Set());
@@ -209,8 +228,8 @@ const AdminCoaches = () => {
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "coach_enrollments.csv"; a.click();
   };
 
-  const clearFilters = () => { setSearch(""); setStatusFilter("all"); setCountryFilter("all"); setCityFilter("all"); setRevenueSort("none"); };
-  const hasFilters = search || statusFilter !== "all" || countryFilter !== "all" || cityFilter !== "all" || revenueSort !== "none";
+  const clearFilters = () => { setSearch(""); setStatusFilter("all"); setCountryFilter("all"); setCityFilter("all"); setSortField("last_active"); setSortDir("desc"); };
+  const hasFilters = search || statusFilter !== "all" || countryFilter !== "all" || cityFilter !== "all" || sortField !== "last_active";
 
   // Metrics
   const totalRevenue = useMemo(() => coaches.reduce((s, c) => s + getCoachStats(c.user_id).revenue, 0), [coaches, getCoachStats]);
@@ -576,9 +595,6 @@ const AdminCoaches = () => {
             <SelectTrigger className="w-32 bg-secondary border-border"><SelectValue placeholder="City" /></SelectTrigger>
             <SelectContent><SelectItem value="all">All Cities</SelectItem>{cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
           </Select>
-          <Button size="sm" variant={revenueSort !== "none" ? "default" : "outline"} onClick={() => setRevenueSort(prev => prev === "none" ? "desc" : prev === "desc" ? "asc" : "none")} className="gap-1">
-            <ArrowUpDown className="h-3.5 w-3.5" /> Revenue {revenueSort === "desc" ? "↓" : revenueSort === "asc" ? "↑" : ""}
-          </Button>
           {hasFilters && <Button size="sm" variant="ghost" onClick={clearFilters} className="gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" /> Clear</Button>}
         </div>
       </div>
@@ -592,17 +608,30 @@ const AdminCoaches = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10"><Checkbox checked={selectedIds.size === filtered.length && filtered.length > 0} onCheckedChange={toggleSelectAll} /></TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Country</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Courses</TableHead>
-                  <TableHead>Students</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Revenue</TableHead>
-                  <TableHead>Tags</TableHead>
-                  <TableHead>Last Active</TableHead>
+                  {[
+                    { label: "Name", field: "name" },
+                    { label: "Email", field: "email" },
+                    { label: "Company", field: "company" },
+                    { label: "Country", field: "country" },
+                    { label: "Status", field: "status" },
+                    { label: "Courses", field: "courses" },
+                    { label: "Students", field: "students" },
+                    { label: "Rating", field: "rating" },
+                    { label: "Revenue", field: "revenue" },
+                    { label: "Tags", field: "tags" },
+                    { label: "Last Active", field: "last_active" },
+                  ].map(col => (
+                    <TableHead key={col.field}>
+                      <button onClick={() => toggleSort(col.field)} className="flex items-center gap-1 hover:text-foreground transition-colors group">
+                        {col.label}
+                        {sortField === col.field ? (
+                          sortDir === "asc" ? <ArrowUp className="h-3 w-3 text-primary" /> : <ArrowDown className="h-3 w-3 text-primary" />
+                        ) : (
+                          <ArrowUpDown className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                        )}
+                      </button>
+                    </TableHead>
+                  ))}
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
