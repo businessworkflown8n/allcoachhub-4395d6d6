@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Download, Mail, Eye, Search, FileText, Copy, Share2 } from "lucide-react";
+import { Download, Mail, Eye, Search, FileText, Copy, Share2, TrendingUp, Flame } from "lucide-react";
+import { useEngagementMultiplier } from "@/hooks/useEngagementMultiplier";
 
 const CATEGORIES = ["All", "General", "AI Research", "AI Tools", "Templates", "Guides", "Worksheets", "Case Studies"];
 
