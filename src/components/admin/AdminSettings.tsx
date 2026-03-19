@@ -224,6 +224,30 @@ const AdminSettings = () => {
           </Table>
         </div>
       )}
+
+      {/* Engagement Multiplier Settings */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <Eye className="h-5 w-5 text-primary" />
+          <h3 className="font-semibold text-foreground">Engagement Display Multiplier</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">Boost visible view/download counts for social proof. Actual data stays unchanged in analytics.</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label className="text-foreground">View Multiplier (×)</Label>
+            <Input type="number" value={viewMultiplier} onChange={(e) => setViewMultiplier(e.target.value)} className="bg-secondary border-border" min="1" max="100" />
+            <p className="text-xs text-muted-foreground">e.g. 10 = 1 real view shows as 10</p>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-foreground">Download Multiplier (×)</Label>
+            <Input type="number" value={downloadMultiplier} onChange={(e) => setDownloadMultiplier(e.target.value)} className="bg-secondary border-border" min="1" max="100" />
+            <p className="text-xs text-muted-foreground">e.g. 5 = 1 real download shows as 5</p>
+          </div>
+        </div>
+        <button onClick={handleSaveMultiplier} disabled={savingMultiplier} className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
+          {savingMultiplier ? "Saving..." : "Save Multipliers"}
+        </button>
+      </div>
     </div>
   );
 };
