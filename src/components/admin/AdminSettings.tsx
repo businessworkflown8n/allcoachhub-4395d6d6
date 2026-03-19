@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Settings, Users, Percent } from "lucide-react";
+import { Settings, Users, Percent, Eye, Download } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -23,6 +23,11 @@ const AdminSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Multiplier state
+  const [viewMultiplier, setViewMultiplier] = useState("10");
+  const [downloadMultiplier, setDownloadMultiplier] = useState("5");
+  const [savingMultiplier, setSavingMultiplier] = useState(false);
+
   // Coach commission state
   const [coaches, setCoaches] = useState<CoachProfile[]>([]);
   const [coachCommissions, setCoachCommissions] = useState<CoachCommission[]>([]);
@@ -36,14 +41,21 @@ const AdminSettings = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const [settingsRes, coachRolesRes, commissionsRes] = await Promise.all([
+    const [settingsRes, coachRolesRes, commissionsRes, multiplierRes] = await Promise.all([
       supabase.from("platform_settings").select("*").eq("key", "commission_percent").single(),
       supabase.from("user_roles").select("user_id").eq("role", "coach"),
       supabase.from("coach_commissions").select("coach_id, commission_percent"),
+      supabase.from("platform_settings").select("key, value").in("key", ["material_view_multiplier", "material_download_multiplier"]),
     ]);
 
     setCommission(settingsRes.data?.value || "20");
     setCoachCommissions(commissionsRes.data || []);
+    if (multiplierRes.data) {
+      multiplierRes.data.forEach((r: any) => {
+        if (r.key === "material_view_multiplier") setViewMultiplier(r.value);
+        if (r.key === "material_download_multiplier") setDownloadMultiplier(r.value);
+      });
+    }
 
     // Fetch coach profiles
     if (coachRolesRes.data && coachRolesRes.data.length > 0) {
@@ -108,6 +120,24 @@ const AdminSettings = () => {
   };
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
+
+  const handleSaveMultiplier = async () => {
+    setSavingMultiplier(true);
+    const upsert = async (key: string, value: string) => {
+      const { data } = await supabase.from("platform_settings").select("id").eq("key", key).single();
+      if (data) {
+        await supabase.from("platform_settings").update({ value }).eq("key", key);
+      } else {
+        await supabase.from("platform_settings").insert({ key, value });
+      }
+    };
+    await Promise.all([
+      upsert("material_view_multiplier", viewMultiplier),
+      upsert("material_download_multiplier", downloadMultiplier),
+    ]);
+    setSavingMultiplier(false);
+    toast({ title: "Engagement multipliers saved" });
+  };
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -194,6 +224,30 @@ const AdminSettings = () => {
           </Table>
         </div>
       )}
+
+      {/* Engagement Multiplier Settings */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <Eye className="h-5 w-5 text-primary" />
+          <h3 className="font-semibold text-foreground">Engagement Display Multiplier</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">Boost visible view/download counts for social proof. Actual data stays unchanged in analytics.</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label className="text-foreground">View Multiplier (×)</Label>
+            <Input type="number" value={viewMultiplier} onChange={(e) => setViewMultiplier(e.target.value)} className="bg-secondary border-border" min="1" max="100" />
+            <p className="text-xs text-muted-foreground">e.g. 10 = 1 real view shows as 10</p>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-foreground">Download Multiplier (×)</Label>
+            <Input type="number" value={downloadMultiplier} onChange={(e) => setDownloadMultiplier(e.target.value)} className="bg-secondary border-border" min="1" max="100" />
+            <p className="text-xs text-muted-foreground">e.g. 5 = 1 real download shows as 5</p>
+          </div>
+        </div>
+        <button onClick={handleSaveMultiplier} disabled={savingMultiplier} className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
+          {savingMultiplier ? "Saving..." : "Save Multipliers"}
+        </button>
+      </div>
     </div>
   );
 };

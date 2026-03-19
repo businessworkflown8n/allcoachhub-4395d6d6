@@ -11,13 +11,15 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Download, Mail, ArrowLeft, Eye, Lock, Copy, Share2 } from "lucide-react";
+import { Download, Mail, ArrowLeft, Eye, Lock, Copy, Share2, TrendingUp, Flame } from "lucide-react";
 import MaterialSocialButtons from "@/components/MaterialSocialButtons";
+import { useEngagementMultiplier } from "@/hooks/useEngagementMultiplier";
 
 const MaterialDetail = () => {
   const { slug } = useParams();
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
+  const { displayViews, displayDownloads, isTrending, isPopular } = useEngagementMultiplier();
   const [material, setMaterial] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [shareOpen, setShareOpen] = useState(false);
@@ -203,9 +205,11 @@ const MaterialDetail = () => {
                     <Badge variant="outline" className="uppercase text-xs">{material.file_type}</Badge>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1"><Eye className="h-4 w-4" /> {material.view_count}</span>
-                  <span className="flex items-center gap-1"><Download className="h-4 w-4" /> {material.download_count}</span>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
+                  <span className="flex items-center gap-1"><Eye className="h-4 w-4" /> {displayViews(material.view_count)}</span>
+                  <span className="flex items-center gap-1"><Download className="h-4 w-4" /> {displayDownloads(material.download_count)}</span>
+                  {isTrending(material.view_count) && <Badge variant="secondary" className="text-xs gap-0.5"><TrendingUp className="h-3 w-3" /> Trending</Badge>}
+                  {isPopular(material.download_count) && <Badge variant="default" className="text-xs gap-0.5"><Flame className="h-3 w-3" /> Popular</Badge>}
                 </div>
               </div>
 
