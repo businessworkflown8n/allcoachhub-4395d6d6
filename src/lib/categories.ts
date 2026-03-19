@@ -10,7 +10,8 @@ export const PREDEFINED_CATEGORIES = [
   { name: "Gen AI for Devs", slug: "generative-ai-for-developers", emoji: "💻" },
   { name: "AI for Business", slug: "ai-business", emoji: "🏢" },
   { name: "Others", slug: "others", emoji: "📦" },
-] as const;
+];
+
 
 export type CategoryName = (typeof PREDEFINED_CATEGORIES)[number]["name"];
 
