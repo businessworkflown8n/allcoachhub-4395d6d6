@@ -622,8 +622,6 @@ const AdminLearners = () => {
             <SelectContent><SelectItem value="all">All Webinars</SelectItem>{allWebinars.map(w => <SelectItem key={w.id} value={w.id}>{w.title}</SelectItem>)}</SelectContent>
           </Select>
           {hasFilters && <Button size="sm" variant="ghost" onClick={clearFilters} className="gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" /> Clear</Button>}
-          </Button>
-          {hasFilters && <Button size="sm" variant="ghost" onClick={clearFilters} className="gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" /> Clear</Button>}
         </div>
       </div>
 
