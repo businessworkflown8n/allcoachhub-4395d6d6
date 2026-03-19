@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
+import { PREDEFINED_CATEGORIES } from "@/lib/categories";
 
 const CoachCourseForm = () => {
   const { id } = useParams();
@@ -19,6 +20,7 @@ const CoachCourseForm = () => {
     title: "",
     description: "",
     category: "",
+    custom_category: "",
     level: "Beginner",
     language: "English",
     duration_hours: "",
@@ -33,10 +35,12 @@ const CoachCourseForm = () => {
     if (isEdit && user) {
       supabase.from("courses").select("*").eq("id", id).eq("coach_id", user.id).single().then(({ data }) => {
         if (data) {
+          const isPredefined = PREDEFINED_CATEGORIES.some((c) => c.name === data.category);
           setForm({
             title: data.title,
             description: data.description || "",
-            category: data.category,
+            category: isPredefined ? data.category : "Others",
+            custom_category: isPredefined ? "" : data.category,
             level: data.level,
             language: data.language,
             duration_hours: String(data.duration_hours),
@@ -56,13 +60,25 @@ const CoachCourseForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    if (!form.category) {
+      toast({ title: "Category is required", variant: "destructive" });
+      return;
+    }
+    if (form.category === "Others" && !form.custom_category.trim()) {
+      toast({ title: "Please enter a custom category name", variant: "destructive" });
+      return;
+    }
+
     setSaving(true);
+
+    const resolvedCategory = form.category === "Others" ? form.custom_category.trim() : form.category;
 
     const payload = {
       coach_id: user.id,
       title: form.title,
       description: form.description,
-      category: form.category,
+      category: resolvedCategory,
       level: form.level,
       language: form.language,
       duration_hours: Number(form.duration_hours) || 0,
@@ -110,8 +126,33 @@ const CoachCourseForm = () => {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label className="text-foreground">Category *</Label>
-            <Input value={form.category} onChange={(e) => updateField("category", e.target.value)} required className="bg-secondary border-border" placeholder="e.g. Prompt Engineering" />
+            <Select value={form.category} onValueChange={(v) => { updateField("category", v); if (v !== "Others") updateField("custom_category", ""); }}>
+              <SelectTrigger className="bg-secondary border-border">
+                <SelectValue placeholder="Select Category" />
+              </SelectTrigger>
+              <SelectContent>
+                {PREDEFINED_CATEGORIES.map((cat) => (
+                  <SelectItem key={cat.slug} value={cat.name}>
+                    {cat.emoji} {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+          {form.category === "Others" && (
+            <div className="space-y-2">
+              <Label className="text-foreground">Custom Category Name *</Label>
+              <Input
+                value={form.custom_category}
+                onChange={(e) => updateField("custom_category", e.target.value)}
+                placeholder="e.g. AI in Healthcare"
+                required
+                className="bg-secondary border-border"
+              />
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label className="text-foreground">Level</Label>
             <Select value={form.level} onValueChange={(v) => updateField("level", v)}>

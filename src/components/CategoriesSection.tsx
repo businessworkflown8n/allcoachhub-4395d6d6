@@ -1,65 +1,44 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { X, Clock, ArrowRight } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/i18n/TranslationProvider";
 import { trackEvent } from "@/lib/analytics";
-
-const categories = [
-  { emoji: "✨", name: "Prompt Engineering", slug: "prompt-engineering", count: 42 },
-  { emoji: "🤖", name: "AI Agents", slug: "ai-agents", count: 28 },
-  { emoji: "🧠", name: "LLMs & Fine-tuning", slug: "llms-fine-tuning", count: 35 },
-  { emoji: "⚡", name: "AI Automation", slug: "ai-automation", count: 31 },
-  { emoji: "🔧", name: "No-Code AI", slug: "no-code-ai", count: 24 },
-  { emoji: "📈", name: "AI for Marketing", slug: "ai-marketing", count: 19 },
-  { emoji: "💻", name: "Gen AI for Devs", slug: "generative-ai-for-developers", count: 38 },
-  { emoji: "🏢", name: "AI for Business", slug: "ai-business", count: 22 },
-];
-
-const staticCoursesByCategory: Record<string, any[]> = {
-  "Prompt Engineering": [
-    { id: "s1", title: "Master Prompt Engineering: Zero to Expert", coach_name: "Expert Coach", level: "Beginner", duration_hours: 8, price_usd: 49, price_inr: 3999, original_price_usd: 99, original_price_inr: 7999, discount_percent: 51 },
-    { id: "s2", title: "Advanced Prompt Patterns for ChatGPT & Claude", coach_name: "Expert Coach", level: "Advanced", duration_hours: 6, price_usd: 59, price_inr: 4799, original_price_usd: null, original_price_inr: null, discount_percent: null },
-    { id: "s3", title: "Prompt Engineering for Business Teams", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 5, price_usd: 39, price_inr: 3199, original_price_usd: 79, original_price_inr: 6499, discount_percent: 51 },
-  ],
-  "AI Agents": [
-    { id: "s4", title: "Build AI Agents with No Code", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 12, price_usd: 69, price_inr: 5699, original_price_usd: 129, original_price_inr: 10699, discount_percent: 47 },
-    { id: "s5", title: "Autonomous AI Agents Masterclass", coach_name: "Expert Coach", level: "Advanced", duration_hours: 14, price_usd: 89, price_inr: 7399, original_price_usd: null, original_price_inr: null, discount_percent: null },
-  ],
-  "LLMs & Fine-tuning": [
-    { id: "s6", title: "Fine-Tune Your Own LLM", coach_name: "Expert Coach", level: "Advanced", duration_hours: 16, price_usd: 99, price_inr: 8199, original_price_usd: 199, original_price_inr: 16499, discount_percent: 50 },
-    { id: "s7", title: "Understanding Large Language Models", coach_name: "Expert Coach", level: "Beginner", duration_hours: 10, price_usd: 49, price_inr: 3999, original_price_usd: null, original_price_inr: null, discount_percent: null },
-  ],
-  "AI Automation": [
-    { id: "s8", title: "AI Automation Bootcamp", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 10, price_usd: 59, price_inr: 4799, original_price_usd: 99, original_price_inr: 7999, discount_percent: 40 },
-    { id: "s9", title: "Automate Everything with AI & Zapier", coach_name: "Expert Coach", level: "Beginner", duration_hours: 6, price_usd: 39, price_inr: 3199, original_price_usd: null, original_price_inr: null, discount_percent: null },
-  ],
-  "No-Code AI": [
-    { id: "s10", title: "No-Code AI Tools Masterclass", coach_name: "Expert Coach", level: "Beginner", duration_hours: 8, price_usd: 39, price_inr: 3199, original_price_usd: 69, original_price_inr: 5699, discount_percent: 43 },
-    { id: "s11", title: "Build AI Apps Without Coding", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 10, price_usd: 59, price_inr: 4799, original_price_usd: null, original_price_inr: null, discount_percent: null },
-  ],
-  "AI for Marketing": [
-    { id: "s12", title: "AI-Powered Marketing Masterclass", coach_name: "Expert Coach", level: "Beginner", duration_hours: 6, price_usd: 39, price_inr: 3199, original_price_usd: null, original_price_inr: null, discount_percent: null },
-    { id: "s13", title: "Content Creation with Generative AI", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 8, price_usd: 49, price_inr: 3999, original_price_usd: 89, original_price_inr: 7399, discount_percent: 45 },
-  ],
-  "Gen AI for Devs": [
-    { id: "s14", title: "Generative AI for Software Developers", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 12, price_usd: 69, price_inr: 5699, original_price_usd: 129, original_price_inr: 10699, discount_percent: 47 },
-    { id: "s15", title: "Building with OpenAI & LangChain", coach_name: "Expert Coach", level: "Advanced", duration_hours: 14, price_usd: 89, price_inr: 7399, original_price_usd: null, original_price_inr: null, discount_percent: null },
-  ],
-  "AI for Business": [
-    { id: "s16", title: "AI Strategy for Business Leaders", coach_name: "Expert Coach", level: "Beginner", duration_hours: 5, price_usd: 49, price_inr: 3999, original_price_usd: null, original_price_inr: null, discount_percent: null },
-    { id: "s17", title: "Implementing AI in Your Organization", coach_name: "Expert Coach", level: "Intermediate", duration_hours: 8, price_usd: 59, price_inr: 4799, original_price_usd: 99, original_price_inr: 7999, discount_percent: 40 },
-  ],
-};
+import { PREDEFINED_CATEGORIES } from "@/lib/categories";
 
 const CategoriesSection = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [dbCourses, setDbCourses] = useState<any[]>([]);
   const [coaches, setCoaches] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [courseCounts, setCourseCounts] = useState<Record<string, number>>({});
   const { symbol, priceKey, originalPriceKey } = useCurrency();
   const { t } = useTranslation();
+
+  // Fetch course counts per category on mount
+  useEffect(() => {
+    const fetchCounts = async () => {
+      const { data } = await supabase
+        .from("courses")
+        .select("category")
+        .eq("is_published", true)
+        .eq("approval_status", "approved");
+
+      if (data) {
+        const counts: Record<string, number> = {};
+        data.forEach((c) => {
+          const catName = c.category;
+          const isPredefined = PREDEFINED_CATEGORIES.some((pc) => pc.name === catName);
+          const key = isPredefined ? catName : "Others";
+          counts[key] = (counts[key] || 0) + 1;
+        });
+        setCourseCounts(counts);
+      }
+    };
+    fetchCounts();
+  }, []);
 
   useEffect(() => {
     if (!activeCategory) return;
@@ -67,36 +46,57 @@ const CategoriesSection = () => {
     trackEvent("category_click", { category: activeCategory });
 
     const fetchCourses = async () => {
-      const { data } = await supabase
+      let query = supabase
         .from("courses")
         .select("*")
         .eq("is_published", true)
-        .eq("category", activeCategory)
-        .limit(3);
+        .eq("approval_status", "approved");
 
-      const list = data || [];
-      setDbCourses(list);
+      if (activeCategory === "Others") {
+        // Fetch courses NOT in any predefined category
+        const predefinedNames = PREDEFINED_CATEGORIES.filter((c) => c.name !== "Others").map((c) => c.name);
+        // Use NOT IN via individual neq is tedious; fetch all and filter client-side
+        const { data } = await query.limit(50);
+        const list = (data || []).filter((c) => !predefinedNames.includes(c.category));
+        setDbCourses(list.slice(0, 3));
+        await fetchCoaches(list.slice(0, 3));
+      } else {
+        query = query.eq("category", activeCategory).limit(3);
+        const { data } = await query;
+        const list = data || [];
+        setDbCourses(list);
+        await fetchCoaches(list);
+      }
 
-      // Fetch coach names
-      const coachIds = [...new Set(list.map(c => c.coach_id))];
+      setLoading(false);
+    };
+
+    const fetchCoaches = async (list: any[]) => {
+      const coachIds = [...new Set(list.map((c) => c.coach_id))];
       if (coachIds.length > 0) {
         const { data: profiles } = await supabase
           .from("profiles")
           .select("user_id, full_name")
           .in("user_id", coachIds);
         const map: Record<string, string> = {};
-        (profiles || []).forEach(p => { map[p.user_id] = p.full_name || "Coach"; });
+        (profiles || []).forEach((p) => { map[p.user_id] = p.full_name || "Coach"; });
         setCoaches(map);
       }
-
-      setLoading(false);
     };
+
     fetchCourses();
   }, [activeCategory]);
 
-  const activeCatObj = categories.find(c => c.name === activeCategory);
-  const staticList = (staticCoursesByCategory[activeCategory || ""] || []).slice(0, 3);
-  const displayCourses = dbCourses.length > 0 ? dbCourses : staticList;
+  const activeCatObj = PREDEFINED_CATEGORIES.find((c) => c.name === activeCategory);
+
+  const handleCardClick = (catName: string, slug: string) => {
+    if (activeCategory === catName) {
+      // Already active — navigate to full page
+      navigate(`/courses/${slug}`);
+    } else {
+      setActiveCategory(catName);
+    }
+  };
 
   return (
     <section className="py-12 sm:py-24">
@@ -106,18 +106,22 @@ const CategoriesSection = () => {
           <p className="text-muted-foreground">{t("categories.subtitle")}</p>
         </div>
 
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-4 md:grid-cols-4">
-          {categories.map((cat) => (
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {PREDEFINED_CATEGORIES.map((cat) => (
             <button
-              key={cat.name}
-              onClick={() => setActiveCategory(cat.name)}
-              className={`group cursor-pointer rounded-xl border p-4 text-center transition-all hover:border-primary/30 hover:bg-secondary sm:p-6 ${
-                activeCategory === cat.name ? "border-primary bg-secondary" : "border-border bg-card"
+              key={cat.slug}
+              onClick={() => handleCardClick(cat.name, cat.slug)}
+              className={`group cursor-pointer rounded-xl border p-4 text-center transition-all duration-200 hover:scale-[1.03] hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 sm:p-6 ${
+                activeCategory === cat.name
+                  ? "border-primary bg-secondary shadow-md shadow-primary/10"
+                  : "border-border bg-card"
               }`}
             >
               <div className="mb-2 text-2xl sm:mb-3 sm:text-3xl">{cat.emoji}</div>
               <h3 className="mb-1 text-xs font-semibold text-foreground sm:text-sm">{cat.name}</h3>
-              <p className="text-xs text-muted-foreground">{cat.count} {t("categories.courses")}</p>
+              <p className="text-xs text-muted-foreground">
+                {courseCounts[cat.name] || 0} {t("categories.courses")}
+              </p>
             </button>
           ))}
         </div>
@@ -147,20 +151,25 @@ const CategoriesSection = () => {
                 <div className="flex justify-center py-8">
                   <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
-              ) : displayCourses.length === 0 ? (
-                <p className="py-8 text-center text-sm text-muted-foreground">{t("categories.noCourses")}</p>
+              ) : dbCourses.length === 0 ? (
+                <div className="py-8 text-center">
+                  <p className="text-sm text-muted-foreground mb-3">{t("categories.noCourses")}</p>
+                  <p className="text-xs text-muted-foreground">No courses available yet. Be the first coach to create one!</p>
+                  <Link to="/auth?mode=signup" className="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:brightness-110">
+                    + Create Course
+                  </Link>
+                </div>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {displayCourses.map((course) => {
-                    const isStatic = course.id?.startsWith("s");
+                  {dbCourses.map((course) => {
                     const price = Number(course[priceKey] || course.price_usd);
                     const originalPrice = Number(course[originalPriceKey] || course.original_price_usd || 0);
-                    const coachName = course.coach_name || coaches[course.coach_id] || "";
+                    const coachName = coaches[course.coach_id] || "";
                     return (
                       <Link
-                        to={isStatic ? "#" : `/course/${course.slug || course.id}`}
+                        to={`/course/${course.slug || course.id}`}
                         key={course.id}
-                        onClick={() => !isStatic && trackEvent("course_click", { course: course.title, coach: coachName })}
+                        onClick={() => trackEvent("course_click", { course: course.title, coach: coachName })}
                         className="group/card flex flex-col rounded-lg border border-border bg-background p-4 transition-all hover:border-primary/20 hover:shadow-md"
                       >
                         <div className="mb-2 flex items-center gap-2">
