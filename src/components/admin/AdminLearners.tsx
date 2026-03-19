@@ -31,7 +31,8 @@ const AdminLearners = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [webinarFilter, setWebinarFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [spendSort, setSpendSort] = useState<"none" | "asc" | "desc">("none");
+  const [sortField, setSortField] = useState<string>("last_active");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
   const [isLive, setIsLive] = useState(true);

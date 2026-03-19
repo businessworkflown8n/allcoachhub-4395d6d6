@@ -30,7 +30,8 @@ const AdminCoaches = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
-  const [revenueSort, setRevenueSort] = useState<"none" | "asc" | "desc">("none");
+  const [sortField, setSortField] = useState<string>("last_active");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [enrollSearch, setEnrollSearch] = useState("");
   const [enrollPaymentFilter, setEnrollPaymentFilter] = useState<string>("all");
