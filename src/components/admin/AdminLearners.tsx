@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { GraduationCap, Search, Download, Eye, BookOpen, DollarSign, Trash2, Tag, Mail, X, ArrowUpDown, Users, Filter } from "lucide-react";
+import { GraduationCap, Search, Download, Eye, BookOpen, DollarSign, Trash2, Tag, Mail, X, ArrowUpDown, Users, Filter, Video, Activity, Clock, TrendingUp, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,12 +9,12 @@ import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Video } from "lucide-react";
-
-
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend } from "recharts";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const TAG_OPTIONS = ["High Intent", "High Spend", "Inactive 30 Days", "New Learner", "Repeat Buyer", "VIP"];
+const PAGE_SIZE = 15;
+const SYNC_INTERVAL = 20000;
 
 const AdminLearners = () => {
   const { user } = useAuth();
@@ -30,31 +30,62 @@ const AdminLearners = () => {
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [webinarFilter, setWebinarFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [spendSort, setSpendSort] = useState<"none" | "asc" | "desc">("none");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
+  const [isLive, setIsLive] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const fetchAll = async () => {
-    const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "learner");
-    if (!roles || roles.length === 0) { setLoading(false); return; }
-    const ids = roles.map((r) => r.user_id);
-    const [profiles, enrollData, courseData, webinarRegData, webinarData] = await Promise.all([
-      supabase.from("profiles").select("*").in("user_id", ids),
-      supabase.from("enrollments").select("*").in("learner_id", ids),
-      supabase.from("courses").select("id, title, category"),
-      supabase.from("webinar_registrations").select("*").in("learner_id", ids),
-      supabase.from("webinars").select("id, title, webinar_date, coach_id"),
-    ]);
-    setLearners(profiles.data || []);
-    setEnrollments(enrollData.data || []);
-    setCourses(courseData.data || []);
-    setWebinarRegs(webinarRegData.data || []);
-    setWebinars(webinarData.data || []);
+  const fetchAll = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "learner");
+      if (!roles || roles.length === 0) {
+        setLearners([]); setEnrollments([]); setCourses([]); setWebinarRegs([]); setWebinars([]);
+        setLoading(false); setLastSyncTime(new Date()); return;
+      }
+      const ids = roles.map((r) => r.user_id);
+      const [profiles, enrollData, courseData, webinarRegData, webinarData] = await Promise.all([
+        supabase.from("profiles").select("*").in("user_id", ids),
+        supabase.from("enrollments").select("*").in("learner_id", ids),
+        supabase.from("courses").select("id, title, category"),
+        supabase.from("webinar_registrations").select("*").in("learner_id", ids),
+        supabase.from("webinars").select("id, title, webinar_date, coach_id"),
+      ]);
+      setLearners(profiles.data || []);
+      setEnrollments(enrollData.data || []);
+      setCourses(courseData.data || []);
+      setWebinarRegs(webinarRegData.data || []);
+      setWebinars(webinarData.data || []);
+      setLastSyncTime(new Date());
+    } catch (err) {
+      console.error("Sync error:", err);
+    }
     setLoading(false);
-  };
+  }, []);
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  const getLearnerStats = (userId: string) => {
+  // Auto-sync interval
+  useEffect(() => {
+    if (!isLive) return;
+    const interval = setInterval(() => fetchAll(true), SYNC_INTERVAL);
+    return () => clearInterval(interval);
+  }, [isLive, fetchAll]);
+
+  // Realtime subscriptions
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-learners-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => fetchAll(true))
+      .on("postgres_changes", { event: "*", schema: "public", table: "enrollments" }, () => fetchAll(true))
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => fetchAll(true))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchAll]);
+
+  const getLearnerStats = useCallback((userId: string) => {
     const le = enrollments.filter((e) => e.learner_id === userId);
     const totalSpent = le.reduce((s, e) => s + Number(e.amount_paid || 0), 0);
     const completed = le.filter((e) => e.completed_at).length;
@@ -63,7 +94,7 @@ const AdminLearners = () => {
     const lastEnrollment = le.length > 0 ? le.sort((a, b) => new Date(b.enrolled_at).getTime() - new Date(a.enrolled_at).getTime())[0].enrolled_at : null;
     const webinarCount = webinarRegs.filter((w) => w.learner_id === userId).length;
     return { enrolled: le.length, totalSpent, completed, avgProgress, categories, lastEnrollment, webinarCount };
-  };
+  }, [enrollments, courses, webinarRegs]);
 
   const deleteLearner = async (learner: any) => {
     if (!confirm(`Remove learner "${learner.full_name}"? This cannot be undone.`)) return;
@@ -81,9 +112,7 @@ const AdminLearners = () => {
     const { error } = await supabase.from("enrollments").update({ payment_status: newStatus }).eq("id", enrollment.id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); setUpdatingStatus(null); return; }
     if (user) {
-      await supabase.from("payment_status_audit").insert({
-        enrollment_id: enrollment.id, old_status: oldStatus, new_status: newStatus, changed_by: user.id,
-      });
+      await supabase.from("payment_status_audit").insert({ enrollment_id: enrollment.id, old_status: oldStatus, new_status: newStatus, changed_by: user.id });
     }
     setEnrollments(prev => prev.map(e => e.id === enrollment.id ? { ...e, payment_status: newStatus } : e));
     setUpdatingStatus(null);
@@ -98,16 +127,14 @@ const AdminLearners = () => {
     });
     const csv = [headers, ...rows].map((r) => r.map(v => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "learner_enrollments.csv";
-    a.click();
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "learner_enrollments.csv"; a.click();
   };
 
   const updateTags = async (learner: any, tags: string[]) => {
     const { error } = await supabase.from("profiles").update({ tags }).eq("user_id", learner.user_id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     setLearners(prev => prev.map(l => l.user_id === learner.user_id ? { ...l, tags } : l));
+    if (selectedLearner?.user_id === learner.user_id) setSelectedLearner({ ...learner, tags });
     toast({ title: "Tags updated" });
   };
 
@@ -121,7 +148,14 @@ const AdminLearners = () => {
       const matchesCountry = countryFilter === "all" || l.country === countryFilter;
       const matchesCategory = categoryFilter === "all" || getLearnerStats(l.user_id).categories.includes(categoryFilter);
       const matchesWebinar = webinarFilter === "all" || webinarRegs.some(wr => wr.learner_id === l.user_id && wr.webinar_id === webinarFilter);
-      return matchesSearch && matchesCountry && matchesCategory && matchesWebinar;
+      const matchesStatus = statusFilter === "all" || (() => {
+        const lastActive = l.last_active_at ? new Date(l.last_active_at) : null;
+        const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        if (statusFilter === "active") return lastActive && lastActive >= sevenDaysAgo;
+        if (statusFilter === "inactive") return !lastActive || lastActive < sevenDaysAgo;
+        return true;
+      })();
+      return matchesSearch && matchesCountry && matchesCategory && matchesWebinar && matchesStatus;
     });
     if (spendSort !== "none") {
       result = [...result].sort((a, b) => {
@@ -131,17 +165,19 @@ const AdminLearners = () => {
       });
     }
     return result;
-  }, [learners, search, countryFilter, categoryFilter, webinarFilter, spendSort, enrollments, courses, webinarRegs]);
+  }, [learners, search, countryFilter, categoryFilter, webinarFilter, statusFilter, spendSort, enrollments, courses, webinarRegs, getLearnerStats]);
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginatedLearners = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  useEffect(() => { setCurrentPage(1); }, [search, countryFilter, categoryFilter, webinarFilter, statusFilter, spendSort]);
 
   const toggleSelectAll = () => {
     if (selectedIds.size === filtered.length) setSelectedIds(new Set());
     else setSelectedIds(new Set(filtered.map(l => l.user_id)));
   };
-
   const toggleSelect = (id: string) => {
-    const next = new Set(selectedIds);
-    next.has(id) ? next.delete(id) : next.add(id);
-    setSelectedIds(next);
+    const next = new Set(selectedIds); next.has(id) ? next.delete(id) : next.add(id); setSelectedIds(next);
   };
 
   const handleBulkEmail = () => {
@@ -164,29 +200,37 @@ const AdminLearners = () => {
     });
     const csv = [headers, ...rows].map((r) => r.map(v => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "learners_report.csv";
-    a.click();
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "learners_report.csv"; a.click();
   };
 
-  const clearFilters = () => { setSearch(""); setCountryFilter("all"); setCategoryFilter("all"); setWebinarFilter("all"); setSpendSort("none"); };
-  const hasFilters = search || countryFilter !== "all" || categoryFilter !== "all" || webinarFilter !== "all" || spendSort !== "none";
+  const clearFilters = () => { setSearch(""); setCountryFilter("all"); setCategoryFilter("all"); setWebinarFilter("all"); setStatusFilter("all"); setSpendSort("none"); };
+  const hasFilters = search || countryFilter !== "all" || categoryFilter !== "all" || webinarFilter !== "all" || statusFilter !== "all" || spendSort !== "none";
 
-  const totalSpend = learners.reduce((s, l) => s + getLearnerStats(l.user_id).totalSpent, 0);
+  // Metrics
+  const totalSpend = useMemo(() => learners.reduce((s, l) => s + getLearnerStats(l.user_id).totalSpent, 0), [learners, getLearnerStats]);
   const totalEnrolled = enrollments.length;
   const paidEnrollments = enrollments.filter(e => e.payment_status === "paid").length;
   const unpaidEnrollments = enrollments.filter(e => e.payment_status !== "paid").length;
-  const activeLearners = learners.filter(l => {
-    const lastActive = l.last_active_at ? new Date(l.last_active_at) : null;
-    if (!lastActive) return false;
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    return lastActive >= thirtyDaysAgo;
-  }).length;
   const completedEnrollments = enrollments.filter(e => e.completed_at).length;
+  const completionRate = totalEnrolled > 0 ? Math.round((completedEnrollments / totalEnrolled) * 100) : 0;
   const avgSpend = learners.length > 0 ? totalSpend / learners.length : 0;
 
+  const activeLearners7d = useMemo(() => {
+    const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    return learners.filter(l => l.last_active_at && new Date(l.last_active_at) >= sevenDaysAgo).length;
+  }, [learners]);
+
+  const newLearners30d = useMemo(() => {
+    const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return learners.filter(l => new Date(l.created_at) >= thirtyDaysAgo).length;
+  }, [learners]);
+
+  const inactiveLearners7d = useMemo(() => {
+    const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    return learners.filter(l => !l.last_active_at || new Date(l.last_active_at) < sevenDaysAgo).length;
+  }, [learners]);
+
+  // Enrollment trend chart
   const enrollmentTrend = useMemo(() => {
     const monthMap: Record<string, { enrollments: number; revenue: number }> = {};
     enrollments.forEach(e => {
@@ -196,16 +240,53 @@ const AdminLearners = () => {
       monthMap[key].enrollments += 1;
       monthMap[key].revenue += Number(e.amount_paid || 0);
     });
-    return Object.entries(monthMap)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-12)
-      .map(([month, data]) => ({
-        month: new Date(month + "-01").toLocaleDateString("en-US", { month: "short", year: "2-digit" }),
-        ...data,
-      }));
+    return Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-12)
+      .map(([month, data]) => ({ month: new Date(month + "-01").toLocaleDateString("en-US", { month: "short", year: "2-digit" }), ...data }));
   }, [enrollments]);
 
-  if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
+  // Completion pie chart
+  const completionPieData = useMemo(() => [
+    { name: "Completed", value: completedEnrollments, fill: "hsl(var(--primary))" },
+    { name: "In Progress", value: totalEnrolled - completedEnrollments, fill: "hsl(var(--muted))" },
+  ], [completedEnrollments, totalEnrolled]);
+
+  // Daily active users (last 7 days)
+  const dauData = useMemo(() => {
+    const days: Record<string, number> = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      days[d.toISOString().split("T")[0]] = 0;
+    }
+    learners.forEach(l => {
+      if (l.last_active_at) {
+        const day = new Date(l.last_active_at).toISOString().split("T")[0];
+        if (days[day] !== undefined) days[day]++;
+      }
+    });
+    return Object.entries(days).map(([date, count]) => ({
+      day: new Date(date).toLocaleDateString("en-US", { weekday: "short" }),
+      active: count,
+    }));
+  }, [learners]);
+
+  // Category distribution bar chart
+  const categoryDistribution = useMemo(() => {
+    const catMap: Record<string, number> = {};
+    enrollments.forEach(e => {
+      const course = courses.find(c => c.id === e.course_id);
+      if (course?.category) catMap[course.category] = (catMap[course.category] || 0) + 1;
+    });
+    return Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 8)
+      .map(([category, count]) => ({ category: category.length > 15 ? category.slice(0, 15) + "…" : category, enrollments: count }));
+  }, [enrollments, courses]);
+
+  if (loading) return (
+    <div className="space-y-5">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}</div>
+      <Skeleton className="h-64 rounded-xl" />
+      <Skeleton className="h-96 rounded-xl" />
+    </div>
+  );
 
   // ─── Detail view ───
   if (selectedLearner) {
@@ -233,7 +314,6 @@ const AdminLearners = () => {
           </button>
         </div>
 
-        {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-5">
           <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{s.enrolled}</p><p className="text-xs text-muted-foreground">Courses Enrolled</p></div>
           <div className="rounded-xl border border-border bg-card p-4"><Video className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.webinarCount}</p><p className="text-xs text-muted-foreground">Webinars Registered</p></div>
@@ -242,7 +322,6 @@ const AdminLearners = () => {
           <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-purple-400 mb-2" /><p className="text-2xl font-bold text-foreground">{s.categories.length}</p><p className="text-xs text-muted-foreground">Category Interests</p></div>
         </div>
 
-        {/* Contact & Profile */}
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="rounded-xl border border-border bg-card p-5">
             <h3 className="text-sm font-semibold text-foreground mb-3">Contact & Profile</h3>
@@ -262,7 +341,6 @@ const AdminLearners = () => {
           </div>
         </div>
 
-        {/* Tags */}
         <div className="rounded-xl border border-border bg-card p-5">
           <h3 className="text-sm font-semibold text-foreground mb-3">Tags</h3>
           <div className="flex flex-wrap gap-2">
@@ -278,7 +356,6 @@ const AdminLearners = () => {
           </div>
         </div>
 
-        {/* Webinar Registrations */}
         {(() => {
           const learnerWebinarRegs = webinarRegs.filter(wr => wr.learner_id === selectedLearner.user_id);
           return learnerWebinarRegs.length > 0 ? (
@@ -305,14 +382,11 @@ const AdminLearners = () => {
           ) : null;
         })()}
 
-        {/* Enrollments */}
         {learnerEnrollments.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-foreground">Course Enrollments ({learnerEnrollments.length})</h3>
-              <Button size="sm" variant="outline" onClick={() => exportEnrollmentsCSV(learnerEnrollments)} className="gap-1 h-8 text-xs">
-                <Download className="h-3 w-3" /> Export
-              </Button>
+              <Button size="sm" variant="outline" onClick={() => exportEnrollmentsCSV(learnerEnrollments)} className="gap-1 h-8 text-xs"><Download className="h-3 w-3" /> Export</Button>
             </div>
             <div className="rounded-xl border border-border overflow-auto">
               <Table>
@@ -333,13 +407,8 @@ const AdminLearners = () => {
                         </TableCell>
                         <TableCell>
                           <Select value={e.payment_status} onValueChange={(val) => changePaymentStatus(e, val)} disabled={updatingStatus === e.id}>
-                            <SelectTrigger className={`w-24 h-7 text-xs border-0 ${e.payment_status === "paid" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="paid">Paid</SelectItem>
-                              <SelectItem value="pending">Unpaid</SelectItem>
-                            </SelectContent>
+                            <SelectTrigger className={`w-24 h-7 text-xs border-0 ${e.payment_status === "paid" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}><SelectValue /></SelectTrigger>
+                            <SelectContent><SelectItem value="paid">Paid</SelectItem><SelectItem value="pending">Unpaid</SelectItem></SelectContent>
                           </Select>
                         </TableCell>
                         <TableCell className="text-muted-foreground text-xs">{e.payment_id || "—"}</TableCell>
@@ -359,27 +428,122 @@ const AdminLearners = () => {
   // ─── List view ───
   return (
     <div className="space-y-5">
-      {/* Summary cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-border bg-card p-4"><GraduationCap className="h-5 w-5 text-blue-400 mb-2" /><p className="text-2xl font-bold text-foreground">{learners.length}</p><p className="text-xs text-muted-foreground">Total Learners</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{activeLearners}</p><p className="text-xs text-muted-foreground">Active (30 days)</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{totalEnrolled}</p><p className="text-xs text-muted-foreground">Total Enrollments</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><Video className="h-5 w-5 text-cyan-400 mb-2" /><p className="text-2xl font-bold text-foreground">{webinarRegs.length}</p><p className="text-xs text-muted-foreground">Webinar Registrations</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><GraduationCap className="h-5 w-5 text-emerald-400 mb-2" /><p className="text-2xl font-bold text-foreground">{completedEnrollments}</p><p className="text-xs text-muted-foreground">Completed Courses</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-green-400 mb-2" /><p className="text-2xl font-bold text-foreground">${totalSpend.toFixed(2)}</p><p className="text-xs text-muted-foreground">Total Revenue</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-teal-400 mb-2" /><p className="text-2xl font-bold text-foreground">${avgSpend.toFixed(2)}</p><p className="text-xs text-muted-foreground">Avg Spend / Learner</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-green-500 mb-2" /><p className="text-2xl font-bold text-foreground">{paidEnrollments}</p><p className="text-xs text-muted-foreground">Paid Enrollments</p></div>
+      {/* Live Sync Status */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <div className={`h-2 w-2 rounded-full ${isLive ? "bg-green-500 animate-pulse" : "bg-muted-foreground"}`} />
+            <span className="text-xs font-medium text-muted-foreground">{isLive ? "Live Updating" : "Paused"}</span>
+          </div>
+          <span className="text-xs text-muted-foreground">Last Sync: {lastSyncTime.toLocaleTimeString()}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant={isLive ? "secondary" : "outline"} onClick={() => setIsLive(!isLive)} className="gap-1.5 text-xs h-7">
+            <Activity className="h-3 w-3" /> {isLive ? "Pause" : "Resume"}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => fetchAll(true)} className="gap-1.5 text-xs h-7">
+            <Clock className="h-3 w-3" /> Refresh
+          </Button>
+        </div>
       </div>
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-yellow-400 mb-2" /><p className="text-2xl font-bold text-foreground">{unpaidEnrollments}</p><p className="text-xs text-muted-foreground">Unpaid Enrollments</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><Users className="h-5 w-5 text-purple-400 mb-2" /><p className="text-2xl font-bold text-foreground">{learners.filter(l => l.marketing_consent).length}</p><p className="text-xs text-muted-foreground">Marketing Opted In</p></div>
-        <div className="rounded-xl border border-border bg-card p-4"><Filter className="h-5 w-5 text-orange-400 mb-2" /><p className="text-2xl font-bold text-foreground">{[...new Set(learners.map(l => l.country).filter(Boolean))].length}</p><p className="text-xs text-muted-foreground">Countries</p></div>
+
+      {/* Summary cards */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <GraduationCap className="h-5 w-5 text-blue-400 mb-2" />
+          <p className="text-2xl font-bold text-foreground">{learners.length.toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground">Total Learners</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <Activity className="h-5 w-5 text-green-400 mb-2" />
+          <p className="text-2xl font-bold text-foreground">{activeLearners7d.toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground">Active (7 Days)</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <TrendingUp className="h-5 w-5 text-cyan-400 mb-2" />
+          <p className="text-2xl font-bold text-foreground">{newLearners30d.toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground">New (30 Days)</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <GraduationCap className="h-5 w-5 text-primary mb-2" />
+          <p className="text-2xl font-bold text-foreground">{completionRate}%</p>
+          <p className="text-xs text-muted-foreground">Completion Rate</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <DollarSign className="h-5 w-5 text-green-400 mb-2" />
+          <p className="text-2xl font-bold text-foreground">${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+          <p className="text-xs text-muted-foreground">Total Revenue</p>
+        </div>
+      </div>
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-border bg-card p-4"><BookOpen className="h-5 w-5 text-primary mb-2" /><p className="text-2xl font-bold text-foreground">{totalEnrolled.toLocaleString()}</p><p className="text-xs text-muted-foreground">Total Enrollments</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-green-500 mb-2" /><p className="text-2xl font-bold text-foreground">{paidEnrollments.toLocaleString()}</p><p className="text-xs text-muted-foreground">Paid Enrollments</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><Tag className="h-5 w-5 text-yellow-400 mb-2" /><p className="text-2xl font-bold text-foreground">{unpaidEnrollments.toLocaleString()}</p><p className="text-xs text-muted-foreground">Unpaid Enrollments</p></div>
+        <div className="rounded-xl border border-border bg-card p-4"><DollarSign className="h-5 w-5 text-teal-400 mb-2" /><p className="text-2xl font-bold text-foreground">${avgSpend.toFixed(0)}</p><p className="text-xs text-muted-foreground">Avg Spend / Learner</p></div>
+      </div>
+
+      {/* Alerts */}
+      {inactiveLearners7d > 0 && (
+        <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4 flex items-center gap-3">
+          <AlertTriangle className="h-5 w-5 text-yellow-400 shrink-0" />
+          <p className="text-sm text-foreground"><span className="font-semibold">{inactiveLearners7d} learners</span> inactive for 7+ days</p>
+          <Button size="sm" variant="outline" className="ml-auto text-xs h-7" onClick={() => setStatusFilter("inactive")}>View Inactive</Button>
+        </div>
+      )}
+
+      {/* Analytics Charts */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Daily Active Users */}
+        {dauData.length > 0 && (
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Daily Active Users (7 Days)</h3>
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={dauData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
+                <Bar dataKey="active" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Completion Rate Pie */}
+        <div className="rounded-xl border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-4">Completion Rate</h3>
+          <ResponsiveContainer width="100%" height={180}>
+            <PieChart>
+              <Pie data={completionPieData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" strokeWidth={0}>
+                {completionPieData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+              </Pie>
+              <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Category Distribution */}
+        {categoryDistribution.length > 0 && (
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Enrollments by Category</h3>
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={categoryDistribution} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis type="number" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <YAxis dataKey="category" type="category" width={100} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
+                <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
+                <Bar dataKey="enrollments" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
 
       {/* Enrollment Trend Chart */}
       {enrollmentTrend.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-4">Enrollment Trends (Last 12 Months)</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-4">Enrollment & Revenue Trends (12 Months)</h3>
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={enrollmentTrend}>
               <defs>
@@ -404,20 +568,17 @@ const AdminLearners = () => {
         </div>
       )}
 
+      {/* Table Header + Filters */}
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-xl font-bold text-foreground">Learner Management</h2>
           <div className="flex items-center gap-2 flex-wrap">
             {selectedIds.size > 0 && (
-              <Button size="sm" variant="secondary" onClick={handleBulkEmail} className="gap-1.5">
-                <Mail className="h-3.5 w-3.5" /> Campaign ({selectedIds.size})
-              </Button>
+              <Button size="sm" variant="secondary" onClick={handleBulkEmail} className="gap-1.5"><Mail className="h-3.5 w-3.5" /> Campaign ({selectedIds.size})</Button>
             )}
             <Button size="sm" variant="outline" onClick={() => handleAudienceSync("Meta Ads")} className="gap-1.5 text-xs">Meta Sync</Button>
             <Button size="sm" variant="outline" onClick={() => handleAudienceSync("Google Ads")} className="gap-1.5 text-xs">Google Sync</Button>
-            <Button size="sm" variant="outline" onClick={exportCSV} className="gap-1.5">
-              <Download className="h-3.5 w-3.5" /> Export CSV
-            </Button>
+            <Button size="sm" variant="outline" onClick={exportCSV} className="gap-1.5"><Download className="h-3.5 w-3.5" /> Export CSV</Button>
           </div>
         </div>
 
@@ -426,6 +587,10 @@ const AdminLearners = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search name, phone, industry..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-secondary border-border w-60" />
           </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-32 bg-secondary border-border"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="all">All Status</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
+          </Select>
           <Select value={countryFilter} onValueChange={setCountryFilter}>
             <SelectTrigger className="w-36 bg-secondary border-border"><SelectValue placeholder="Country" /></SelectTrigger>
             <SelectContent><SelectItem value="all">All Countries</SelectItem>{countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
@@ -448,79 +613,100 @@ const AdminLearners = () => {
       {filtered.length === 0 ? (
         <div className="text-center py-16"><GraduationCap className="h-12 w-12 text-muted-foreground mx-auto mb-4" /><p className="text-muted-foreground">No learners found</p></div>
       ) : (
-        <div className="rounded-xl border border-border overflow-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-10"><Checkbox checked={selectedIds.size === filtered.length && filtered.length > 0} onCheckedChange={toggleSelectAll} /></TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Country</TableHead>
-                <TableHead>Courses</TableHead>
-                <TableHead>Webinars</TableHead>
-                <TableHead>Spend</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead>Tags</TableHead>
-                <TableHead>Last Active</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead>Actions</TableHead>
-                <TableHead>Tags</TableHead>
-                <TableHead>Last Active</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((l) => {
-                const s = getLearnerStats(l.user_id);
-                const tags: string[] = l.tags || [];
+        <>
+          <div className="rounded-xl border border-border overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10"><Checkbox checked={selectedIds.size === filtered.length && filtered.length > 0} onCheckedChange={toggleSelectAll} /></TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Country</TableHead>
+                  <TableHead>Courses</TableHead>
+                  <TableHead>Webinars</TableHead>
+                  <TableHead>Spend</TableHead>
+                  <TableHead>Payment</TableHead>
+                  <TableHead>Progress</TableHead>
+                  <TableHead>Tags</TableHead>
+                  <TableHead>Last Active</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedLearners.map((l) => {
+                  const s = getLearnerStats(l.user_id);
+                  const tags: string[] = l.tags || [];
+                  const lastActive = l.last_active_at ? new Date(l.last_active_at) : null;
+                  const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                  const isActive = lastActive && lastActive >= sevenDaysAgo;
+                  return (
+                    <TableRow key={l.id} className={selectedIds.has(l.user_id) ? "bg-primary/5" : ""}>
+                      <TableCell><Checkbox checked={selectedIds.has(l.user_id)} onCheckedChange={() => toggleSelect(l.user_id)} /></TableCell>
+                      <TableCell className="text-foreground font-medium">{l.full_name || "—"}</TableCell>
+                      <TableCell className="text-muted-foreground text-xs">{l.email || "—"}</TableCell>
+                      <TableCell className="text-muted-foreground">{l.contact_number || "—"}</TableCell>
+                      <TableCell className="text-muted-foreground">{l.country || "—"}</TableCell>
+                      <TableCell className="text-foreground">{s.enrolled}</TableCell>
+                      <TableCell className="text-foreground">{s.webinarCount}</TableCell>
+                      <TableCell className="text-green-400 font-medium">${s.totalSpent.toFixed(2)}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const le = enrollments.filter(e => e.learner_id === l.user_id);
+                          if (le.length === 0) return <span className="text-muted-foreground text-xs">N/A</span>;
+                          const allPaid = le.every(e => e.payment_status === "paid");
+                          const somePaid = le.some(e => e.payment_status === "paid");
+                          return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${allPaid ? "bg-green-500/20 text-green-400" : somePaid ? "bg-yellow-500/20 text-yellow-400" : "bg-red-500/20 text-red-400"}`}>{allPaid ? "Paid" : somePaid ? "Partial" : "Unpaid"}</span>;
+                        })()}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-16 rounded-full bg-secondary"><div className="h-1.5 rounded-full bg-primary" style={{ width: `${s.avgProgress}%` }} /></div>
+                          <span className="text-xs text-muted-foreground">{s.avgProgress}%</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1 flex-wrap max-w-[140px]">
+                          {tags.slice(0, 2).map(t => <Badge key={t} variant="secondary" className="text-[10px] px-1.5 py-0">{t}</Badge>)}
+                          {tags.length > 2 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">+{tags.length - 2}</Badge>}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <div className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-muted-foreground"}`} />
+                          <span className="text-muted-foreground text-xs">{l.last_active_at ? new Date(l.last_active_at).toLocaleDateString() : "—"}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{new Date(l.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => setSelectedLearner(l)} className="text-primary hover:text-primary/80" title="View"><Eye className="h-4 w-4" /></button>
+                          <button onClick={() => deleteLearner(l)} className="text-destructive hover:text-destructive/80" title="Remove"><Trash2 className="h-4 w-4" /></button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">Showing {((currentPage - 1) * PAGE_SIZE) + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length} learners</p>
+            <div className="flex items-center gap-1">
+              <Button size="sm" variant="ghost" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="h-8 w-8 p-0"><ChevronLeft className="h-4 w-4" /></Button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                const page = totalPages <= 5 ? i + 1 : currentPage <= 3 ? i + 1 : currentPage >= totalPages - 2 ? totalPages - 4 + i : currentPage - 2 + i;
                 return (
-                  <TableRow key={l.id} className={selectedIds.has(l.user_id) ? "bg-primary/5" : ""}>
-                    <TableCell><Checkbox checked={selectedIds.has(l.user_id)} onCheckedChange={() => toggleSelect(l.user_id)} /></TableCell>
-                    <TableCell className="text-foreground font-medium">{l.full_name || "—"}</TableCell>
-                    <TableCell className="text-muted-foreground text-xs">{l.email || "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{l.contact_number || "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{l.country || "—"}</TableCell>
-                    <TableCell className="text-foreground">{s.enrolled}</TableCell>
-                    <TableCell className="text-foreground">{s.webinarCount}</TableCell>
-                    <TableCell className="text-green-400 font-medium">${s.totalSpent.toFixed(2)}</TableCell>
-                    <TableCell>
-                      {(() => {
-                        const le = enrollments.filter(e => e.learner_id === l.user_id);
-                        if (le.length === 0) return <span className="text-muted-foreground text-xs">N/A</span>;
-                        const allPaid = le.every(e => e.payment_status === "paid");
-                        const somePaid = le.some(e => e.payment_status === "paid");
-                        return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${allPaid ? "bg-green-500/20 text-green-400" : somePaid ? "bg-yellow-500/20 text-yellow-400" : "bg-red-500/20 text-red-400"}`}>{allPaid ? "Paid" : somePaid ? "Partial" : "Unpaid"}</span>;
-                      })()}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-16 rounded-full bg-secondary"><div className="h-1.5 rounded-full bg-primary" style={{ width: `${s.avgProgress}%` }} /></div>
-                        <span className="text-xs text-muted-foreground">{s.avgProgress}%</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1 flex-wrap max-w-[140px]">
-                        {tags.slice(0, 2).map(t => <Badge key={t} variant="secondary" className="text-[10px] px-1.5 py-0">{t}</Badge>)}
-                        {tags.length > 2 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">+{tags.length - 2}</Badge>}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{l.last_active_at ? new Date(l.last_active_at).toLocaleDateString() : "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{new Date(l.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => setSelectedLearner(l)} className="text-primary hover:text-primary/80" title="View"><Eye className="h-4 w-4" /></button>
-                        <button onClick={() => deleteLearner(l)} className="text-destructive hover:text-destructive/80" title="Remove"><Trash2 className="h-4 w-4" /></button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <Button key={page} size="sm" variant={currentPage === page ? "default" : "ghost"} onClick={() => setCurrentPage(page)} className="h-8 w-8 p-0 text-xs">{page}</Button>
                 );
               })}
-            </TableBody>
-          </Table>
-        </div>
+              <Button size="sm" variant="ghost" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="h-8 w-8 p-0"><ChevronRight className="h-4 w-4" /></Button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
