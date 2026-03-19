@@ -608,17 +608,30 @@ const AdminCoaches = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10"><Checkbox checked={selectedIds.size === filtered.length && filtered.length > 0} onCheckedChange={toggleSelectAll} /></TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Country</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Courses</TableHead>
-                  <TableHead>Students</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Revenue</TableHead>
-                  <TableHead>Tags</TableHead>
-                  <TableHead>Last Active</TableHead>
+                  {[
+                    { label: "Name", field: "name" },
+                    { label: "Email", field: "email" },
+                    { label: "Company", field: "company" },
+                    { label: "Country", field: "country" },
+                    { label: "Status", field: "status" },
+                    { label: "Courses", field: "courses" },
+                    { label: "Students", field: "students" },
+                    { label: "Rating", field: "rating" },
+                    { label: "Revenue", field: "revenue" },
+                    { label: "Tags", field: "tags" },
+                    { label: "Last Active", field: "last_active" },
+                  ].map(col => (
+                    <TableHead key={col.field}>
+                      <button onClick={() => toggleSort(col.field)} className="flex items-center gap-1 hover:text-foreground transition-colors group">
+                        {col.label}
+                        {sortField === col.field ? (
+                          sortDir === "asc" ? <ArrowUp className="h-3 w-3 text-primary" /> : <ArrowDown className="h-3 w-3 text-primary" />
+                        ) : (
+                          <ArrowUpDown className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                        )}
+                      </button>
+                    </TableHead>
+                  ))}
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>

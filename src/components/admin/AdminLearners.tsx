@@ -634,18 +634,33 @@ const AdminLearners = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10"><Checkbox checked={selectedIds.size === filtered.length && filtered.length > 0} onCheckedChange={toggleSelectAll} /></TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Country</TableHead>
-                  <TableHead>Courses</TableHead>
-                  <TableHead>Webinars</TableHead>
-                  <TableHead>Spend</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>Tags</TableHead>
-                  <TableHead>Last Active</TableHead>
-                  <TableHead>Joined</TableHead>
+                  {[
+                    { label: "Name", field: "name" },
+                    { label: "Email", field: "email" },
+                    { label: "Phone", field: "phone" },
+                    { label: "Country", field: "country" },
+                    { label: "Courses", field: "courses" },
+                    { label: "Webinars", field: "webinars" },
+                    { label: "Spend", field: "spend" },
+                    { label: "Payment", field: null },
+                    { label: "Progress", field: "progress" },
+                    { label: "Tags", field: "tags" },
+                    { label: "Last Active", field: "last_active" },
+                    { label: "Joined", field: "joined" },
+                  ].map(col => (
+                    <TableHead key={col.label}>
+                      {col.field ? (
+                        <button onClick={() => toggleSort(col.field)} className="flex items-center gap-1 hover:text-foreground transition-colors group">
+                          {col.label}
+                          {sortField === col.field ? (
+                            sortDir === "asc" ? <ArrowUp className="h-3 w-3 text-primary" /> : <ArrowDown className="h-3 w-3 text-primary" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                          )}
+                        </button>
+                      ) : col.label}
+                    </TableHead>
+                  ))}
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
