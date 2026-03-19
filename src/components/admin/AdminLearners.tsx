@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { GraduationCap, Search, Download, Eye, BookOpen, DollarSign, Trash2, Tag, Mail, X, ArrowUpDown, Users, Filter, Video, Activity, Clock, TrendingUp, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { GraduationCap, Search, Download, Eye, BookOpen, DollarSign, Trash2, Tag, Mail, X, ArrowUpDown, Users, Filter, Video, Activity, Clock, TrendingUp, AlertTriangle, ChevronLeft, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
