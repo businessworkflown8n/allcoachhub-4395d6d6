@@ -595,8 +595,7 @@ const AdminCoaches = () => {
             <SelectTrigger className="w-32 bg-secondary border-border"><SelectValue placeholder="City" /></SelectTrigger>
             <SelectContent><SelectItem value="all">All Cities</SelectItem>{cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
           </Select>
-          <Button size="sm" variant={revenueSort !== "none" ? "default" : "outline"} onClick={() => setRevenueSort(prev => prev === "none" ? "desc" : prev === "desc" ? "asc" : "none")} className="gap-1">
-            <ArrowUpDown className="h-3.5 w-3.5" /> Revenue {revenueSort === "desc" ? "↓" : revenueSort === "asc" ? "↑" : ""}
+          {hasFilters && <Button size="sm" variant="ghost" onClick={clearFilters} className="gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" /> Clear</Button>}
           </Button>
           {hasFilters && <Button size="sm" variant="ghost" onClick={clearFilters} className="gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" /> Clear</Button>}
         </div>
