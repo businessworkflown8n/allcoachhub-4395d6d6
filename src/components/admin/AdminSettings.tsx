@@ -121,6 +121,24 @@ const AdminSettings = () => {
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
+  const handleSaveMultiplier = async () => {
+    setSavingMultiplier(true);
+    const upsert = async (key: string, value: string) => {
+      const { data } = await supabase.from("platform_settings").select("id").eq("key", key).single();
+      if (data) {
+        await supabase.from("platform_settings").update({ value }).eq("key", key);
+      } else {
+        await supabase.from("platform_settings").insert({ key, value });
+      }
+    };
+    await Promise.all([
+      upsert("material_view_multiplier", viewMultiplier),
+      upsert("material_download_multiplier", downloadMultiplier),
+    ]);
+    setSavingMultiplier(false);
+    toast({ title: "Engagement multipliers saved" });
+  };
+
   return (
     <div className="max-w-2xl space-y-8">
       <h2 className="text-xl font-bold text-foreground">Platform Settings</h2>
