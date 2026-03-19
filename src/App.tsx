@@ -126,9 +126,8 @@ const App = () => (
             <Route path="/install" element={<Install />} />
             <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/courses" element={<Courses />} />
-            <Route path="/webinars" element={<Webinars />} />
-            <Route path="/materials" element={<Materials />} />
-            <Route path="/materials/:slug" element={<MaterialDetail />} />
+            <Route path="/courses/:slug" element={<CategoryPage />} />
+            {/* Legacy redirects */}
             <Route path="/prompt-engineering" element={<CategoryPage />} />
             <Route path="/ai-agents" element={<CategoryPage />} />
             <Route path="/llms-fine-tuning" element={<CategoryPage />} />
@@ -137,6 +136,9 @@ const App = () => (
             <Route path="/ai-marketing" element={<CategoryPage />} />
             <Route path="/generative-ai-for-developers" element={<CategoryPage />} />
             <Route path="/ai-business" element={<CategoryPage />} />
+            <Route path="/webinars" element={<Webinars />} />
+            <Route path="/materials" element={<Materials />} />
+            <Route path="/materials/:slug" element={<MaterialDetail />} />
             <Route path="/coach/*" element={
               <ProtectedRoute allowedRole="coach">
                 <CoachDashboard />

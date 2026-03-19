@@ -132,7 +132,7 @@ const CategoriesSection = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <Link
-                    to={`/${activeCatObj.slug}`}
+                    to={`/courses/${activeCatObj.slug}`}
                     className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-all hover:brightness-110"
                   >
                     View All <ArrowRight className="h-3 w-3" />
