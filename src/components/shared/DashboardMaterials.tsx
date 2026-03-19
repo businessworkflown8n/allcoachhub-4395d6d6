@@ -34,6 +34,7 @@ const getSource = (pathname: string) => {
 const DashboardMaterials = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const { displayViews, displayDownloads, isTrending, isPopular } = useEngagementMultiplier();
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
