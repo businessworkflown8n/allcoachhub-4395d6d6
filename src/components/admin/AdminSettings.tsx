@@ -41,14 +41,21 @@ const AdminSettings = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const [settingsRes, coachRolesRes, commissionsRes] = await Promise.all([
+    const [settingsRes, coachRolesRes, commissionsRes, multiplierRes] = await Promise.all([
       supabase.from("platform_settings").select("*").eq("key", "commission_percent").single(),
       supabase.from("user_roles").select("user_id").eq("role", "coach"),
       supabase.from("coach_commissions").select("coach_id, commission_percent"),
+      supabase.from("platform_settings").select("key, value").in("key", ["material_view_multiplier", "material_download_multiplier"]),
     ]);
 
     setCommission(settingsRes.data?.value || "20");
     setCoachCommissions(commissionsRes.data || []);
+    if (multiplierRes.data) {
+      multiplierRes.data.forEach((r: any) => {
+        if (r.key === "material_view_multiplier") setViewMultiplier(r.value);
+        if (r.key === "material_download_multiplier") setDownloadMultiplier(r.value);
+      });
+    }
 
     // Fetch coach profiles
     if (coachRolesRes.data && coachRolesRes.data.length > 0) {
