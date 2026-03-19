@@ -9,8 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Download, Eye, Lock, Search, Copy, Share2 } from "lucide-react";
+import { FileText, Download, Eye, Lock, Search, Copy, Share2, TrendingUp, Flame } from "lucide-react";
 import { toast } from "sonner";
+import { useEngagementMultiplier } from "@/hooks/useEngagementMultiplier";
 
 const CATEGORIES = ["All", "General", "AI Research", "AI Tools", "Templates", "Guides", "Worksheets", "Case Studies"];
 
