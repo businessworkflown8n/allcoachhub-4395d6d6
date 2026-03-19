@@ -23,6 +23,11 @@ const AdminSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Multiplier state
+  const [viewMultiplier, setViewMultiplier] = useState("10");
+  const [downloadMultiplier, setDownloadMultiplier] = useState("5");
+  const [savingMultiplier, setSavingMultiplier] = useState(false);
+
   // Coach commission state
   const [coaches, setCoaches] = useState<CoachProfile[]>([]);
   const [coachCommissions, setCoachCommissions] = useState<CoachCommission[]>([]);
