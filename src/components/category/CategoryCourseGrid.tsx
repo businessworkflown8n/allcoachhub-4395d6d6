@@ -56,12 +56,12 @@ const CategoryCourseGrid = ({
                 {/* Badges */}
                 <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
                   {isNew && (
-                    <span className="flex items-center gap-1 rounded-full bg-emerald-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
+                    <span className="flex items-center gap-1 rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold text-accent-foreground backdrop-blur-sm">
                       <Sparkles className="h-3 w-3" /> NEW
                     </span>
                   )}
                   {isTrending && (
-                    <span className="flex items-center gap-1 rounded-full bg-amber-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
+                    <span className="flex items-center gap-1 rounded-full bg-primary/90 px-2.5 py-0.5 text-[10px] font-bold text-primary-foreground backdrop-blur-sm">
                       <TrendingUp className="h-3 w-3" /> TRENDING
                     </span>
                   )}
