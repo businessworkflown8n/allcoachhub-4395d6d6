@@ -19,6 +19,7 @@ const MaterialDetail = () => {
   const { slug } = useParams();
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
+  const { displayViews, displayDownloads, isTrending, isPopular } = useEngagementMultiplier();
   const [material, setMaterial] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [shareOpen, setShareOpen] = useState(false);
