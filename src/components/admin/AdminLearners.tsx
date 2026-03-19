@@ -143,6 +143,11 @@ const AdminLearners = () => {
   const allCategories = useMemo(() => [...new Set(courses.map(c => c.category).filter(Boolean))].sort(), [courses]);
   const allWebinars = useMemo(() => webinars.map(w => ({ id: w.id, title: w.title })), [webinars]);
 
+  const toggleSort = (field: string) => {
+    if (sortField === field) setSortDir(prev => prev === "asc" ? "desc" : "asc");
+    else { setSortField(field); setSortDir("desc"); }
+  };
+
   const filtered = useMemo(() => {
     let result = learners.filter((l) => {
       const matchesSearch = !search || [l.full_name, l.email, l.country, l.industry, l.city, l.contact_number].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
@@ -158,15 +163,27 @@ const AdminLearners = () => {
       })();
       return matchesSearch && matchesCountry && matchesCategory && matchesWebinar && matchesStatus;
     });
-    if (spendSort !== "none") {
-      result = [...result].sort((a, b) => {
-        const sa = getLearnerStats(a.user_id).totalSpent;
-        const sb = getLearnerStats(b.user_id).totalSpent;
-        return spendSort === "asc" ? sa - sb : sb - sa;
-      });
-    }
+    result = [...result].sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      const sa = getLearnerStats(a.user_id);
+      const sb = getLearnerStats(b.user_id);
+      switch (sortField) {
+        case "name": return dir * (a.full_name || "").localeCompare(b.full_name || "");
+        case "email": return dir * (a.email || "").localeCompare(b.email || "");
+        case "phone": return dir * (a.contact_number || "").localeCompare(b.contact_number || "");
+        case "country": return dir * (a.country || "").localeCompare(b.country || "");
+        case "courses": return dir * (sa.enrolled - sb.enrolled);
+        case "webinars": return dir * (sa.webinarCount - sb.webinarCount);
+        case "spend": return dir * (sa.totalSpent - sb.totalSpent);
+        case "progress": return dir * (sa.avgProgress - sb.avgProgress);
+        case "tags": return dir * ((a.tags || []).join(",")).localeCompare((b.tags || []).join(","));
+        case "last_active": return dir * (new Date(a.last_active_at || 0).getTime() - new Date(b.last_active_at || 0).getTime());
+        case "joined": return dir * (new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
+        default: return 0;
+      }
+    });
     return result;
-  }, [learners, search, countryFilter, categoryFilter, webinarFilter, statusFilter, spendSort, enrollments, courses, webinarRegs, getLearnerStats]);
+  }, [learners, search, countryFilter, categoryFilter, webinarFilter, statusFilter, sortField, sortDir, enrollments, courses, webinarRegs, getLearnerStats]);
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));

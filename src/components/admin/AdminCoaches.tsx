@@ -153,6 +153,11 @@ const AdminCoaches = () => {
   const countries = useMemo(() => [...new Set(coaches.map(c => c.country).filter(Boolean))].sort(), [coaches]);
   const cities = useMemo(() => [...new Set(coaches.map(c => c.city).filter(Boolean))].sort(), [coaches]);
 
+  const toggleSort = (field: string) => {
+    if (sortField === field) setSortDir(prev => prev === "asc" ? "desc" : "asc");
+    else { setSortField(field); setSortDir("desc"); }
+  };
+
   const filtered = useMemo(() => {
     let result = coaches.filter((c) => {
       const matchesSearch = !search || [c.full_name, c.email, c.category, c.country, c.city, c.company_name, c.contact_number].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
@@ -161,15 +166,28 @@ const AdminCoaches = () => {
       const matchesCity = cityFilter === "all" || c.city === cityFilter;
       return matchesSearch && matchesStatus && matchesCountry && matchesCity;
     });
-    if (revenueSort !== "none") {
-      result = [...result].sort((a, b) => {
-        const ra = getCoachStats(a.user_id).revenue;
-        const rb = getCoachStats(b.user_id).revenue;
-        return revenueSort === "asc" ? ra - rb : rb - ra;
-      });
-    }
+    result = [...result].sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      const sa = getCoachStats(a.user_id);
+      const sb = getCoachStats(b.user_id);
+      switch (sortField) {
+        case "name": return dir * (a.full_name || "").localeCompare(b.full_name || "");
+        case "email": return dir * (a.email || "").localeCompare(b.email || "");
+        case "company": return dir * (a.company_name || "").localeCompare(b.company_name || "");
+        case "country": return dir * (a.country || "").localeCompare(b.country || "");
+        case "status": return dir * (Number(a.is_suspended) - Number(b.is_suspended));
+        case "courses": return dir * (sa.courses - sb.courses);
+        case "students": return dir * (sa.totalStudents - sb.totalStudents);
+        case "rating": return dir * (sa.avgRating - sb.avgRating);
+        case "revenue": return dir * (sa.revenue - sb.revenue);
+        case "tags": return dir * ((a.tags || []).join(",")).localeCompare((b.tags || []).join(","));
+        case "last_active": return dir * (new Date(a.last_active_at || 0).getTime() - new Date(b.last_active_at || 0).getTime());
+        case "registered": return dir * (new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
+        default: return 0;
+      }
+    });
     return result;
-  }, [coaches, search, statusFilter, countryFilter, cityFilter, revenueSort, getCoachStats]);
+  }, [coaches, search, statusFilter, countryFilter, cityFilter, sortField, sortDir, getCoachStats]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginatedCoaches = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
