@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,9 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Download, Mail, ArrowLeft, Eye, Lock, Copy, Share2, TrendingUp, Flame } from "lucide-react";
+import { Download, Mail, ArrowLeft, Eye, Lock, Copy, Share2, TrendingUp, Flame, ExternalLink } from "lucide-react";
 import MaterialSocialButtons from "@/components/MaterialSocialButtons";
 import { useEngagementMultiplier } from "@/hooks/useEngagementMultiplier";
+
+const VIEW_COOLDOWN_MS = 10_000; // 10 second cooldown per material per session
 
 const MaterialDetail = () => {
   const { slug } = useParams();
@@ -26,6 +28,7 @@ const MaterialDetail = () => {
   const [recipientEmail, setRecipientEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const viewTrackedRef = useRef<Record<string, number>>({});
   const [settings, setSettings] = useState<Record<string, boolean>>({
     download: true,
     share: true,
@@ -79,7 +82,14 @@ const MaterialDetail = () => {
         .single();
       if (data) {
         setMaterial(data);
-        await supabase.from("materials").update({ view_count: (data.view_count || 0) + 1 }).eq("id", data.id);
+        // Debounced view tracking - only count once per material per cooldown period
+        const now = Date.now();
+        const lastViewed = viewTrackedRef.current[data.id] || 0;
+        if (now - lastViewed > VIEW_COOLDOWN_MS) {
+          viewTrackedRef.current[data.id] = now;
+          await supabase.from("materials").update({ view_count: (data.view_count || 0) + 1 }).eq("id", data.id);
+          setMaterial((prev: any) => prev ? { ...prev, view_count: (prev.view_count || 0) + 1 } : prev);
+        }
       }
       setLoading(false);
     };
@@ -87,7 +97,9 @@ const MaterialDetail = () => {
   }, [user, slug]);
 
   const handleDownload = useCallback(async () => {
-    if (!material?.file_url || downloading) return;
+    if (!material || downloading) return;
+    const fileUrl = material.file_url || material.external_url;
+    if (!fileUrl) return;
     setDownloading(true);
     try {
       await supabase.from("material_downloads").insert({
@@ -97,14 +109,16 @@ const MaterialDetail = () => {
       });
       await supabase.from("materials").update({ download_count: (material.download_count || 0) + 1 }).eq("id", material.id);
       setMaterial((prev: any) => ({ ...prev, download_count: (prev.download_count || 0) + 1 }));
-      window.open(material.file_url, "_blank");
+      window.open(fileUrl, "_blank");
     } finally {
       setTimeout(() => setDownloading(false), 2000);
     }
   }, [material, downloading, user]);
 
   const handleCopyLink = async () => {
-    const url = `${window.location.origin}/materials/${material.slug}`;
+    const url = material.resource_type === "link" && material.external_url
+      ? material.external_url
+      : `${window.location.origin}/materials/${material.slug}`;
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied successfully!");
@@ -151,6 +165,10 @@ const MaterialDetail = () => {
     }
     setSending(false);
   };
+
+  const isLinkOnly = material?.resource_type === "link" && !material?.file_url;
+  const hasExternalUrl = !!material?.external_url;
+  const hasFileUrl = !!material?.file_url;
 
   if (authLoading) {
     return <div className="flex min-h-screen items-center justify-center bg-background"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
@@ -203,6 +221,9 @@ const MaterialDetail = () => {
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">{material.category}</Badge>
                     <Badge variant="outline" className="uppercase text-xs">{material.file_type}</Badge>
+                    {material.resource_type && material.resource_type !== "file" && (
+                      <Badge variant="default" className="text-xs">{material.resource_type === "link" ? "External Link" : "File + Link"}</Badge>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
@@ -216,8 +237,25 @@ const MaterialDetail = () => {
               {material.description && <p className="text-muted-foreground">{material.description}</p>}
 
               <div className="flex flex-wrap gap-3 pt-2">
-                {settings.download && material.is_downloadable && material.file_url && (
+                {/* Download button for file-based materials */}
+                {settings.download && material.is_downloadable && hasFileUrl && (
                   <Button onClick={handleDownload} disabled={downloading}><Download className="h-4 w-4 mr-2" /> Download</Button>
+                )}
+                {/* Open Resource button for link-based materials */}
+                {hasExternalUrl && (
+                  <Button
+                    variant={isLinkOnly ? "default" : "outline"}
+                    onClick={() => {
+                      // Track as download if admin marked as downloadable, otherwise just open
+                      if (material.is_downloadable && isLinkOnly) {
+                        handleDownload();
+                      } else {
+                        window.open(material.external_url, "_blank");
+                      }
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" /> Open Resource
+                  </Button>
                 )}
                 {settings.share && material.is_email_shareable && (
                   <Button variant="outline" onClick={() => setShareOpen(true)}><Mail className="h-4 w-4 mr-2" /> Send via Email</Button>
@@ -226,7 +264,6 @@ const MaterialDetail = () => {
                 <Button variant="ghost" onClick={handleNativeShare}><Share2 className="h-4 w-4 mr-2" /> Share</Button>
               </div>
 
-              {/* Social Media Buttons */}
               <MaterialSocialButtons material={material} settings={settings} />
 
               {/* Preview for images/videos */}
