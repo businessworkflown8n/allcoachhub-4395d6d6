@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,11 +9,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Download, Eye, Lock, Search, Copy, Share2, TrendingUp, Flame } from "lucide-react";
+import { FileText, Download, Eye, Lock, Search, Copy, Share2, TrendingUp, Flame, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { useEngagementMultiplier } from "@/hooks/useEngagementMultiplier";
 
 const CATEGORIES = ["All", "General", "AI Research", "AI Tools", "Templates", "Guides", "Worksheets", "Case Studies"];
+
+const VIEW_COOLDOWN_MS = 10_000;
 
 const Materials = () => {
   useSEO({
@@ -31,6 +33,7 @@ const Materials = () => {
   const [filterCategory, setFilterCategory] = useState("All");
   const [pageEnabled, setPageEnabled] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const viewTrackedRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     const checkPageEnabled = async () => {
@@ -72,12 +75,24 @@ const Materials = () => {
       case "xls": return "📊";
       case "image": return "🖼️";
       case "video": return "🎬";
+      case "link": return "🔗";
       default: return "📁";
     }
   };
 
+  const trackView = useCallback(async (material: any) => {
+    const now = Date.now();
+    const lastViewed = viewTrackedRef.current[material.id] || 0;
+    if (now - lastViewed > VIEW_COOLDOWN_MS) {
+      viewTrackedRef.current[material.id] = now;
+      await supabase.from("materials").update({ view_count: (material.view_count || 0) + 1 }).eq("id", material.id);
+      setMaterials((prev) => prev.map((m) => m.id === material.id ? { ...m, view_count: (m.view_count || 0) + 1 } : m));
+    }
+  }, []);
+
   const handleDownload = useCallback(async (material: any) => {
-    if (!material?.file_url || downloadingId === material.id) return;
+    const fileUrl = material.file_url || material.external_url;
+    if (!fileUrl || downloadingId === material.id) return;
     setDownloadingId(material.id);
     try {
       await supabase.from("material_downloads").insert({
@@ -87,14 +102,16 @@ const Materials = () => {
       });
       await supabase.from("materials").update({ download_count: (material.download_count || 0) + 1 }).eq("id", material.id);
       setMaterials((prev) => prev.map((m) => m.id === material.id ? { ...m, download_count: (m.download_count || 0) + 1 } : m));
-      window.open(material.file_url, "_blank");
+      window.open(fileUrl, "_blank");
     } finally {
       setTimeout(() => setDownloadingId(null), 2000);
     }
   }, [downloadingId, user]);
 
   const handleCopyLink = async (material: any) => {
-    const url = `${window.location.origin}/materials/${material.slug}`;
+    const url = material.resource_type === "link" && material.external_url
+      ? material.external_url
+      : `${window.location.origin}/materials/${material.slug}`;
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied successfully!");
@@ -171,45 +188,68 @@ const Materials = () => {
               <div className="text-center py-20 text-muted-foreground">No materials found</div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filtered.map((m) => (
-                  <Card key={m.id} className="h-full transition-all hover:shadow-lg hover:border-primary/50">
-                    {m.thumbnail_url && (
-                      <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-                        <img src={m.thumbnail_url} alt={m.title} className="h-full w-full object-cover" />
-                      </div>
-                    )}
-                    <CardContent className={`${m.thumbnail_url ? "pt-4" : "pt-6"} space-y-3`}>
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-2xl">{fileIcon(m.file_type)}</span>
-                        <Badge variant="secondary" className="shrink-0">{m.category}</Badge>
-                      </div>
-                      <Link to={`/materials/${m.slug}`} className="block">
-                        <h3 className="font-semibold text-foreground line-clamp-2 mb-1 hover:text-primary transition-colors">{m.title}</h3>
-                      </Link>
-                      {m.description && <p className="text-sm text-muted-foreground line-clamp-2">{m.description}</p>}
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {displayViews(m.view_count)}</span>
-                        <span className="flex items-center gap-1"><Download className="h-3 w-3" /> {displayDownloads(m.download_count)}</span>
-                        <Badge variant="outline" className="uppercase text-[10px]">{m.file_type}</Badge>
-                        {isTrending(m.view_count) && <Badge variant="secondary" className="text-[10px] gap-0.5"><TrendingUp className="h-2.5 w-2.5" /> Trending</Badge>}
-                        {isPopular(m.download_count) && <Badge variant="default" className="text-[10px] gap-0.5"><Flame className="h-2.5 w-2.5" /> Popular</Badge>}
-                      </div>
-                      <div className="flex flex-wrap gap-2 pt-1">
-                        {m.is_downloadable && m.file_url && (
-                          <Button size="sm" variant="default" onClick={() => handleDownload(m)} disabled={downloadingId === m.id}>
-                            <Download className="h-3.5 w-3.5 mr-1.5" /> Download
+                {filtered.map((m) => {
+                  const isLinkOnly = m.resource_type === "link" && !m.file_url;
+                  const hasFile = !!m.file_url;
+                  const hasExtUrl = !!m.external_url;
+
+                  return (
+                    <Card key={m.id} className="h-full transition-all hover:shadow-lg hover:border-primary/50">
+                      {m.thumbnail_url && (
+                        <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+                          <img src={m.thumbnail_url} alt={m.title} className="h-full w-full object-cover" />
+                        </div>
+                      )}
+                      <CardContent className={`${m.thumbnail_url ? "pt-4" : "pt-6"} space-y-3`}>
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-2xl">{fileIcon(m.file_type)}</span>
+                          <Badge variant="secondary" className="shrink-0">{m.category}</Badge>
+                        </div>
+                        <Link to={`/materials/${m.slug}`} className="block" onClick={() => trackView(m)}>
+                          <h3 className="font-semibold text-foreground line-clamp-2 mb-1 hover:text-primary transition-colors">{m.title}</h3>
+                        </Link>
+                        {m.description && <p className="text-sm text-muted-foreground line-clamp-2">{m.description}</p>}
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {displayViews(m.view_count)}</span>
+                          <span className="flex items-center gap-1"><Download className="h-3 w-3" /> {displayDownloads(m.download_count)}</span>
+                          <Badge variant="outline" className="uppercase text-[10px]">{m.file_type}</Badge>
+                          {isTrending(m.view_count) && <Badge variant="secondary" className="text-[10px] gap-0.5"><TrendingUp className="h-2.5 w-2.5" /> Trending</Badge>}
+                          {isPopular(m.download_count) && <Badge variant="default" className="text-[10px] gap-0.5"><Flame className="h-2.5 w-2.5" /> Popular</Badge>}
+                        </div>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {/* File download */}
+                          {m.is_downloadable && hasFile && (
+                            <Button size="sm" variant="default" onClick={() => handleDownload(m)} disabled={downloadingId === m.id}>
+                              <Download className="h-3.5 w-3.5 mr-1.5" /> Download
+                            </Button>
+                          )}
+                          {/* Open Resource for link-only or both */}
+                          {hasExtUrl && isLinkOnly && m.is_downloadable && (
+                            <Button size="sm" variant="default" onClick={() => handleDownload(m)} disabled={downloadingId === m.id}>
+                              <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Open Resource
+                            </Button>
+                          )}
+                          {hasExtUrl && !isLinkOnly && (
+                            <Button size="sm" variant="outline" onClick={() => window.open(m.external_url, "_blank")}>
+                              <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Open Link
+                            </Button>
+                          )}
+                          {hasExtUrl && isLinkOnly && !m.is_downloadable && (
+                            <Button size="sm" variant="outline" onClick={() => window.open(m.external_url, "_blank")}>
+                              <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Open Resource
+                            </Button>
+                          )}
+                          <Button size="sm" variant="outline" onClick={() => handleCopyLink(m)}>
+                            <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Link
                           </Button>
-                        )}
-                        <Button size="sm" variant="outline" onClick={() => handleCopyLink(m)}>
-                          <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Link
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleNativeShare(m)}>
-                          <Share2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                          <Button size="sm" variant="ghost" onClick={() => handleNativeShare(m)}>
+                            <Share2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </>

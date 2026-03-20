@@ -1259,6 +1259,7 @@ export type Database = {
           description: string | null
           download_count: number
           email_share_count: number
+          external_url: string | null
           facebook_clicks: number
           facebook_url: string | null
           file_type: string | null
@@ -1271,6 +1272,7 @@ export type Database = {
           is_published: boolean
           linkedin_clicks: number
           linkedin_url: string | null
+          resource_type: string
           share_count: number
           slug: string | null
           thumbnail_url: string | null
@@ -1291,6 +1293,7 @@ export type Database = {
           description?: string | null
           download_count?: number
           email_share_count?: number
+          external_url?: string | null
           facebook_clicks?: number
           facebook_url?: string | null
           file_type?: string | null
@@ -1303,6 +1306,7 @@ export type Database = {
           is_published?: boolean
           linkedin_clicks?: number
           linkedin_url?: string | null
+          resource_type?: string
           share_count?: number
           slug?: string | null
           thumbnail_url?: string | null
@@ -1323,6 +1327,7 @@ export type Database = {
           description?: string | null
           download_count?: number
           email_share_count?: number
+          external_url?: string | null
           facebook_clicks?: number
           facebook_url?: string | null
           file_type?: string | null
@@ -1335,6 +1340,7 @@ export type Database = {
           is_published?: boolean
           linkedin_clicks?: number
           linkedin_url?: string | null
+          resource_type?: string
           share_count?: number
           slug?: string | null
           thumbnail_url?: string | null
