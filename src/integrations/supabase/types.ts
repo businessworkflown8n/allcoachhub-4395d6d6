@@ -536,6 +536,480 @@ export type Database = {
         }
         Relationships: []
       }
+      community_answers: {
+        Row: {
+          answer_text: string
+          author_role: string
+          created_at: string
+          id: string
+          is_best_answer: boolean
+          like_count: number
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          answer_text: string
+          author_role?: string
+          created_at?: string
+          id?: string
+          is_best_answer?: boolean
+          like_count?: number
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          answer_text?: string
+          author_role?: string
+          created_at?: string
+          id?: string
+          is_best_answer?: boolean
+          like_count?: number
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "community_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_badges: {
+        Row: {
+          color: string | null
+          created_at: string
+          criteria: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          criteria?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          criteria?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      community_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          target_id?: string
+          target_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      community_comments: {
+        Row: {
+          author_id: string
+          author_role: string
+          content: string
+          created_at: string
+          id: string
+          like_count: number
+          post_id: string
+          status: string
+        }
+        Insert: {
+          author_id: string
+          author_role?: string
+          content: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          post_id: string
+          status?: string
+        }
+        Update: {
+          author_id?: string
+          author_role?: string
+          content?: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          post_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_event_registrations: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "community_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_events: {
+        Row: {
+          access_type: string
+          capacity: number | null
+          created_at: string
+          description: string | null
+          end_time: string | null
+          event_type: string
+          host_id: string
+          host_name: string | null
+          id: string
+          meeting_url: string | null
+          registered_count: number
+          replay_url: string | null
+          start_time: string
+          status: string
+          timezone: string | null
+          title: string
+        }
+        Insert: {
+          access_type?: string
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_type?: string
+          host_id: string
+          host_name?: string | null
+          id?: string
+          meeting_url?: string | null
+          registered_count?: number
+          replay_url?: string | null
+          start_time: string
+          status?: string
+          timezone?: string | null
+          title: string
+        }
+        Update: {
+          access_type?: string
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_type?: string
+          host_id?: string
+          host_name?: string | null
+          id?: string
+          meeting_url?: string | null
+          registered_count?: number
+          replay_url?: string | null
+          start_time?: string
+          status?: string
+          timezone?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      community_posts: {
+        Row: {
+          author_id: string
+          author_role: string
+          comment_count: number
+          content: string
+          created_at: string
+          id: string
+          is_featured: boolean
+          is_pinned: boolean
+          like_count: number
+          post_type: string
+          status: string
+          title: string
+          topic_id: string | null
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          author_id: string
+          author_role?: string
+          comment_count?: number
+          content: string
+          created_at?: string
+          id?: string
+          is_featured?: boolean
+          is_pinned?: boolean
+          like_count?: number
+          post_type?: string
+          status?: string
+          title: string
+          topic_id?: string | null
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          author_id?: string
+          author_role?: string
+          comment_count?: number
+          content?: string
+          created_at?: string
+          id?: string
+          is_featured?: boolean
+          is_pinned?: boolean
+          like_count?: number
+          post_type?: string
+          status?: string
+          title?: string
+          topic_id?: string | null
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "community_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_questions: {
+        Row: {
+          answer_count: number
+          created_at: string
+          description: string
+          id: string
+          is_resolved: boolean
+          skill_level: string
+          status: string
+          title: string
+          topic_id: string | null
+          updated_at: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          answer_count?: number
+          created_at?: string
+          description: string
+          id?: string
+          is_resolved?: boolean
+          skill_level?: string
+          status?: string
+          title: string
+          topic_id?: string | null
+          updated_at?: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          answer_count?: number
+          created_at?: string
+          description?: string
+          id?: string
+          is_resolved?: boolean
+          skill_level?: string
+          status?: string
+          title?: string
+          topic_id?: string | null
+          updated_at?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_questions_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "community_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          reaction_type: string
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reaction_type?: string
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reaction_type?: string
+          target_id?: string
+          target_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      community_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reported_by: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reported_by: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reported_by?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
+      community_topic_members: {
+        Row: {
+          id: string
+          joined_at: string
+          topic_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          topic_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          topic_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_topic_members_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "community_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_topics: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          member_count: number
+          post_count: number
+          slug: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          member_count?: number
+          post_count?: number
+          slug?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          member_count?: number
+          post_count?: number
+          slug?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           coach_id: string
@@ -1487,6 +1961,77 @@ export type Database = {
         }
         Relationships: []
       }
+      private_group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          role: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "private_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "private_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      private_groups: {
+        Row: {
+          access_type: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_active: boolean
+          max_members: number | null
+          member_count: number
+          title: string
+        }
+        Insert: {
+          access_type?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_members?: number | null
+          member_count?: number
+          title: string
+        }
+        Update: {
+          access_type?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_members?: number | null
+          member_count?: number
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1628,6 +2173,60 @@ export type Database = {
           sales_count?: number
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      prompt_library_items: {
+        Row: {
+          author_role: string
+          category: string
+          copies_count: number
+          created_at: string
+          description: string | null
+          id: string
+          likes_count: number
+          prompt_text: string
+          saves_count: number
+          status: string
+          title: string
+          updated_at: string
+          use_case: string | null
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          author_role?: string
+          category?: string
+          copies_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          likes_count?: number
+          prompt_text: string
+          saves_count?: number
+          status?: string
+          title: string
+          updated_at?: string
+          use_case?: string | null
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          author_role?: string
+          category?: string
+          copies_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          likes_count?: number
+          prompt_text?: string
+          saves_count?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          use_case?: string | null
+          user_id?: string
+          visibility?: string
         }
         Relationships: []
       }
@@ -1965,6 +2564,35 @@ export type Database = {
           reason?: string
         }
         Relationships: []
+      }
+      user_badges: {
+        Row: {
+          awarded_at: string
+          badge_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "community_badges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
