@@ -177,7 +177,6 @@ Deno.serve(async (req) => {
           html: emailHtml,
           tags: [
             { name: "category", value: "welcome-coach" },
-            { name: "coach_email", value: email },
           ],
         }),
       });
