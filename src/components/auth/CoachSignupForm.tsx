@@ -58,7 +58,6 @@ const CoachSignupForm = () => {
     }
 
     // Update profile with extra coach fields after signup
-    // The trigger will create the profile, we update it with extra info
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       await supabase.from("profiles").update({
@@ -67,6 +66,11 @@ const CoachSignupForm = () => {
         category: expertise,
       }).eq("user_id", user.id);
     }
+
+    // Send admin notification email (fire-and-forget)
+    supabase.functions.invoke("notify-coach-registration", {
+      body: { fullName, email, mobile, companyName, expertise, city, country },
+    }).catch((err) => console.error("Coach registration notification failed:", err));
 
     setLoading(false);
     setSuccess(true);
