@@ -72,6 +72,11 @@ const CoachSignupForm = () => {
       body: { fullName, email, mobile, companyName, expertise, city, country },
     }).catch((err) => console.error("Coach registration notification failed:", err));
 
+    // Send welcome email to the coach (fire-and-forget)
+    supabase.functions.invoke("welcome-coach-email", {
+      body: { fullName, email },
+    }).catch((err) => console.error("Welcome coach email failed:", err));
+
     setLoading(false);
     setSuccess(true);
   };
