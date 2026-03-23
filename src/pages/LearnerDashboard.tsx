@@ -50,6 +50,7 @@ const LearnerDashboard = () => {
         <Route path="community/*" element={<CommunityPage baseUrl="/learner/community" userRole="learner" />} />
         <Route path="chat-history" element={<LearnerChatHistory />} />
         <Route path="daily-zip" element={<LearnerDailyZip />} />
+        <Route path="prompt-generator" element={<div className="space-y-4"><h2 className="text-xl font-bold text-foreground">Prompt Generator</h2><div className="rounded-xl border border-border bg-card p-6"><PromptGeneratorForm showSave userRole="learner" /></div></div>} />
         <Route path="social" element={<SocialMediaHub />} />
         <Route path="profile" element={<LearnerProfile />} />
         <Route path="wishlist" element={<LearnerWishlist />} />
