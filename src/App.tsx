@@ -167,6 +167,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <FloatingButtons />
+          <FloatingPromptButton />
           <WebsitePopup />
           <AICursor />
         </BrowserRouter>
