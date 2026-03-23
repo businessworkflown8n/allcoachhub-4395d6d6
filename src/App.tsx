@@ -141,6 +141,7 @@ const App = () => (
             <Route path="/webinars" element={<Webinars />} />
             <Route path="/materials" element={<Materials />} />
             <Route path="/materials/:slug" element={<MaterialDetail />} />
+            <Route path="/prompt-generator" element={<PromptGenerator />} />
             <Route path="/coach/*" element={
               <ProtectedRoute allowedRole="coach">
                 <CoachDashboard />
