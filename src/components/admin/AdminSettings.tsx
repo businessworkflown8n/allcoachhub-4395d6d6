@@ -29,6 +29,11 @@ const AdminSettings = () => {
   const [downloadMultiplier, setDownloadMultiplier] = useState("5");
   const [savingMultiplier, setSavingMultiplier] = useState(false);
 
+  // Community visibility state
+  const [showCommunityLearners, setShowCommunityLearners] = useState(true);
+  const [showCommunityCoaches, setShowCommunityCoaches] = useState(true);
+  const [savingCommunity, setSavingCommunity] = useState(false);
+
   // Coach commission state
   const [coaches, setCoaches] = useState<CoachProfile[]>([]);
   const [coachCommissions, setCoachCommissions] = useState<CoachCommission[]>([]);
