@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
+import { useCommunityVisibility } from "@/hooks/useCommunityVisibility";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText, MessageSquare, Users, Sparkles } from "lucide-react";
 import LearnerProfile from "@/components/learner/LearnerProfile";
@@ -16,29 +17,31 @@ import LearnerChatHistory from "@/components/learner/LearnerChatHistory";
 import CommunityPage from "@/components/community/CommunityPage";
 import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
 
-const navItems = [
-  { label: "My Courses", path: "/learner/courses", icon: <BookOpen className="h-4 w-4" /> },
-  { label: "Webinars", path: "/learner/webinars", icon: <Video className="h-4 w-4" /> },
-  { label: "Certificates", path: "/learner/certificates", icon: <Award className="h-4 w-4" /> },
-  { label: "Materials", path: "/learner/materials", icon: <FileText className="h-4 w-4" /> },
-  { label: "AI Community", path: "/learner/community", icon: <Users className="h-4 w-4" /> },
-  { label: "Chat History", path: "/learner/chat-history", icon: <MessageSquare className="h-4 w-4" /> },
-  { label: "Daily Zip", path: "/learner/daily-zip", icon: <Zap className="h-4 w-4" /> },
-  { label: "Prompt Generator", path: "/learner/prompt-generator", icon: <Sparkles className="h-4 w-4" /> },
-  { label: "Social Media", path: "/learner/social", icon: <Share2 className="h-4 w-4" /> },
-  { label: "Profile", path: "/learner/profile", icon: <User className="h-4 w-4" /> },
-  { label: "Wishlist", path: "/learner/wishlist", icon: <Heart className="h-4 w-4" /> },
-  { label: "Payment History", path: "/learner/payments", icon: <History className="h-4 w-4" /> },
-  { label: "Referrals", path: "/learner/referrals", icon: <Settings className="h-4 w-4" /> },
-];
-
 const LearnerDashboard = () => {
+  const { showForLearners } = useCommunityVisibility();
+
   useSEO({
     title: "Learner Dashboard – My Courses & Progress",
     description: "Access your enrolled courses, webinars, certificates, and learning progress.",
     canonical: "https://www.aicoachportal.com/learner",
     noIndex: true,
   });
+
+  const navItems = [
+    { label: "My Courses", path: "/learner/courses", icon: <BookOpen className="h-4 w-4" /> },
+    { label: "Webinars", path: "/learner/webinars", icon: <Video className="h-4 w-4" /> },
+    { label: "Certificates", path: "/learner/certificates", icon: <Award className="h-4 w-4" /> },
+    { label: "Materials", path: "/learner/materials", icon: <FileText className="h-4 w-4" /> },
+    ...(showForLearners ? [{ label: "AI Community", path: "/learner/community", icon: <Users className="h-4 w-4" /> }] : []),
+    { label: "Chat History", path: "/learner/chat-history", icon: <MessageSquare className="h-4 w-4" /> },
+    { label: "Daily Zip", path: "/learner/daily-zip", icon: <Zap className="h-4 w-4" /> },
+    { label: "Prompt Generator", path: "/learner/prompt-generator", icon: <Sparkles className="h-4 w-4" /> },
+    { label: "Social Media", path: "/learner/social", icon: <Share2 className="h-4 w-4" /> },
+    { label: "Profile", path: "/learner/profile", icon: <User className="h-4 w-4" /> },
+    { label: "Wishlist", path: "/learner/wishlist", icon: <Heart className="h-4 w-4" /> },
+    { label: "Payment History", path: "/learner/payments", icon: <History className="h-4 w-4" /> },
+    { label: "Referrals", path: "/learner/referrals", icon: <Settings className="h-4 w-4" /> },
+  ];
 
   return (
     <DashboardLayout navItems={navItems} title="Learner Dashboard">
@@ -47,7 +50,9 @@ const LearnerDashboard = () => {
         <Route path="webinars" element={<LearnerWebinars />} />
         <Route path="certificates" element={<LearnerCertificates />} />
         <Route path="materials" element={<DashboardMaterials />} />
-        <Route path="community/*" element={<CommunityPage baseUrl="/learner/community" userRole="learner" />} />
+        {showForLearners && (
+          <Route path="community/*" element={<CommunityPage baseUrl="/learner/community" userRole="learner" />} />
+        )}
         <Route path="chat-history" element={<LearnerChatHistory />} />
         <Route path="daily-zip" element={<LearnerDailyZip />} />
         <Route path="prompt-generator" element={<div className="space-y-4"><h2 className="text-xl font-bold text-foreground">Prompt Generator</h2><div className="rounded-xl border border-border bg-card p-6"><PromptGeneratorForm showSave userRole="learner" /></div></div>} />
