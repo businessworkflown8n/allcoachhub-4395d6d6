@@ -15,6 +15,7 @@ import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import CoachCampaignInsights from "@/components/coach/CoachCampaignInsights";
 import CoachReportBuilder from "@/components/coach/CoachReportBuilder";
 import CommunityPage from "@/components/community/CommunityPage";
+import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
 
 const navItems = [
   { label: "Overview", path: "/coach/overview", icon: <LayoutDashboard className="h-4 w-4" /> },
