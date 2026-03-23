@@ -67,8 +67,13 @@ const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode; 
 const FloatingButtons = () => {
   const isMobile = useIsMobile();
   const { settings, loading } = useCommunicationSettings();
+  const { role, loading: roleLoading } = useUserRole();
 
-  if (loading) return null;
+  if (loading || roleLoading) return null;
+
+  // Hide all communication buttons based on role
+  if (role === "learner" && !settings.show_to_learners) return null;
+  if (role === "coach" && !settings.show_to_coaches) return null;
 
   return (
     <>

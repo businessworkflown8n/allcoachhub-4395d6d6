@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, Phone, MessageCircle, Save } from "lucide-react";
+import { Bot, Phone, MessageCircle, Save, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminCommunicationSettings = () => {
@@ -21,16 +21,30 @@ const AdminCommunicationSettings = () => {
     call_number: "+919852411280",
   });
 
+  // Role-based visibility
+  const [showToLearners, setShowToLearners] = useState(true);
+  const [showToCoaches, setShowToCoaches] = useState(true);
+  const [savingVisibility, setSavingVisibility] = useState(false);
+
   useEffect(() => {
     fetchSettings();
   }, []);
 
   const fetchSettings = async () => {
-    const { data } = await supabase.from("communication_settings" as any).select("key, value");
-    if (data) {
+    const [commRes, platformRes] = await Promise.all([
+      supabase.from("communication_settings" as any).select("key, value"),
+      supabase.from("platform_settings").select("key, value").in("key", ["show_comm_buttons_learners", "show_comm_buttons_coaches"]),
+    ]);
+    if (commRes.data) {
       const map: Record<string, string> = {};
-      (data as any[]).forEach(d => { map[d.key] = d.value; });
+      (commRes.data as any[]).forEach(d => { map[d.key] = d.value; });
       setSettings(prev => ({ ...prev, ...map }));
+    }
+    if (platformRes.data) {
+      platformRes.data.forEach((r: any) => {
+        if (r.key === "show_comm_buttons_learners") setShowToLearners(r.value === "true");
+        if (r.key === "show_comm_buttons_coaches") setShowToCoaches(r.value === "true");
+      });
     }
     setLoading(false);
   };
@@ -44,6 +58,24 @@ const AdminCommunicationSettings = () => {
     }
     toast({ title: "Settings saved", description: "Communication settings updated successfully." });
     setSaving(false);
+  };
+
+  const saveVisibility = async () => {
+    setSavingVisibility(true);
+    const upsert = async (key: string, value: string) => {
+      const { data } = await supabase.from("platform_settings").select("id").eq("key", key).single();
+      if (data) {
+        await supabase.from("platform_settings").update({ value }).eq("key", key);
+      } else {
+        await supabase.from("platform_settings").insert({ key, value });
+      }
+    };
+    await Promise.all([
+      upsert("show_comm_buttons_learners", String(showToLearners)),
+      upsert("show_comm_buttons_coaches", String(showToCoaches)),
+    ]);
+    setSavingVisibility(false);
+    toast({ title: "Visibility settings saved", description: "Communication visibility updated for Learners & Coaches." });
   };
 
   const toggle = (key: string) => {
@@ -121,6 +153,34 @@ const AdminCommunicationSettings = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Role-Based Visibility Control */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <Users className="h-5 w-5 text-primary" />
+          <h3 className="font-semibold text-foreground">Communication Visibility by Role</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">Control whether communication buttons (Chatbot, WhatsApp, Call) are visible for Learners and Coaches.</p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between rounded-lg border border-border p-4">
+            <div>
+              <Label className="text-foreground font-medium">Show Communication to Learners</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">When OFF, all communication buttons are hidden for Learners</p>
+            </div>
+            <Switch checked={showToLearners} onCheckedChange={setShowToLearners} />
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-border p-4">
+            <div>
+              <Label className="text-foreground font-medium">Show Communication to Coaches</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">When OFF, all communication buttons are hidden for Coaches</p>
+            </div>
+            <Switch checked={showToCoaches} onCheckedChange={setShowToCoaches} />
+          </div>
+        </div>
+        <Button onClick={saveVisibility} disabled={savingVisibility}>
+          {savingVisibility ? "Saving..." : "Save Visibility Settings"}
+        </Button>
       </div>
     </div>
   );
