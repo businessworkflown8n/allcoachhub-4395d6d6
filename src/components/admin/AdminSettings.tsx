@@ -63,6 +63,12 @@ const AdminSettings = () => {
         if (r.key === "material_download_multiplier") setDownloadMultiplier(r.value);
       });
     }
+    if (communityRes.data) {
+      communityRes.data.forEach((r: any) => {
+        if (r.key === "show_ai_community_learners") setShowCommunityLearners(r.value === "true");
+        if (r.key === "show_ai_community_coaches") setShowCommunityCoaches(r.value === "true");
+      });
+    }
 
     // Fetch coach profiles
     if (coachRolesRes.data && coachRolesRes.data.length > 0) {
