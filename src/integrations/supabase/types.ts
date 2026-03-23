@@ -1649,6 +1649,36 @@ export type Database = {
           },
         ]
       }
+      generated_prompts: {
+        Row: {
+          created_at: string
+          id: string
+          input_data: Json
+          output_prompt: string
+          prompt_type: string
+          role: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          input_data?: Json
+          output_prompt: string
+          prompt_type: string
+          role?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          input_data?: Json
+          output_prompt?: string
+          prompt_type?: string
+          role?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       material_downloads: {
         Row: {
           created_at: string
