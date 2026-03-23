@@ -47,11 +47,12 @@ const AdminSettings = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const [settingsRes, coachRolesRes, commissionsRes, multiplierRes] = await Promise.all([
+    const [settingsRes, coachRolesRes, commissionsRes, multiplierRes, communityRes] = await Promise.all([
       supabase.from("platform_settings").select("*").eq("key", "commission_percent").single(),
       supabase.from("user_roles").select("user_id").eq("role", "coach"),
       supabase.from("coach_commissions").select("coach_id, commission_percent"),
       supabase.from("platform_settings").select("key, value").in("key", ["material_view_multiplier", "material_download_multiplier"]),
+      supabase.from("platform_settings").select("key, value").in("key", ["show_ai_community_learners", "show_ai_community_coaches"]),
     ]);
 
     setCommission(settingsRes.data?.value || "20");
