@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Users } from "lucide-react";
+import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Users, Sparkles } from "lucide-react";
 import CoachProfile from "@/components/coach/CoachProfile";
 import CoachCourses from "@/components/coach/CoachCourses";
 import CoachCourseForm from "@/components/coach/CoachCourseForm";
@@ -15,6 +15,7 @@ import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import CoachCampaignInsights from "@/components/coach/CoachCampaignInsights";
 import CoachReportBuilder from "@/components/coach/CoachReportBuilder";
 import CommunityPage from "@/components/community/CommunityPage";
+import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
 
 const navItems = [
   { label: "Overview", path: "/coach/overview", icon: <LayoutDashboard className="h-4 w-4" /> },
@@ -29,6 +30,7 @@ const navItems = [
   { label: "Social Media", path: "/coach/social", icon: <Share2 className="h-4 w-4" /> },
   { label: "Campaigns", path: "/coach/campaigns", icon: <Megaphone className="h-4 w-4" /> },
   { label: "Earnings", path: "/coach/earnings", icon: <DollarSign className="h-4 w-4" /> },
+  { label: "Prompt Generator", path: "/coach/prompt-generator", icon: <Sparkles className="h-4 w-4" /> },
   { label: "Profile", path: "/coach/profile", icon: <User className="h-4 w-4" /> },
 ];
 
@@ -56,6 +58,7 @@ const CoachDashboard = () => {
         <Route path="campaigns" element={<CoachCampaigns />} />
         <Route path="earnings" element={<CoachEarnings />} />
         <Route path="profile" element={<CoachProfile />} />
+        <Route path="prompt-generator" element={<div className="space-y-4"><h2 className="text-xl font-bold text-foreground">Prompt Generator</h2><div className="rounded-xl border border-border bg-card p-6"><PromptGeneratorForm showSave userRole="coach" /></div></div>} />
         <Route path="overview" element={<CoachOverview />} />
         <Route path="*" element={<Navigate to="overview" replace />} />
       </Routes>

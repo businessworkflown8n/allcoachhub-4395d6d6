@@ -36,12 +36,14 @@ import Sitemap from "./pages/Sitemap";
 import AISeoPrompt from "./pages/AISeoPrompt";
 import Materials from "./pages/Materials";
 import MaterialDetail from "./pages/MaterialDetail";
+import PromptGenerator from "./pages/PromptGenerator";
 import CategoryPage from "./pages/CategoryPage";
 import NotFound from "./pages/NotFound";
 import AICursor from "./components/AICursor";
 import ChatbotWidget from "./components/ChatbotWidget";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import WebsitePopup from "./components/WebsitePopup";
+import FloatingPromptButton from "./components/prompt/FloatingPromptButton";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode; allowedRole: string }) => {
@@ -139,6 +141,7 @@ const App = () => (
             <Route path="/webinars" element={<Webinars />} />
             <Route path="/materials" element={<Materials />} />
             <Route path="/materials/:slug" element={<MaterialDetail />} />
+            <Route path="/prompt-generator" element={<PromptGenerator />} />
             <Route path="/coach/*" element={
               <ProtectedRoute allowedRole="coach">
                 <CoachDashboard />
@@ -164,6 +167,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <FloatingButtons />
+          <FloatingPromptButton />
           <WebsitePopup />
           <AICursor />
         </BrowserRouter>
