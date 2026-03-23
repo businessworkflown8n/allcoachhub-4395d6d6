@@ -261,6 +261,54 @@ const AdminSettings = () => {
           {savingMultiplier ? "Saving..." : "Save Multipliers"}
         </button>
       </div>
+
+      {/* AI Community Visibility */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <MessageSquare className="h-5 w-5 text-primary" />
+          <h3 className="font-semibold text-foreground">AI Community Visibility</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">Control whether the AI Community section is visible in Learner and Coach dashboards.</p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between rounded-lg border border-border p-4">
+            <div>
+              <Label className="text-foreground font-medium">Show AI Community to Learners</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">When OFF, AI Community is hidden from the Learner Dashboard</p>
+            </div>
+            <Switch checked={showCommunityLearners} onCheckedChange={setShowCommunityLearners} />
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-border p-4">
+            <div>
+              <Label className="text-foreground font-medium">Show AI Community to Coaches</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">When OFF, AI Community is hidden from the Coach Dashboard</p>
+            </div>
+            <Switch checked={showCommunityCoaches} onCheckedChange={setShowCommunityCoaches} />
+          </div>
+        </div>
+        <button
+          onClick={async () => {
+            setSavingCommunity(true);
+            const upsert = async (key: string, value: string) => {
+              const { data } = await supabase.from("platform_settings").select("id").eq("key", key).single();
+              if (data) {
+                await supabase.from("platform_settings").update({ value }).eq("key", key);
+              } else {
+                await supabase.from("platform_settings").insert({ key, value });
+              }
+            };
+            await Promise.all([
+              upsert("show_ai_community_learners", String(showCommunityLearners)),
+              upsert("show_ai_community_coaches", String(showCommunityCoaches)),
+            ]);
+            setSavingCommunity(false);
+            toast({ title: "Community visibility settings saved" });
+          }}
+          disabled={savingCommunity}
+          className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50"
+        >
+          {savingCommunity ? "Saving..." : "Save Community Settings"}
+        </button>
+      </div>
     </div>
   );
 };
