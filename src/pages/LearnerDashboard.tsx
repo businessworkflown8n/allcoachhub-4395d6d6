@@ -14,6 +14,7 @@ import SocialMediaHub from "@/components/shared/SocialMediaHub";
 import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import LearnerChatHistory from "@/components/learner/LearnerChatHistory";
 import CommunityPage from "@/components/community/CommunityPage";
+import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
 
 const navItems = [
   { label: "My Courses", path: "/learner/courses", icon: <BookOpen className="h-4 w-4" /> },
