@@ -156,14 +156,22 @@ const PromptGeneratorForm = ({ compact = false, showSave = false, userRole }: Pr
         </div>
       )}
 
-      <a
-        href="https://claude.ai/public/artifacts/117dde1a-a18c-411a-8486-1f0b36a55f01"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-      >
-        <ExternalLink className="h-3.5 w-3.5" /> Open Advanced Generator
-      </a>
+      <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-2">
+        <a
+          href="https://claude.ai/public/artifacts/117dde1a-a18c-411a-8486-1f0b36a55f01"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
+          <ExternalLink className="h-3.5 w-3.5" /> Open Advanced Generator
+        </a>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          <span className="font-semibold text-foreground">How to use:</span>{" "}
+          1. Login to Claude →{" "}
+          2. Click "Open Advanced Generator" above →{" "}
+          3. Copy the URL and open it again in a new tab. It will work!
+        </p>
+      </div>
     </div>
   );
 };
