@@ -24,6 +24,7 @@ const navItems = [
   { label: "AI Community", path: "/learner/community", icon: <Users className="h-4 w-4" /> },
   { label: "Chat History", path: "/learner/chat-history", icon: <MessageSquare className="h-4 w-4" /> },
   { label: "Daily Zip", path: "/learner/daily-zip", icon: <Zap className="h-4 w-4" /> },
+  { label: "Prompt Generator", path: "/learner/prompt-generator", icon: <Sparkles className="h-4 w-4" /> },
   { label: "Social Media", path: "/learner/social", icon: <Share2 className="h-4 w-4" /> },
   { label: "Profile", path: "/learner/profile", icon: <User className="h-4 w-4" /> },
   { label: "Wishlist", path: "/learner/wishlist", icon: <Heart className="h-4 w-4" /> },
