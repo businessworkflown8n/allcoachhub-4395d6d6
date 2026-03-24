@@ -77,8 +77,16 @@ const CoachOverview = () => {
         }
       });
 
-      // Webinar commission placeholder - webinars don't have pricing yet
-      const wUSD = 0, wINR = 0;
+      // Webinar commission calculated based on course fees
+      let wUSD = 0, wINR = 0;
+      (enrollData.data || []).forEach((e: any) => {
+        const course = e.courses as any;
+        if (e.currency === "USD") {
+          wUSD += Number(course?.price_usd || 0) * (webinarComm / 100);
+        } else {
+          wINR += Number(course?.price_inr || 0) * (webinarComm / 100);
+        }
+      });
 
       setPayableData({
         courseCommissionUSD: cUSD,
