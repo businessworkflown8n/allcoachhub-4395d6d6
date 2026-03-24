@@ -55,13 +55,12 @@ const CoachOverview = () => {
       });
 
       // Payable calculation
-      const [enrollData, courseCommRes, defaultCommRes, webinarCommCoachRes, defaultWebinarCommRes, webinarData] = await Promise.all([
+      const [enrollData, courseCommRes, defaultCommRes, webinarCommCoachRes, defaultWebinarCommRes] = await Promise.all([
         supabase.from("enrollments").select("*, courses(price_usd, price_inr)").eq("coach_id", user.id).eq("payment_status", "paid"),
         supabase.from("coach_commissions").select("commission_percent").eq("coach_id", user.id).maybeSingle(),
         supabase.from("platform_settings").select("value").eq("key", "commission_percent").single(),
         supabase.from("coach_webinar_commissions").select("commission_percent").eq("coach_id", user.id).maybeSingle(),
         supabase.from("platform_settings").select("value").eq("key", "webinar_commission_percent").single(),
-        supabase.from("webinars").select("id, price_usd, price_inr").eq("coach_id", user.id),
       ]);
 
       const courseComm = courseCommRes.data?.commission_percent ?? Number(defaultCommRes.data?.value || 20);
@@ -78,26 +77,8 @@ const CoachOverview = () => {
         }
       });
 
-      // Webinar commission - based on paid registrations
-      let wUSD = 0, wINR = 0;
-      if (webinarData.data?.length) {
-        const webinarMap = new Map(webinarData.data.map((w: any) => [w.id, w]));
-        const { data: regsData } = await supabase
-          .from("webinar_registrations")
-          .select("webinar_id, payment_status, currency")
-          .in("webinar_id", webinarData.data.map((w: any) => w.id))
-          .eq("payment_status", "paid");
-
-        (regsData || []).forEach((r: any) => {
-          const webinar = webinarMap.get(r.webinar_id) as any;
-          if (!webinar) return;
-          if (r.currency === "USD") {
-            wUSD += Number(webinar.price_usd || 0) * (webinarComm / 100);
-          } else {
-            wINR += Number(webinar.price_inr || 0) * (webinarComm / 100);
-          }
-        });
-      }
+      // Webinar commission placeholder - webinars don't have pricing yet
+      const wUSD = 0, wINR = 0;
 
       setPayableData({
         courseCommissionUSD: cUSD,
