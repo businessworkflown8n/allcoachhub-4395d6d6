@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useContactAccess } from "@/hooks/useContactAccess";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Users, Download, Search, DollarSign, IndianRupee, Globe, RefreshCw, Lock, KeyRound } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import GlobalDateRangePicker, { useDateRange } from "@/components/shared/GlobalDateRangePicker";
 
 const USD_TO_INR_FALLBACK = 83.5;
@@ -32,6 +34,7 @@ const useExchangeRate = () => {
 
 const CoachEnrollments = () => {
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const { hasAccess, isPending, requestAccess } = useContactAccess();
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,17 +52,34 @@ const CoachEnrollments = () => {
   }, [user]);
 
   const handlePaymentStatusChange = async (enrollmentId: string, newStatus: string) => {
+    const enrollment = enrollments.find((e) => e.id === enrollmentId);
+    // Block if locked and not admin
+    if (enrollment?.payment_locked && !isAdmin) {
+      toast({
+        title: "Payment locked",
+        description: "Payment status is locked. Contact admin for changes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setUpdatingId(enrollmentId);
     try {
+      const updatePayload: any = { payment_status: newStatus };
+      // Lock payment when coach marks as paid
+      if (newStatus === "paid" && !isAdmin) {
+        updatePayload.payment_locked = true;
+      }
+
       const { error } = await supabase
         .from("enrollments")
-        .update({ payment_status: newStatus })
+        .update(updatePayload)
         .eq("id", enrollmentId);
 
       if (error) throw error;
 
       setEnrollments((prev) =>
-        prev.map((e) => (e.id === enrollmentId ? { ...e, payment_status: newStatus } : e))
+        prev.map((e) => (e.id === enrollmentId ? { ...e, ...updatePayload } : e))
       );
 
       if (newStatus === "paid") {
@@ -72,7 +92,7 @@ const CoachEnrollments = () => {
 
       toast({
         title: "Payment status updated",
-        description: `Status changed to "${newStatus}" successfully.`,
+        description: `Status changed to "${newStatus}" successfully.${!isAdmin && newStatus === "paid" ? " Payment is now locked." : ""}`,
       });
     } catch (err: any) {
       toast({
@@ -124,7 +144,7 @@ const CoachEnrollments = () => {
   const countries = [...new Set(enrollments.map((e) => e.country))];
 
   const exportCSV = () => {
-    const headers = ["Name", "Course", "Course Fee", "Amount Paid", "Country", "City", "Industry", "Job Title", "Experience", "Education", "Payment", "Date"];
+    const headers = ["Name", "Course", "Course Fee", "Amount Paid", "Country", "City", "Industry", "Job Title", "Experience", "Education", "Payment", "Locked", "Date"];
     const rows = filtered.map((e) => {
       const course = e.courses as any;
       const fee = e.currency === "USD" ? `$${course?.price_usd || 0}` : `₹${course?.price_inr || 0}`;
@@ -132,7 +152,7 @@ const CoachEnrollments = () => {
       return [
         e.full_name, course?.title, fee, paid, e.country, e.city, e.industry,
         e.current_job_title, e.experience_level, e.education_qualification,
-        e.payment_status, new Date(e.enrolled_at).toLocaleDateString()
+        e.payment_status, e.payment_locked ? "Yes" : "No", new Date(e.enrolled_at).toLocaleDateString()
       ];
     });
     const csv = [headers, ...rows].map((r) => r.map((v: string) => `"${(v || "").replace(/"/g, '""')}"`).join(",")).join("\n");
@@ -171,6 +191,11 @@ const CoachEnrollments = () => {
         </TableCell>
       </>
     );
+  };
+
+  const isPaymentEditable = (enrollment: any) => {
+    if (isAdmin) return true;
+    return !enrollment.payment_locked;
   };
 
   return (
@@ -274,29 +299,47 @@ const CoachEnrollments = () => {
                     {e.linkedin_profile ? <a href={e.linkedin_profile} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View</a> : "—"}
                   </TableCell>
                   <TableCell>
-                    <Select
-                      value={e.payment_status}
-                      onValueChange={(val) => handlePaymentStatusChange(e.id, val)}
-                      disabled={updatingId === e.id}
-                    >
-                      <SelectTrigger className="w-[120px] h-8 text-xs bg-popover border-border">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-popover border-border z-[9999]">
-                        <SelectItem value="pending">
-                          <span className="flex items-center gap-1.5">
-                            <span className="h-2 w-2 rounded-full bg-yellow-400" />
-                            Pending
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="paid">
-                          <span className="flex items-center gap-1.5">
-                            <span className="h-2 w-2 rounded-full bg-green-400" />
-                            Paid
-                          </span>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {isPaymentEditable(e) ? (
+                      <Select
+                        value={e.payment_status}
+                        onValueChange={(val) => handlePaymentStatusChange(e.id, val)}
+                        disabled={updatingId === e.id}
+                      >
+                        <SelectTrigger className="w-[120px] h-8 text-xs bg-popover border-border">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-popover border-border z-[9999]">
+                          <SelectItem value="pending">
+                            <span className="flex items-center gap-1.5">
+                              <span className="h-2 w-2 rounded-full bg-yellow-400" />
+                              Pending
+                            </span>
+                          </SelectItem>
+                          <SelectItem value="paid">
+                            <span className="flex items-center gap-1.5">
+                              <span className="h-2 w-2 rounded-full bg-green-400" />
+                              Paid
+                            </span>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-1.5">
+                              <Badge variant="outline" className="text-green-400 border-green-500/30 text-xs gap-1">
+                                <Lock className="h-3 w-3" />
+                                {e.payment_status === "paid" ? "Paid" : e.payment_status}
+                              </Badge>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Locked after update. Admin approval required.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground whitespace-nowrap">{new Date(e.enrolled_at).toLocaleDateString()}</TableCell>
                 </TableRow>

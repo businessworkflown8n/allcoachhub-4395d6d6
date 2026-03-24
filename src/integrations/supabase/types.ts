@@ -515,6 +515,27 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_webinar_commissions: {
+        Row: {
+          coach_id: string
+          commission_percent: number
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          commission_percent?: number
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          commission_percent?: number
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       communication_settings: {
         Row: {
           id: string
@@ -1616,6 +1637,7 @@ export type Database = {
           learning_objective: string | null
           linkedin_profile: string | null
           payment_id: string | null
+          payment_locked: boolean
           payment_status: string
           progress_percent: number | null
           whatsapp_number: string
@@ -1642,6 +1664,7 @@ export type Database = {
           learning_objective?: string | null
           linkedin_profile?: string | null
           payment_id?: string | null
+          payment_locked?: boolean
           payment_status?: string
           progress_percent?: number | null
           whatsapp_number: string
@@ -1668,6 +1691,7 @@ export type Database = {
           learning_objective?: string | null
           linkedin_profile?: string | null
           payment_id?: string | null
+          payment_locked?: boolean
           payment_status?: string
           progress_percent?: number | null
           whatsapp_number?: string
