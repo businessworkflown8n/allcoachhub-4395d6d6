@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Settings, Users, Percent, Eye, Download } from "lucide-react";
+import { Settings, Users, Percent, Eye, Video } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -35,21 +35,33 @@ const AdminSettings = () => {
   const [coachCommission, setCoachCommission] = useState("");
   const [savingCoach, setSavingCoach] = useState(false);
 
+  // Webinar commission state
+  const [webinarCommission, setWebinarCommission] = useState("1");
+  const [savingWebinar, setSavingWebinar] = useState(false);
+  const [coachWebinarCommissions, setCoachWebinarCommissions] = useState<CoachCommission[]>([]);
+  const [selectedWebinarCoach, setSelectedWebinarCoach] = useState("");
+  const [coachWebinarCommission, setCoachWebinarCommission] = useState("");
+  const [savingWebinarCoach, setSavingWebinarCoach] = useState(false);
+
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
     setLoading(true);
-    const [settingsRes, coachRolesRes, commissionsRes, multiplierRes] = await Promise.all([
+    const [settingsRes, coachRolesRes, commissionsRes, multiplierRes, webinarSettingsRes, webinarCommRes] = await Promise.all([
       supabase.from("platform_settings").select("*").eq("key", "commission_percent").single(),
       supabase.from("user_roles").select("user_id").eq("role", "coach"),
       supabase.from("coach_commissions").select("coach_id, commission_percent"),
       supabase.from("platform_settings").select("key, value").in("key", ["material_view_multiplier", "material_download_multiplier"]),
+      supabase.from("platform_settings").select("value").eq("key", "webinar_commission_percent").single(),
+      supabase.from("coach_webinar_commissions").select("coach_id, commission_percent"),
     ]);
 
     setCommission(settingsRes.data?.value || "20");
     setCoachCommissions(commissionsRes.data || []);
+    setWebinarCommission(webinarSettingsRes.data?.value || "1");
+    setCoachWebinarCommissions(webinarCommRes.data || []);
     if (multiplierRes.data) {
       multiplierRes.data.forEach((r: any) => {
         if (r.key === "material_view_multiplier") setViewMultiplier(r.value);
@@ -57,7 +69,6 @@ const AdminSettings = () => {
       });
     }
 
-    // Fetch coach profiles
     if (coachRolesRes.data && coachRolesRes.data.length > 0) {
       const coachIds = coachRolesRes.data.map((r) => r.user_id);
       const { data: profiles } = await supabase
@@ -81,21 +92,13 @@ const AdminSettings = () => {
   const handleSaveCoachCommission = async () => {
     if (!selectedCoach || !coachCommission) return;
     setSavingCoach(true);
-
     const existing = coachCommissions.find((c) => c.coach_id === selectedCoach);
     let error;
-
     if (existing) {
-      ({ error } = await supabase
-        .from("coach_commissions")
-        .update({ commission_percent: Number(coachCommission) })
-        .eq("coach_id", selectedCoach));
+      ({ error } = await supabase.from("coach_commissions").update({ commission_percent: Number(coachCommission) }).eq("coach_id", selectedCoach));
     } else {
-      ({ error } = await supabase
-        .from("coach_commissions")
-        .insert({ coach_id: selectedCoach, commission_percent: Number(coachCommission) }));
+      ({ error } = await supabase.from("coach_commissions").insert({ coach_id: selectedCoach, commission_percent: Number(coachCommission) }));
     }
-
     setSavingCoach(false);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -105,6 +108,43 @@ const AdminSettings = () => {
       setCoachCommissions(data || []);
       setSelectedCoach("");
       setCoachCommission("");
+    }
+  };
+
+  // Webinar commission handlers
+  const handleSaveWebinarDefault = async () => {
+    setSavingWebinar(true);
+    const { data } = await supabase.from("platform_settings").select("id").eq("key", "webinar_commission_percent").single();
+    let error;
+    if (data) {
+      ({ error } = await supabase.from("platform_settings").update({ value: webinarCommission }).eq("key", "webinar_commission_percent"));
+    } else {
+      ({ error } = await supabase.from("platform_settings").insert({ key: "webinar_commission_percent", value: webinarCommission }));
+    }
+    setSavingWebinar(false);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else toast({ title: "Default webinar commission saved" });
+  };
+
+  const handleSaveWebinarCoachCommission = async () => {
+    if (!selectedWebinarCoach || !coachWebinarCommission) return;
+    setSavingWebinarCoach(true);
+    const existing = coachWebinarCommissions.find((c) => c.coach_id === selectedWebinarCoach);
+    let error;
+    if (existing) {
+      ({ error } = await supabase.from("coach_webinar_commissions").update({ commission_percent: Number(coachWebinarCommission) }).eq("coach_id", selectedWebinarCoach));
+    } else {
+      ({ error } = await supabase.from("coach_webinar_commissions").insert({ coach_id: selectedWebinarCoach, commission_percent: Number(coachWebinarCommission) }));
+    }
+    setSavingWebinarCoach(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Coach webinar commission saved" });
+      const { data } = await supabase.from("coach_webinar_commissions").select("coach_id, commission_percent");
+      setCoachWebinarCommissions(data || []);
+      setSelectedWebinarCoach("");
+      setCoachWebinarCommission("");
     }
   };
 
@@ -118,7 +158,10 @@ const AdminSettings = () => {
     return cc ? `${cc.commission_percent}%` : `${commission || 20}% (default)`;
   };
 
-  if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
+  const getCoachWebinarCommission = (coachId: string) => {
+    const cc = coachWebinarCommissions.find((c) => c.coach_id === coachId);
+    return cc ? `${cc.commission_percent}%` : `${webinarCommission || 1}% (default)`;
+  };
 
   const handleSaveMultiplier = async () => {
     setSavingMultiplier(true);
@@ -138,15 +181,17 @@ const AdminSettings = () => {
     toast({ title: "Engagement multipliers saved" });
   };
 
+  if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
+
   return (
     <div className="max-w-2xl space-y-8">
       <h2 className="text-xl font-bold text-foreground">Platform Settings</h2>
 
-      {/* Default Commission */}
+      {/* Default Course Commission */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
         <div className="flex items-center gap-3 mb-2">
           <Settings className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold text-foreground">Default Commission</h3>
+          <h3 className="font-semibold text-foreground">Default Course Commission</h3>
         </div>
         <div className="space-y-2">
           <Label className="text-foreground">Platform Commission (%)</Label>
@@ -158,14 +203,13 @@ const AdminSettings = () => {
         </button>
       </div>
 
-      {/* Per-Coach Commission */}
+      {/* Per-Coach Course Commission */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
         <div className="flex items-center gap-3 mb-2">
           <Users className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold text-foreground">Coach-Specific Commission</h3>
+          <h3 className="font-semibold text-foreground">Coach-Specific Course Commission</h3>
         </div>
         <p className="text-xs text-muted-foreground">Set a custom commission rate for individual coaches. Overrides the default rate.</p>
-
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label className="text-foreground">Select Coach</Label>
@@ -196,12 +240,12 @@ const AdminSettings = () => {
         </button>
       </div>
 
-      {/* All Coaches Commission Table */}
+      {/* All Coaches Course Commission Table */}
       {coaches.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-6 space-y-4">
           <div className="flex items-center gap-3 mb-2">
             <Percent className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold text-foreground">All Coaches Commission Rates</h3>
+            <h3 className="font-semibold text-foreground">All Coaches – Course Commission</h3>
           </div>
           <Table>
             <TableHeader>
@@ -217,6 +261,87 @@ const AdminSettings = () => {
                   <TableCell className="font-medium text-foreground">{coach.full_name || "—"}</TableCell>
                   <TableCell className="text-muted-foreground">{coach.email || "—"}</TableCell>
                   <TableCell className="text-right font-semibold text-foreground">{getCoachCommission(coach.user_id)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Default Webinar Commission */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <Video className="h-5 w-5 text-primary" />
+          <h3 className="font-semibold text-foreground">Default Webinar Commission</h3>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-foreground">Platform Commission (%)</Label>
+          <Input type="number" value={webinarCommission} onChange={(e) => setWebinarCommission(e.target.value)} className="bg-secondary border-border" min="0" max="100" />
+          <p className="text-xs text-muted-foreground">Applied when no custom webinar commission exists for a coach</p>
+        </div>
+        <button onClick={handleSaveWebinarDefault} disabled={savingWebinar} className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
+          {savingWebinar ? "Saving..." : "Save Default"}
+        </button>
+      </div>
+
+      {/* Per-Coach Webinar Commission */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <Users className="h-5 w-5 text-primary" />
+          <h3 className="font-semibold text-foreground">Coach-Specific Webinar Commission</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">Set a custom webinar commission rate. Overrides the default webinar rate.</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label className="text-foreground">Select Coach</Label>
+            <Select value={selectedWebinarCoach} onValueChange={(val) => {
+              setSelectedWebinarCoach(val);
+              const existing = coachWebinarCommissions.find((c) => c.coach_id === val);
+              setCoachWebinarCommission(existing ? String(existing.commission_percent) : "");
+            }}>
+              <SelectTrigger className="bg-secondary border-border">
+                <SelectValue placeholder="Choose a coach..." />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border z-50">
+                {coaches.map((coach) => (
+                  <SelectItem key={coach.user_id} value={coach.user_id}>
+                    {coach.full_name || coach.email || coach.user_id.slice(0, 8)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-foreground">Commission (%)</Label>
+            <Input type="number" value={coachWebinarCommission} onChange={(e) => setCoachWebinarCommission(e.target.value)} className="bg-secondary border-border" min="0" max="100" placeholder={`Default: ${webinarCommission || 1}%`} />
+          </div>
+        </div>
+        <button onClick={handleSaveWebinarCoachCommission} disabled={savingWebinarCoach || !selectedWebinarCoach || !coachWebinarCommission} className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
+          {savingWebinarCoach ? "Saving..." : "Save Coach Commission"}
+        </button>
+      </div>
+
+      {/* All Coaches Webinar Commission Table */}
+      {coaches.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <div className="flex items-center gap-3 mb-2">
+            <Video className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold text-foreground">All Coaches – Webinar Commission</h3>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Coach</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead className="text-right">Commission</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {coaches.map((coach) => (
+                <TableRow key={coach.user_id}>
+                  <TableCell className="font-medium text-foreground">{coach.full_name || "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">{coach.email || "—"}</TableCell>
+                  <TableCell className="text-right font-semibold text-foreground">{getCoachWebinarCommission(coach.user_id)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

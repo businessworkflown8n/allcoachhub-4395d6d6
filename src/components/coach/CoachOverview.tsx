@@ -1,17 +1,39 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { BookOpen, Users, Video, UserCheck } from "lucide-react";
+import { BookOpen, Users, Video, UserCheck, DollarSign, IndianRupee, ChevronDown, ChevronUp } from "lucide-react";
 import GrowthTools from "./GrowthTools";
+
+const USD_TO_INR_FALLBACK = 83.5;
 
 const CoachOverview = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState({ courses: 0, enrollments: 0, webinars: 0, registrations: 0 });
   const [loading, setLoading] = useState(true);
 
+  // Payable state
+  const [payableData, setPayableData] = useState({
+    courseCommissionUSD: 0,
+    courseCommissionINR: 0,
+    webinarCommissionUSD: 0,
+    webinarCommissionINR: 0,
+    courseCommissionPercent: 20,
+    webinarCommissionPercent: 1,
+  });
+  const [showBreakdown, setShowBreakdown] = useState(false);
+  const [usdToInr, setUsdToInr] = useState(USD_TO_INR_FALLBACK);
+
   useEffect(() => {
     if (!user) return;
-    const fetch = async () => {
+
+    // Fetch exchange rate
+    fetch("https://open.er-api.com/v6/latest/USD")
+      .then((r) => r.json())
+      .then((data) => { if (data?.rates?.INR) setUsdToInr(data.rates.INR); })
+      .catch(() => {});
+
+    const fetchAll = async () => {
+      // Stats
       const [coursesRes, enrollmentsRes, webinarsRes, regsRes] = await Promise.all([
         supabase.from("courses").select("id", { count: "exact", head: true }).eq("coach_id", user.id),
         supabase.from("enrollments").select("id", { count: "exact", head: true }).eq("coach_id", user.id),
@@ -31,9 +53,64 @@ const CoachOverview = () => {
         webinars: webinarsRes.count || 0,
         registrations: regsRes.count || 0,
       });
+
+      // Payable calculation
+      const [enrollData, courseCommRes, defaultCommRes, webinarCommCoachRes, defaultWebinarCommRes, webinarData] = await Promise.all([
+        supabase.from("enrollments").select("*, courses(price_usd, price_inr)").eq("coach_id", user.id).eq("payment_status", "paid"),
+        supabase.from("coach_commissions").select("commission_percent").eq("coach_id", user.id).maybeSingle(),
+        supabase.from("platform_settings").select("value").eq("key", "commission_percent").single(),
+        supabase.from("coach_webinar_commissions").select("commission_percent").eq("coach_id", user.id).maybeSingle(),
+        supabase.from("platform_settings").select("value").eq("key", "webinar_commission_percent").single(),
+        supabase.from("webinars").select("id, price_usd, price_inr").eq("coach_id", user.id),
+      ]);
+
+      const courseComm = courseCommRes.data?.commission_percent ?? Number(defaultCommRes.data?.value || 20);
+      const webinarComm = webinarCommCoachRes.data?.commission_percent ?? Number(defaultWebinarCommRes.data?.value || 1);
+
+      // Course commission
+      let cUSD = 0, cINR = 0;
+      (enrollData.data || []).forEach((e: any) => {
+        const course = e.courses as any;
+        if (e.currency === "USD") {
+          cUSD += Number(course?.price_usd || 0) * (courseComm / 100);
+        } else {
+          cINR += Number(course?.price_inr || 0) * (courseComm / 100);
+        }
+      });
+
+      // Webinar commission - based on paid registrations
+      let wUSD = 0, wINR = 0;
+      if (webinarData.data?.length) {
+        const webinarMap = new Map(webinarData.data.map((w: any) => [w.id, w]));
+        const { data: regsData } = await supabase
+          .from("webinar_registrations")
+          .select("webinar_id, payment_status, currency")
+          .in("webinar_id", webinarData.data.map((w: any) => w.id))
+          .eq("payment_status", "paid");
+
+        (regsData || []).forEach((r: any) => {
+          const webinar = webinarMap.get(r.webinar_id) as any;
+          if (!webinar) return;
+          if (r.currency === "USD") {
+            wUSD += Number(webinar.price_usd || 0) * (webinarComm / 100);
+          } else {
+            wINR += Number(webinar.price_inr || 0) * (webinarComm / 100);
+          }
+        });
+      }
+
+      setPayableData({
+        courseCommissionUSD: cUSD,
+        courseCommissionINR: cINR,
+        webinarCommissionUSD: wUSD,
+        webinarCommissionINR: wINR,
+        courseCommissionPercent: courseComm,
+        webinarCommissionPercent: webinarComm,
+      });
+
       setLoading(false);
     };
-    fetch();
+    fetchAll();
   }, [user]);
 
   const cards = [
@@ -42,6 +119,9 @@ const CoachOverview = () => {
     { label: "Total Webinars", value: stats.webinars, icon: Video, color: "text-blue-500" },
     { label: "Webinar Registrations", value: stats.registrations, icon: UserCheck, color: "text-orange-500" },
   ];
+
+  const totalPayableUSD = payableData.courseCommissionUSD + payableData.webinarCommissionUSD + (payableData.courseCommissionINR + payableData.webinarCommissionINR) / usdToInr;
+  const totalPayableINR = (payableData.courseCommissionUSD + payableData.webinarCommissionUSD) * usdToInr + payableData.courseCommissionINR + payableData.webinarCommissionINR;
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
@@ -59,6 +139,65 @@ const CoachOverview = () => {
           </div>
         ))}
       </div>
+
+      {/* Total Payable to Admin */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-foreground">Total Payable to Admin (AiCoach Portal)</h3>
+          <button
+            onClick={() => setShowBreakdown(!showBreakdown)}
+            className="flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            {showBreakdown ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            {showBreakdown ? "Hide" : "View"} Breakdown
+          </button>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-lg border border-border bg-secondary/50 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <DollarSign className="h-4 w-4 text-green-400" />
+              <span className="text-xs text-muted-foreground">Grand Total (USD)</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground">${totalPayableUSD.toFixed(2)}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-secondary/50 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <IndianRupee className="h-4 w-4 text-green-400" />
+              <span className="text-xs text-muted-foreground">Grand Total (INR)</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground">₹{totalPayableINR.toFixed(2)}</p>
+          </div>
+        </div>
+
+        {showBreakdown && (
+          <div className="space-y-3 pt-2 border-t border-border">
+            <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/30 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">Course Commission ({payableData.courseCommissionPercent}%)</p>
+                <p className="text-xs text-muted-foreground">From paid course enrollments</p>
+              </div>
+              <div className="text-right">
+                {payableData.courseCommissionUSD > 0 && <p className="text-sm font-semibold text-foreground">${payableData.courseCommissionUSD.toFixed(2)}</p>}
+                {payableData.courseCommissionINR > 0 && <p className="text-sm font-semibold text-foreground">₹{payableData.courseCommissionINR.toFixed(2)}</p>}
+                {payableData.courseCommissionUSD === 0 && payableData.courseCommissionINR === 0 && <p className="text-sm text-muted-foreground">$0.00</p>}
+              </div>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/30 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">Webinar Commission ({payableData.webinarCommissionPercent}%)</p>
+                <p className="text-xs text-muted-foreground">From paid webinar registrations</p>
+              </div>
+              <div className="text-right">
+                {payableData.webinarCommissionUSD > 0 && <p className="text-sm font-semibold text-foreground">${payableData.webinarCommissionUSD.toFixed(2)}</p>}
+                {payableData.webinarCommissionINR > 0 && <p className="text-sm font-semibold text-foreground">₹{payableData.webinarCommissionINR.toFixed(2)}</p>}
+                {payableData.webinarCommissionUSD === 0 && payableData.webinarCommissionINR === 0 && <p className="text-sm text-muted-foreground">$0.00</p>}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       <GrowthTools />
     </div>
   );
