@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search } from "lucide-react";
+import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search, KeyRound } from "lucide-react";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminCoaches from "@/components/admin/AdminCoaches";
 import AdminLearners from "@/components/admin/AdminLearners";
@@ -27,8 +27,7 @@ import AdminIntegrationsHub from "@/components/admin/AdminIntegrationsHub";
 import AdminCoachCampaigns from "@/components/admin/AdminCoachCampaigns";
 import AdminSharingRequests from "@/components/admin/AdminSharingRequests";
 import AdminSEODashboard from "@/components/admin/AdminSEODashboard";
-import CommunityPage from "@/components/community/CommunityPage";
-import ModeratorPanel from "@/components/community/ModeratorPanel";
+import AdminContactRequests from "@/components/admin/AdminContactRequests";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
@@ -46,8 +45,7 @@ const navItems = [
   { label: "Reviews", path: "/admin/reviews", icon: <Star className="h-4 w-4" /> },
   { label: "Chatbot Leads", path: "/admin/chatbot-leads", icon: <Bot className="h-4 w-4" /> },
   { label: "Communication", path: "/admin/communication", icon: <MessageSquare className="h-4 w-4" /> },
-  { label: "AI Community", path: "/admin/community", icon: <Users className="h-4 w-4" /> },
-  { label: "Moderator Panel", path: "/admin/moderator", icon: <Shield className="h-4 w-4" /> },
+  { label: "Contact Requests", path: "/admin/contact-requests", icon: <KeyRound className="h-4 w-4" /> },
   { label: "Daily Zip", path: "/admin/daily-zip", icon: <Gamepad2 className="h-4 w-4" /> },
   { label: "Email Marketing", path: "/admin/email-tools", icon: <Mail className="h-4 w-4" /> },
   { label: "Social Media", path: "/admin/social", icon: <Share2 className="h-4 w-4" /> },
@@ -86,8 +84,7 @@ const AdminDashboard = () => {
         <Route path="reviews" element={<AdminReviews />} />
         <Route path="chatbot-leads" element={<AdminChatbotLeads />} />
         <Route path="communication" element={<AdminCommunicationSettings />} />
-        <Route path="community/*" element={<CommunityPage baseUrl="/admin/community" userRole="admin" />} />
-        <Route path="moderator" element={<ModeratorPanel />} />
+        <Route path="contact-requests" element={<AdminContactRequests />} />
         <Route path="daily-zip" element={<AdminDailyZip />} />
         <Route path="email-tools" element={<AdminEmailTools />} />
         <Route path="social" element={<AdminSocialMedia />} />

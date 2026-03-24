@@ -3,8 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Settings, Users, Percent, Eye, Download, MessageSquare } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { Settings, Users, Percent, Eye, Download } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -29,11 +28,6 @@ const AdminSettings = () => {
   const [downloadMultiplier, setDownloadMultiplier] = useState("5");
   const [savingMultiplier, setSavingMultiplier] = useState(false);
 
-  // Community visibility state
-  const [showCommunityLearners, setShowCommunityLearners] = useState(true);
-  const [showCommunityCoaches, setShowCommunityCoaches] = useState(true);
-  const [savingCommunity, setSavingCommunity] = useState(false);
-
   // Coach commission state
   const [coaches, setCoaches] = useState<CoachProfile[]>([]);
   const [coachCommissions, setCoachCommissions] = useState<CoachCommission[]>([]);
@@ -47,12 +41,11 @@ const AdminSettings = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const [settingsRes, coachRolesRes, commissionsRes, multiplierRes, communityRes] = await Promise.all([
+    const [settingsRes, coachRolesRes, commissionsRes, multiplierRes] = await Promise.all([
       supabase.from("platform_settings").select("*").eq("key", "commission_percent").single(),
       supabase.from("user_roles").select("user_id").eq("role", "coach"),
       supabase.from("coach_commissions").select("coach_id, commission_percent"),
       supabase.from("platform_settings").select("key, value").in("key", ["material_view_multiplier", "material_download_multiplier"]),
-      supabase.from("platform_settings").select("key, value").in("key", ["show_ai_community_learners", "show_ai_community_coaches"]),
     ]);
 
     setCommission(settingsRes.data?.value || "20");
@@ -61,12 +54,6 @@ const AdminSettings = () => {
       multiplierRes.data.forEach((r: any) => {
         if (r.key === "material_view_multiplier") setViewMultiplier(r.value);
         if (r.key === "material_download_multiplier") setDownloadMultiplier(r.value);
-      });
-    }
-    if (communityRes.data) {
-      communityRes.data.forEach((r: any) => {
-        if (r.key === "show_ai_community_learners") setShowCommunityLearners(r.value === "true");
-        if (r.key === "show_ai_community_coaches") setShowCommunityCoaches(r.value === "true");
       });
     }
 
@@ -114,7 +101,6 @@ const AdminSettings = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Coach commission saved" });
-      // Refresh commissions
       const { data } = await supabase.from("coach_commissions").select("coach_id, commission_percent");
       setCoachCommissions(data || []);
       setSelectedCoach("");
@@ -259,54 +245,6 @@ const AdminSettings = () => {
         </div>
         <button onClick={handleSaveMultiplier} disabled={savingMultiplier} className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
           {savingMultiplier ? "Saving..." : "Save Multipliers"}
-        </button>
-      </div>
-
-      {/* AI Community Visibility */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <div className="flex items-center gap-3 mb-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold text-foreground">AI Community Visibility</h3>
-        </div>
-        <p className="text-xs text-muted-foreground">Control whether the AI Community section is visible in Learner and Coach dashboards.</p>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-border p-4">
-            <div>
-              <Label className="text-foreground font-medium">Show AI Community to Learners</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">When OFF, AI Community is hidden from the Learner Dashboard</p>
-            </div>
-            <Switch checked={showCommunityLearners} onCheckedChange={setShowCommunityLearners} />
-          </div>
-          <div className="flex items-center justify-between rounded-lg border border-border p-4">
-            <div>
-              <Label className="text-foreground font-medium">Show AI Community to Coaches</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">When OFF, AI Community is hidden from the Coach Dashboard</p>
-            </div>
-            <Switch checked={showCommunityCoaches} onCheckedChange={setShowCommunityCoaches} />
-          </div>
-        </div>
-        <button
-          onClick={async () => {
-            setSavingCommunity(true);
-            const upsert = async (key: string, value: string) => {
-              const { data } = await supabase.from("platform_settings").select("id").eq("key", key).single();
-              if (data) {
-                await supabase.from("platform_settings").update({ value }).eq("key", key);
-              } else {
-                await supabase.from("platform_settings").insert({ key, value });
-              }
-            };
-            await Promise.all([
-              upsert("show_ai_community_learners", String(showCommunityLearners)),
-              upsert("show_ai_community_coaches", String(showCommunityCoaches)),
-            ]);
-            setSavingCommunity(false);
-            toast({ title: "Community visibility settings saved" });
-          }}
-          disabled={savingCommunity}
-          className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50"
-        >
-          {savingCommunity ? "Saving..." : "Save Community Settings"}
         </button>
       </div>
     </div>

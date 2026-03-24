@@ -1,8 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
-import { useCommunityVisibility } from "@/hooks/useCommunityVisibility";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText, MessageSquare, Users, Sparkles } from "lucide-react";
+import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText, MessageSquare, Sparkles } from "lucide-react";
 import LearnerProfile from "@/components/learner/LearnerProfile";
 import LearnerCourses from "@/components/learner/LearnerCourses";
 import LearnerWishlist from "@/components/learner/LearnerWishlist";
@@ -14,12 +13,9 @@ import LearnerDailyZip from "@/components/learner/LearnerDailyZip";
 import SocialMediaHub from "@/components/shared/SocialMediaHub";
 import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import LearnerChatHistory from "@/components/learner/LearnerChatHistory";
-import CommunityPage from "@/components/community/CommunityPage";
 import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
 
 const LearnerDashboard = () => {
-  const { showForLearners } = useCommunityVisibility();
-
   useSEO({
     title: "Learner Dashboard – My Courses & Progress",
     description: "Access your enrolled courses, webinars, certificates, and learning progress.",
@@ -32,7 +28,6 @@ const LearnerDashboard = () => {
     { label: "Webinars", path: "/learner/webinars", icon: <Video className="h-4 w-4" /> },
     { label: "Certificates", path: "/learner/certificates", icon: <Award className="h-4 w-4" /> },
     { label: "Materials", path: "/learner/materials", icon: <FileText className="h-4 w-4" /> },
-    ...(showForLearners ? [{ label: "AI Community", path: "/learner/community", icon: <Users className="h-4 w-4" /> }] : []),
     { label: "Chat History", path: "/learner/chat-history", icon: <MessageSquare className="h-4 w-4" /> },
     { label: "Daily Zip", path: "/learner/daily-zip", icon: <Zap className="h-4 w-4" /> },
     { label: "Prompt Generator", path: "/learner/prompt-generator", icon: <Sparkles className="h-4 w-4" /> },
@@ -50,9 +45,6 @@ const LearnerDashboard = () => {
         <Route path="webinars" element={<LearnerWebinars />} />
         <Route path="certificates" element={<LearnerCertificates />} />
         <Route path="materials" element={<DashboardMaterials />} />
-        {showForLearners && (
-          <Route path="community/*" element={<CommunityPage baseUrl="/learner/community" userRole="learner" />} />
-        )}
         <Route path="chat-history" element={<LearnerChatHistory />} />
         <Route path="daily-zip" element={<LearnerDailyZip />} />
         <Route path="prompt-generator" element={<div className="space-y-4"><h2 className="text-xl font-bold text-foreground">Prompt Generator</h2><div className="rounded-xl border border-border bg-card p-6"><PromptGeneratorForm showSave userRole="learner" /></div></div>} />

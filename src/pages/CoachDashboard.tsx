@@ -1,8 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
-import { useCommunityVisibility } from "@/hooks/useCommunityVisibility";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Users, Sparkles } from "lucide-react";
+import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles } from "lucide-react";
 import CoachProfile from "@/components/coach/CoachProfile";
 import CoachCourses from "@/components/coach/CoachCourses";
 import CoachCourseForm from "@/components/coach/CoachCourseForm";
@@ -15,12 +14,9 @@ import CoachOverview from "@/components/coach/CoachOverview";
 import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import CoachCampaignInsights from "@/components/coach/CoachCampaignInsights";
 import CoachReportBuilder from "@/components/coach/CoachReportBuilder";
-import CommunityPage from "@/components/community/CommunityPage";
 import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
 
 const CoachDashboard = () => {
-  const { showForCoaches } = useCommunityVisibility();
-
   useSEO({
     title: "Coach Dashboard – Manage Courses & Earnings",
     description: "Manage your courses, enrollments, webinars, and track your coaching earnings.",
@@ -34,7 +30,6 @@ const CoachDashboard = () => {
     { label: "Add Course", path: "/coach/courses/new", icon: <Plus className="h-4 w-4" /> },
     { label: "My Webinars", path: "/coach/webinars", icon: <Video className="h-4 w-4" /> },
     { label: "Enrollments", path: "/coach/enrollments", icon: <BarChart3 className="h-4 w-4" /> },
-    ...(showForCoaches ? [{ label: "AI Community", path: "/coach/community", icon: <Users className="h-4 w-4" /> }] : []),
     { label: "Campaign Insights", path: "/coach/insights", icon: <TrendingUp className="h-4 w-4" /> },
     { label: "Report Builder", path: "/coach/reports", icon: <FileBarChart className="h-4 w-4" /> },
     { label: "Materials", path: "/coach/materials", icon: <FileText className="h-4 w-4" /> },
@@ -53,9 +48,6 @@ const CoachDashboard = () => {
         <Route path="courses/:id/edit" element={<CoachCourseForm />} />
         <Route path="webinars" element={<CoachWebinars />} />
         <Route path="enrollments" element={<CoachEnrollments />} />
-        {showForCoaches && (
-          <Route path="community/*" element={<CommunityPage baseUrl="/coach/community" userRole="coach" />} />
-        )}
         <Route path="insights" element={<CoachCampaignInsights />} />
         <Route path="reports" element={<CoachReportBuilder />} />
         <Route path="materials" element={<DashboardMaterials />} />
