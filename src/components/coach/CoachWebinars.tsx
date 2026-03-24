@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Video, Plus, Edit, Trash2, Users, Calendar, Clock, X, Download } from "lucide-react";
+import { useContactAccess } from "@/hooks/useContactAccess";
+import { Video, Plus, Edit, Trash2, Users, Calendar, Clock, X, Download, Lock, KeyRound } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Webinar {
@@ -27,11 +29,12 @@ interface Registrant {
   id: string;
   learner_id: string;
   registered_at: string;
-  profiles: { full_name: string | null; email: string | null } | null;
+  profiles: { full_name: string | null; email: string | null; contact_number: string | null } | null;
 }
 
 const CoachWebinars = () => {
   const { user } = useAuth();
+  const { hasAccess, isPending, requestAccess } = useContactAccess();
   const [webinars, setWebinars] = useState<Webinar[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -58,7 +61,6 @@ const CoachWebinars = () => {
       .order("webinar_date", { ascending: false });
     setWebinars((data as Webinar[]) || []);
 
-    // Fetch registration counts
     if (data && data.length > 0) {
       const { data: regs } = await supabase
         .from("webinar_registrations")
@@ -156,14 +158,21 @@ const CoachWebinars = () => {
     }
   };
 
+  const handleRequestWebinarAccess = async (learnerId: string) => {
+    const { error } = await requestAccess(learnerId, "webinar");
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Access requested", description: "Admin will review your request." });
+    }
+  };
+
   const downloadCSV = () => {
     const webinar = webinars.find((w) => w.id === showRegistrants);
-    const rows = [["Name", "Email", "Phone", "Registered At"]];
+    const rows = [["Name", "Registered At"]];
     registrants.forEach((r) => {
       rows.push([
         r.profiles?.full_name || "Unknown",
-        r.profiles?.email || "—",
-        (r.profiles as any)?.contact_number || "—",
         format(new Date(r.registered_at), "yyyy-MM-dd HH:mm"),
       ]);
     });
@@ -231,12 +240,29 @@ const CoachWebinars = () => {
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {registrants.map((r) => (
-                <div key={r.id} className="flex items-center justify-between rounded-lg border border-border p-3">
-                  <div>
+                <div key={r.id} className="rounded-lg border border-border p-3 space-y-1">
+                  <div className="flex items-center justify-between">
                     <p className="text-sm font-medium text-foreground">{r.profiles?.full_name || "Unknown"}</p>
-                    <p className="text-xs text-muted-foreground">{r.profiles?.email || "—"}</p>
+                    <span className="text-xs text-muted-foreground">{format(new Date(r.registered_at), "MMM d, yyyy")}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{format(new Date(r.registered_at), "MMM d, yyyy")}</span>
+                  {hasAccess(r.learner_id) ? (
+                    <div className="text-xs text-muted-foreground space-y-0.5">
+                      <p>{r.profiles?.email || "—"}</p>
+                      <p>{(r.profiles as any)?.contact_number || "—"}</p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Contact info hidden</span>
+                      {isPending(r.learner_id) ? (
+                        <Badge variant="outline" className="text-yellow-400 border-yellow-500/30 text-xs">Pending</Badge>
+                      ) : (
+                        <Button size="sm" variant="outline" className="gap-1 text-xs h-6" onClick={() => handleRequestWebinarAccess(r.learner_id)}>
+                          <KeyRound className="h-3 w-3" /> Request
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -268,7 +294,7 @@ const CoachWebinars = () => {
                   }`}>
                     Link: {w.webinar_link_status === "approved" ? "Approved" : w.webinar_link_status === "rejected" ? "Rejected" : "Pending"}
                   </span>
-              <button onClick={() => viewRegistrants(w.id)} className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                  <button onClick={() => viewRegistrants(w.id)} className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
                     <Users className="h-3.5 w-3.5" /> {regCounts[w.id] || 0} Registrations
                   </button>
                 </div>

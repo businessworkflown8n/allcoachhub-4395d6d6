@@ -1010,6 +1010,39 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_access_requests: {
+        Row: {
+          approved_by: string | null
+          coach_id: string
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+          user_type: string
+        }
+        Insert: {
+          approved_by?: string | null
+          coach_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          user_type?: string
+        }
+        Update: {
+          approved_by?: string | null
+          coach_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          user_type?: string
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           coach_id: string

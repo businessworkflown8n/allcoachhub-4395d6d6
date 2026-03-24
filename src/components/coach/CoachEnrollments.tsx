@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useContactAccess } from "@/hooks/useContactAccess";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Download, Search, DollarSign, IndianRupee, Globe, RefreshCw } from "lucide-react";
+import { Users, Download, Search, DollarSign, IndianRupee, Globe, RefreshCw, Lock, KeyRound } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 import GlobalDateRangePicker, { useDateRange } from "@/components/shared/GlobalDateRangePicker";
 
 const USD_TO_INR_FALLBACK = 83.5;
@@ -30,6 +32,7 @@ const useExchangeRate = () => {
 
 const CoachEnrollments = () => {
   const { user } = useAuth();
+  const { hasAccess, isPending, requestAccess } = useContactAccess();
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -60,7 +63,6 @@ const CoachEnrollments = () => {
       );
 
       if (newStatus === "paid") {
-        // Send confirmation email via edge function
         supabase.functions.invoke("send-payment-confirmation", {
           body: { enrollmentId },
         }).then(({ error: fnError }) => {
@@ -83,6 +85,15 @@ const CoachEnrollments = () => {
     }
   };
 
+  const handleRequestAccess = async (learnerId: string) => {
+    const { error } = await requestAccess(learnerId, "learner");
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Access requested", description: "Admin will review your request." });
+    }
+  };
+
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
   const filtered = enrollments.filter((e) => {
@@ -90,13 +101,12 @@ const CoachEnrollments = () => {
     const d = e.enrolled_at?.slice(0, 10);
     if (dateFrom && d < dateFrom) return false;
     if (dateTo && d > dateTo) return false;
-    return !q || e.full_name?.toLowerCase().includes(q) || e.email?.toLowerCase().includes(q) || e.contact_number?.includes(q) || (e.courses as any)?.title?.toLowerCase().includes(q) || e.country?.toLowerCase().includes(q);
+    return !q || e.full_name?.toLowerCase().includes(q) || (e.courses as any)?.title?.toLowerCase().includes(q) || e.country?.toLowerCase().includes(q);
   });
 
   const totalEnrollments = enrollments.length;
   const paidEnrollments = enrollments.filter((e) => e.payment_status === "paid");
 
-  // Sum course fee per paid enrollment based on learner's currency
   let rawUSD = 0;
   let rawINR = 0;
   paidEnrollments.forEach((e) => {
@@ -108,21 +118,19 @@ const CoachEnrollments = () => {
     }
   });
 
-  // Show combined totals converted via live rate
   const combinedTotalUSD = rawUSD + (rawINR / usdToInr);
   const combinedTotalINR = (rawUSD * usdToInr) + rawINR;
 
   const countries = [...new Set(enrollments.map((e) => e.country))];
 
   const exportCSV = () => {
-    const headers = ["Name", "Email", "Mobile", "WhatsApp", "Course", "Course Fee", "Amount Paid", "Country", "City", "Industry", "Job Title", "Experience", "Education", "Payment", "Date"];
+    const headers = ["Name", "Course", "Course Fee", "Amount Paid", "Country", "City", "Industry", "Job Title", "Experience", "Education", "Payment", "Date"];
     const rows = filtered.map((e) => {
       const course = e.courses as any;
       const fee = e.currency === "USD" ? `$${course?.price_usd || 0}` : `₹${course?.price_inr || 0}`;
       const paid = e.amount_paid ? (e.currency === "USD" ? `$${e.amount_paid}` : `₹${e.amount_paid}`) : "—";
       return [
-        e.full_name, e.email, e.contact_number, e.whatsapp_number,
-        course?.title, fee, paid, e.country, e.city, e.industry,
+        e.full_name, course?.title, fee, paid, e.country, e.city, e.industry,
         e.current_job_title, e.experience_level, e.education_qualification,
         e.payment_status, new Date(e.enrolled_at).toLocaleDateString()
       ];
@@ -135,6 +143,36 @@ const CoachEnrollments = () => {
     URL.revokeObjectURL(url);
   };
 
+  const ContactCell = ({ enrollment }: { enrollment: any }) => {
+    const learnerId = enrollment.learner_id;
+    if (hasAccess(learnerId)) {
+      return (
+        <>
+          <TableCell className="text-foreground whitespace-nowrap">{enrollment.email}</TableCell>
+          <TableCell className="text-foreground whitespace-nowrap">{enrollment.contact_number}</TableCell>
+          <TableCell className="text-foreground whitespace-nowrap">{enrollment.whatsapp_number}</TableCell>
+        </>
+      );
+    }
+    return (
+      <>
+        <TableCell colSpan={3} className="text-center">
+          <div className="flex items-center gap-2 justify-center">
+            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Contact info hidden</span>
+            {isPending(learnerId) ? (
+              <Badge variant="outline" className="text-yellow-400 border-yellow-500/30 text-xs">Pending</Badge>
+            ) : (
+              <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => handleRequestAccess(learnerId)}>
+                <KeyRound className="h-3 w-3" /> Request Access
+              </Button>
+            )}
+          </div>
+        </TableCell>
+      </>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -143,7 +181,7 @@ const CoachEnrollments = () => {
           <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search by name, email, course..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 w-64" />
+            <Input placeholder="Search by name, course..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 w-64" />
           </div>
           <Button variant="outline" size="sm" onClick={exportCSV}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
         </div>
@@ -214,9 +252,7 @@ const CoachEnrollments = () => {
               {filtered.map((e) => (
                 <TableRow key={e.id}>
                   <TableCell className="text-foreground font-medium whitespace-nowrap">{e.full_name}</TableCell>
-                  <TableCell className="text-foreground whitespace-nowrap">{e.email}</TableCell>
-                  <TableCell className="text-foreground whitespace-nowrap">{e.contact_number}</TableCell>
-                  <TableCell className="text-foreground whitespace-nowrap">{e.whatsapp_number}</TableCell>
+                  <ContactCell enrollment={e} />
                   <TableCell className="text-foreground whitespace-nowrap">{(e.courses as any)?.title}</TableCell>
                   <TableCell className="text-foreground whitespace-nowrap">
                     {e.currency === "USD"
