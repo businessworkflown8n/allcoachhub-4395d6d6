@@ -40,6 +40,14 @@ const AdminCoaches = () => {
   const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
   const [isLive, setIsLive] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [performanceCoach, setPerformanceCoach] = useState<any>(null);
+  const [commissions, setCommissions] = useState<any[]>([]);
+  const [webinarCommissions, setWebinarCommissions] = useState<any[]>([]);
+  const [defaultCommission, setDefaultCommission] = useState(20);
+  const [defaultWebinarCommission, setDefaultWebinarCommission] = useState(1);
+  const [webinarRegs, setWebinarRegs] = useState<any[]>([]);
+  const [coachPaymentStatuses, setCoachPaymentStatuses] = useState<Record<string, string>>({});
+  const [updatingCoachPayment, setUpdatingCoachPayment] = useState<string | null>(null);
 
   const fetchAll = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -50,13 +58,18 @@ const AdminCoaches = () => {
         setLoading(false); setLastSyncTime(new Date()); return;
       }
       const ids = roles.map((r) => r.user_id);
-      const [profiles, courseData, enrollData, payData, webinarData, reviewData] = await Promise.all([
+      const [profiles, courseData, enrollData, payData, webinarData, reviewData, commData, webCommData, defComm, defWebComm, webRegData] = await Promise.all([
         supabase.from("profiles").select("*").in("user_id", ids),
         supabase.from("courses").select("*").in("coach_id", ids),
-        supabase.from("enrollments").select("*").in("coach_id", ids),
+        supabase.from("enrollments").select("*, courses(price_usd, price_inr)").in("coach_id", ids),
         supabase.from("payments").select("*").in("coach_id", ids),
         supabase.from("webinars").select("*").in("coach_id", ids),
         supabase.from("reviews").select("*").in("coach_id", ids),
+        supabase.from("coach_commissions").select("*"),
+        supabase.from("coach_webinar_commissions").select("*"),
+        supabase.from("platform_settings").select("value").eq("key", "commission_percent").single(),
+        supabase.from("platform_settings").select("value").eq("key", "webinar_commission_percent").single(),
+        supabase.from("webinar_registrations").select("*"),
       ]);
       setCoaches(profiles.data || []);
       setCourses(courseData.data || []);
@@ -64,6 +77,11 @@ const AdminCoaches = () => {
       setPayments(payData.data || []);
       setWebinars(webinarData.data || []);
       setReviews(reviewData.data || []);
+      setCommissions(commData.data || []);
+      setWebinarCommissions(webCommData.data || []);
+      setWebinarRegs(webRegData.data || []);
+      if (defComm.data) setDefaultCommission(Number(defComm.data.value) || 20);
+      if (defWebComm.data) setDefaultWebinarCommission(Number(defWebComm.data.value) || 1);
       setLastSyncTime(new Date());
     } catch (err) {
       console.error("Sync error:", err);
