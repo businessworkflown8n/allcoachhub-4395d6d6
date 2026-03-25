@@ -122,7 +122,40 @@ const AdminCoaches = () => {
     return { courses: coachCourses.length, enrollments: coachEnrollments.length, revenue, categories, paidEnrollments: paidEnrollments.length, unpaidEnrollments: unpaidEnrollments.length, webinars: coachWebinars.length, avgRating, totalStudents: studentIds.length, reviewCount: coachReviews.length };
   }, [courses, enrollments, webinars, reviews]);
 
-  const getCourseStats = useCallback((courseId: string) => {
+  const getCoachFinancials = useCallback((userId: string) => {
+    const coachEnrolls = enrollments.filter((e) => e.coach_id === userId && e.payment_status === "paid");
+    const coachComm = commissions.find(c => c.coach_id === userId);
+    const coachWebComm = webinarCommissions.find(c => c.coach_id === userId);
+    const courseCommPercent = coachComm?.commission_percent ?? defaultCommission;
+    const webinarCommPercent = coachWebComm?.commission_percent ?? defaultWebinarCommission;
+
+    let totalEarningsINR = 0;
+    let courseCommINR = 0;
+    let webinarCommINR = 0;
+
+    coachEnrolls.forEach((e: any) => {
+      const course = e.courses as any;
+      const priceINR = Number(course?.price_inr || 0);
+      totalEarningsINR += priceINR;
+      courseCommINR += priceINR * (courseCommPercent / 100);
+      webinarCommINR += priceINR * (webinarCommPercent / 100);
+    });
+
+    const totalDueINR = totalEarningsINR - courseCommINR - webinarCommINR;
+
+    // Webinar registrations count
+    const coachWebinarIds = webinars.filter(w => w.coach_id === userId).map(w => w.id);
+    const webinarRegCount = webinarRegs.filter(r => coachWebinarIds.includes(r.webinar_id)).length;
+
+    return { totalEarningsINR, courseCommINR, webinarCommINR, totalDueINR, courseCommPercent, webinarCommPercent, webinarRegCount };
+  }, [enrollments, commissions, webinarCommissions, defaultCommission, defaultWebinarCommission, webinars, webinarRegs]);
+
+  const changeCoachPaymentStatus = async (coachUserId: string, newStatus: string) => {
+    setUpdatingCoachPayment(coachUserId);
+    setCoachPaymentStatuses(prev => ({ ...prev, [coachUserId]: newStatus }));
+    setUpdatingCoachPayment(null);
+    toast({ title: `Payment status set to ${newStatus}` });
+  };
     const courseEnrollments = enrollments.filter((e) => e.course_id === courseId);
     const paid = courseEnrollments.filter((e) => e.payment_status === "paid");
     const unpaid = courseEnrollments.filter((e) => e.payment_status !== "paid");
