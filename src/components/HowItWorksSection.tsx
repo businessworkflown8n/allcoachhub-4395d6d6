@@ -34,15 +34,19 @@ const AnimCounter = ({ end, prefix = "" }: { end: number; prefix?: string }) => 
 
 /* ── step card ── */
 const StepCard = ({
-  num, icon: Icon, title, bullets,
+  num, icon: Icon, title, bullets, onClick,
 }: {
   num: number;
   icon: React.ElementType;
   title: string;
   bullets: string[];
+  onClick?: () => void;
 }) => (
-  <div className="group relative rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
-    <div className="absolute -top-3 -left-3 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-md">
+  <div
+    onClick={onClick}
+    className={`group relative rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 ${onClick ? "cursor-pointer" : ""}`}
+  >
+    <div className="absolute -top-4 -left-4 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground shadow-lg ring-2 ring-primary/30">
       {num}
     </div>
     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
