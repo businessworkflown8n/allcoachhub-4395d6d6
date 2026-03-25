@@ -169,12 +169,13 @@ const Toggle3DButton = ({
 const HowItWorksSection = () => {
   const [activeTab, setActiveTab] = useState<"learner" | "coach" | null>(null);
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const learnerSteps = [
-    { icon: UserPlus, title: t("howItWorks.learner.step1.title"), bullets: [t("howItWorks.learner.step1.b1"), t("howItWorks.learner.step1.b2"), t("howItWorks.learner.step1.b3")] },
-    { icon: Search, title: t("howItWorks.learner.step2.title"), bullets: [t("howItWorks.learner.step2.b1"), t("howItWorks.learner.step2.b2"), t("howItWorks.learner.step2.b3")] },
-    { icon: CreditCard, title: t("howItWorks.learner.step3.title"), bullets: [t("howItWorks.learner.step3.b1"), t("howItWorks.learner.step3.b2"), t("howItWorks.learner.step3.b3")] },
-    { icon: Share2, title: t("howItWorks.learner.step4.title"), bullets: [t("howItWorks.learner.step4.b1"), t("howItWorks.learner.step4.b2"), t("howItWorks.learner.step4.b3")] },
+    { icon: UserPlus, title: t("howItWorks.learner.step1.title"), bullets: [t("howItWorks.learner.step1.b1"), t("howItWorks.learner.step1.b2"), t("howItWorks.learner.step1.b3")], onClick: () => navigate("/auth?mode=signup") },
+    { icon: Search, title: t("howItWorks.learner.step2.title"), bullets: [t("howItWorks.learner.step2.b1"), t("howItWorks.learner.step2.b2"), t("howItWorks.learner.step2.b3")], onClick: () => navigate("/courses") },
+    { icon: CreditCard, title: t("howItWorks.learner.step3.title"), bullets: [t("howItWorks.learner.step3.b1"), t("howItWorks.learner.step3.b2"), t("howItWorks.learner.step3.b3")], onClick: () => navigate("/courses") },
+    { icon: Share2, title: t("howItWorks.learner.step4.title"), bullets: [t("howItWorks.learner.step4.b1"), t("howItWorks.learner.step4.b2"), t("howItWorks.learner.step4.b3")], onClick: () => navigate("/auth?mode=signup") },
   ];
 
   const coachSteps = [
