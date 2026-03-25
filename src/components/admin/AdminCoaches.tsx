@@ -156,6 +156,7 @@ const AdminCoaches = () => {
     setUpdatingCoachPayment(null);
     toast({ title: `Payment status set to ${newStatus}` });
   };
+  const getCourseStats = useCallback((courseId: string) => {
     const courseEnrollments = enrollments.filter((e) => e.course_id === courseId);
     const paid = courseEnrollments.filter((e) => e.payment_status === "paid");
     const unpaid = courseEnrollments.filter((e) => e.payment_status !== "paid");
