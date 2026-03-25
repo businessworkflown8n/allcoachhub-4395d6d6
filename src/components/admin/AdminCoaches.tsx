@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Shield, Search, Download, Eye, BookOpen, DollarSign, Users, Ban, CheckCircle, Trash2, Tag, Mail, X, ArrowUpDown, Filter, Video, Activity, Clock, TrendingUp, Star, AlertTriangle, ChevronLeft, ChevronRight, Trophy, ArrowUp, ArrowDown } from "lucide-react";
+import { Shield, Search, Download, Eye, BookOpen, DollarSign, Users, Ban, CheckCircle, Trash2, Tag, Mail, X, ArrowUpDown, Filter, Video, Activity, Clock, TrendingUp, Star, AlertTriangle, ChevronLeft, ChevronRight, Trophy, ArrowUp, ArrowDown, IndianRupee, BarChart3 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,14 @@ const AdminCoaches = () => {
   const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
   const [isLive, setIsLive] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [performanceCoach, setPerformanceCoach] = useState<any>(null);
+  const [commissions, setCommissions] = useState<any[]>([]);
+  const [webinarCommissions, setWebinarCommissions] = useState<any[]>([]);
+  const [defaultCommission, setDefaultCommission] = useState(20);
+  const [defaultWebinarCommission, setDefaultWebinarCommission] = useState(1);
+  const [webinarRegs, setWebinarRegs] = useState<any[]>([]);
+  const [coachPaymentStatuses, setCoachPaymentStatuses] = useState<Record<string, string>>({});
+  const [updatingCoachPayment, setUpdatingCoachPayment] = useState<string | null>(null);
 
   const fetchAll = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -49,13 +58,18 @@ const AdminCoaches = () => {
         setLoading(false); setLastSyncTime(new Date()); return;
       }
       const ids = roles.map((r) => r.user_id);
-      const [profiles, courseData, enrollData, payData, webinarData, reviewData] = await Promise.all([
+      const [profiles, courseData, enrollData, payData, webinarData, reviewData, commData, webCommData, defComm, defWebComm, webRegData] = await Promise.all([
         supabase.from("profiles").select("*").in("user_id", ids),
         supabase.from("courses").select("*").in("coach_id", ids),
-        supabase.from("enrollments").select("*").in("coach_id", ids),
+        supabase.from("enrollments").select("*, courses(price_usd, price_inr)").in("coach_id", ids),
         supabase.from("payments").select("*").in("coach_id", ids),
         supabase.from("webinars").select("*").in("coach_id", ids),
         supabase.from("reviews").select("*").in("coach_id", ids),
+        supabase.from("coach_commissions").select("*"),
+        supabase.from("coach_webinar_commissions").select("*"),
+        supabase.from("platform_settings").select("value").eq("key", "commission_percent").single(),
+        supabase.from("platform_settings").select("value").eq("key", "webinar_commission_percent").single(),
+        supabase.from("webinar_registrations").select("*"),
       ]);
       setCoaches(profiles.data || []);
       setCourses(courseData.data || []);
@@ -63,6 +77,11 @@ const AdminCoaches = () => {
       setPayments(payData.data || []);
       setWebinars(webinarData.data || []);
       setReviews(reviewData.data || []);
+      setCommissions(commData.data || []);
+      setWebinarCommissions(webCommData.data || []);
+      setWebinarRegs(webRegData.data || []);
+      if (defComm.data) setDefaultCommission(Number(defComm.data.value) || 20);
+      if (defWebComm.data) setDefaultWebinarCommission(Number(defWebComm.data.value) || 1);
       setLastSyncTime(new Date());
     } catch (err) {
       console.error("Sync error:", err);
@@ -103,6 +122,40 @@ const AdminCoaches = () => {
     return { courses: coachCourses.length, enrollments: coachEnrollments.length, revenue, categories, paidEnrollments: paidEnrollments.length, unpaidEnrollments: unpaidEnrollments.length, webinars: coachWebinars.length, avgRating, totalStudents: studentIds.length, reviewCount: coachReviews.length };
   }, [courses, enrollments, webinars, reviews]);
 
+  const getCoachFinancials = useCallback((userId: string) => {
+    const coachEnrolls = enrollments.filter((e) => e.coach_id === userId && e.payment_status === "paid");
+    const coachComm = commissions.find(c => c.coach_id === userId);
+    const coachWebComm = webinarCommissions.find(c => c.coach_id === userId);
+    const courseCommPercent = coachComm?.commission_percent ?? defaultCommission;
+    const webinarCommPercent = coachWebComm?.commission_percent ?? defaultWebinarCommission;
+
+    let totalEarningsINR = 0;
+    let courseCommINR = 0;
+    let webinarCommINR = 0;
+
+    coachEnrolls.forEach((e: any) => {
+      const course = e.courses as any;
+      const priceINR = Number(course?.price_inr || 0);
+      totalEarningsINR += priceINR;
+      courseCommINR += priceINR * (courseCommPercent / 100);
+      webinarCommINR += priceINR * (webinarCommPercent / 100);
+    });
+
+    const totalDueINR = totalEarningsINR - courseCommINR - webinarCommINR;
+
+    // Webinar registrations count
+    const coachWebinarIds = webinars.filter(w => w.coach_id === userId).map(w => w.id);
+    const webinarRegCount = webinarRegs.filter(r => coachWebinarIds.includes(r.webinar_id)).length;
+
+    return { totalEarningsINR, courseCommINR, webinarCommINR, totalDueINR, courseCommPercent, webinarCommPercent, webinarRegCount };
+  }, [enrollments, commissions, webinarCommissions, defaultCommission, defaultWebinarCommission, webinars, webinarRegs]);
+
+  const changeCoachPaymentStatus = async (coachUserId: string, newStatus: string) => {
+    setUpdatingCoachPayment(coachUserId);
+    setCoachPaymentStatuses(prev => ({ ...prev, [coachUserId]: newStatus }));
+    setUpdatingCoachPayment(null);
+    toast({ title: `Payment status set to ${newStatus}` });
+  };
   const getCourseStats = useCallback((courseId: string) => {
     const courseEnrollments = enrollments.filter((e) => e.course_id === courseId);
     const paid = courseEnrollments.filter((e) => e.payment_status === "paid");
@@ -180,6 +233,8 @@ const AdminCoaches = () => {
         case "students": return dir * (sa.totalStudents - sb.totalStudents);
         case "rating": return dir * (sa.avgRating - sb.avgRating);
         case "revenue": return dir * (sa.revenue - sb.revenue);
+        case "earnings": return dir * (getCoachFinancials(a.user_id).totalEarningsINR - getCoachFinancials(b.user_id).totalEarningsINR);
+        case "due": return dir * (getCoachFinancials(a.user_id).totalDueINR - getCoachFinancials(b.user_id).totalDueINR);
         case "tags": return dir * ((a.tags || []).join(",")).localeCompare((b.tags || []).join(","));
         case "last_active": return dir * (new Date(a.last_active_at || 0).getTime() - new Date(b.last_active_at || 0).getTime());
         case "registered": return dir * (new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
@@ -187,7 +242,7 @@ const AdminCoaches = () => {
       }
     });
     return result;
-  }, [coaches, search, statusFilter, countryFilter, cityFilter, sortField, sortDir, getCoachStats]);
+  }, [coaches, search, statusFilter, countryFilter, cityFilter, sortField, sortDir, getCoachStats, getCoachFinancials]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginatedCoaches = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -207,14 +262,15 @@ const AdminCoaches = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["Name", "Company", "Email", "Phone", "WhatsApp", "Status", "Category", "Country", "City", "Courses", "Webinars", "Enrollments", "Students", "Avg Rating", "Revenue", "Tags", "Joined"];
+    const headers = ["Name", "Email", "Phone", "City", "Country", "Courses", "Webinars", "Learners", "Total Earnings (₹)", "Total Due (₹)", "Payment Status", "Tags", "Joined"];
     const rows = filtered.map((c) => {
       const s = getCoachStats(c.user_id);
-      return [c.full_name, c.company_name, c.email, c.contact_number, c.whatsapp_number, c.is_suspended ? "Suspended" : "Active", c.category, c.country, c.city, s.courses, s.webinars, s.enrollments, s.totalStudents, s.avgRating.toFixed(1), `$${s.revenue.toFixed(2)}`, (c.tags || []).join(";"), new Date(c.created_at).toLocaleDateString()];
+      const f = getCoachFinancials(c.user_id);
+      return [c.full_name, c.email, c.contact_number, c.city, c.country, s.courses, s.webinars, s.totalStudents, `₹${f.totalEarningsINR.toFixed(2)}`, `₹${f.totalDueINR.toFixed(2)}`, coachPaymentStatuses[c.user_id] || "pending", (c.tags || []).join(";"), new Date(c.created_at).toLocaleDateString()];
     });
     const csv = [headers, ...rows].map((r) => r.map(v => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "coaches_report.csv"; a.click();
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "coaches_financial_report.csv"; a.click();
   };
 
   const exportEnrollmentsCSV = (coachEnrollments: any[]) => {
@@ -610,16 +666,14 @@ const AdminCoaches = () => {
                   <TableHead className="w-10"><Checkbox checked={selectedIds.size === filtered.length && filtered.length > 0} onCheckedChange={toggleSelectAll} /></TableHead>
                   {[
                     { label: "Name", field: "name" },
+                    { label: "Learners", field: "students" },
+                    { label: "Programs", field: "courses" },
+                    { label: "Earnings (₹)", field: "earnings" },
+                    { label: "Due (₹)", field: "due" },
+                    { label: "Payment", field: "status" },
                     { label: "Email", field: "email" },
-                    { label: "Company", field: "company" },
-                    { label: "Country", field: "country" },
-                    { label: "Status", field: "status" },
-                    { label: "Courses", field: "courses" },
-                    { label: "Students", field: "students" },
-                    { label: "Rating", field: "rating" },
-                    { label: "Revenue", field: "revenue" },
-                    { label: "Tags", field: "tags" },
-                    { label: "Last Active", field: "last_active" },
+                    { label: "Phone", field: "country" },
+                    { label: "City", field: "last_active" },
                   ].map(col => (
                     <TableHead key={col.field}>
                       <button onClick={() => toggleSort(col.field)} className="flex items-center gap-1 hover:text-foreground transition-colors group">
@@ -638,34 +692,39 @@ const AdminCoaches = () => {
               <TableBody>
                 {paginatedCoaches.map((c) => {
                   const s = getCoachStats(c.user_id);
-                  const tags: string[] = c.tags || [];
+                  const f = getCoachFinancials(c.user_id);
+                  const payStatus = coachPaymentStatuses[c.user_id] || "pending";
                   return (
-                    <TableRow key={c.id} className={selectedIds.has(c.user_id) ? "bg-primary/5" : ""}>
+                    <TableRow key={c.id} className={`${selectedIds.has(c.user_id) ? "bg-primary/5" : ""} ${f.totalDueINR > 10000 ? "border-l-2 border-l-destructive" : f.totalEarningsINR > 5000 ? "border-l-2 border-l-green-500" : ""}`}>
                       <TableCell><Checkbox checked={selectedIds.has(c.user_id)} onCheckedChange={() => toggleSelect(c.user_id)} /></TableCell>
                       <TableCell className="text-foreground font-medium">{c.full_name || "—"}</TableCell>
-                      <TableCell className="text-muted-foreground text-xs">{c.email || "—"}</TableCell>
-                      <TableCell className="text-muted-foreground">{c.company_name || "—"}</TableCell>
-                      <TableCell className="text-muted-foreground">{c.country || "—"}</TableCell>
-                      <TableCell>
-                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${c.is_suspended ? "bg-red-500/20 text-red-400" : "bg-green-500/20 text-green-400"}`}>
-                          {c.is_suspended ? "Suspended" : "Active"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-foreground">{s.courses}</TableCell>
                       <TableCell className="text-foreground">{s.totalStudents}</TableCell>
-                      <TableCell>{s.avgRating > 0 ? <span className="flex items-center gap-1 text-sm"><Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />{s.avgRating.toFixed(1)}</span> : <span className="text-muted-foreground text-xs">—</span>}</TableCell>
-                      <TableCell className="text-green-400 font-medium">${s.revenue.toFixed(0)}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-1 flex-wrap max-w-[140px]">
-                          {tags.slice(0, 2).map(t => <Badge key={t} variant="secondary" className="text-[10px] px-1.5 py-0">{t}</Badge>)}
-                          {tags.length > 2 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">+{tags.length - 2}</Badge>}
-                        </div>
+                      <TableCell className="text-foreground text-xs">
+                        <span>Course ({s.courses})</span>
+                        <span className="text-muted-foreground"> | </span>
+                        <span>Webinar ({s.webinars})</span>
                       </TableCell>
+                      <TableCell className="font-semibold text-green-400">₹{f.totalEarningsINR.toFixed(0)}</TableCell>
+                      <TableCell className={`font-semibold ${f.totalDueINR > 10000 ? "text-destructive" : "text-foreground"}`}>₹{f.totalDueINR.toFixed(0)}</TableCell>
                       <TableCell>
-                        <span className="text-muted-foreground text-xs">{c.last_active_at ? new Date(c.last_active_at).toLocaleDateString() : "—"}</span>
+                        <Select value={payStatus} onValueChange={(val) => changeCoachPaymentStatus(c.user_id, val)} disabled={updatingCoachPayment === c.user_id}>
+                          <SelectTrigger className={`w-[110px] h-7 text-xs border-0 ${payStatus === "paid" ? "bg-green-500/20 text-green-400" : payStatus === "transferred" ? "bg-blue-500/20 text-blue-400" : payStatus === "pay_soon" ? "bg-orange-500/20 text-orange-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="paid">Paid</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="transferred">Transferred</SelectItem>
+                            <SelectItem value="pay_soon">Pay You Soon</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </TableCell>
+                      <TableCell className="text-muted-foreground text-xs">{c.email || "—"}</TableCell>
+                      <TableCell className="text-muted-foreground text-xs">{c.contact_number || "—"}</TableCell>
+                      <TableCell className="text-muted-foreground text-xs">{c.city || "—"}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
+                          <button onClick={() => setPerformanceCoach(c)} className="text-blue-400 hover:text-blue-300" title="Performance"><BarChart3 className="h-4 w-4" /></button>
                           <button onClick={() => setSelectedCoach(c)} className="text-primary hover:text-primary/80" title="View"><Eye className="h-4 w-4" /></button>
                           <button onClick={() => toggleSuspend(c)} className={c.is_suspended ? "text-green-400 hover:text-green-300" : "text-yellow-400 hover:text-yellow-300"} title={c.is_suspended ? "Activate" : "Suspend"}>
                             {c.is_suspended ? <CheckCircle className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
@@ -696,6 +755,145 @@ const AdminCoaches = () => {
           </div>
         </>
       )}
+
+      {/* Performance Modal */}
+      <Dialog open={!!performanceCoach} onOpenChange={(open) => !open && setPerformanceCoach(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          {performanceCoach && (() => {
+            const s = getCoachStats(performanceCoach.user_id);
+            const f = getCoachFinancials(performanceCoach.user_id);
+            const coachCourseList = courses.filter(c => c.coach_id === performanceCoach.user_id);
+            const coachWebinarList = webinars.filter(w => w.coach_id === performanceCoach.user_id);
+            const recentEnrolls = enrollments.filter(e => e.coach_id === performanceCoach.user_id).sort((a, b) => new Date(b.enrolled_at).getTime() - new Date(a.enrolled_at).getTime()).slice(0, 10);
+
+            // Monthly earnings trend
+            const monthlyData: Record<string, number> = {};
+            enrollments.filter(e => e.coach_id === performanceCoach.user_id && e.payment_status === "paid").forEach(e => {
+              const d = new Date(e.enrolled_at);
+              const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+              const course = e.courses as any;
+              monthlyData[key] = (monthlyData[key] || 0) + Number(course?.price_inr || 0);
+            });
+            const trendData = Object.entries(monthlyData).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([month, amount]) => ({
+              month: new Date(month + "-01").toLocaleDateString("en-US", { month: "short" }),
+              amount,
+            }));
+
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary font-bold">{performanceCoach.full_name?.[0] || "C"}</div>
+                    <div>
+                      <p>{performanceCoach.full_name}</p>
+                      <p className="text-xs text-muted-foreground font-normal">{performanceCoach.email}</p>
+                    </div>
+                  </DialogTitle>
+                </DialogHeader>
+
+                {/* Financial Summary */}
+                <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+                  <div className="rounded-lg border border-border bg-card p-3">
+                    <IndianRupee className="h-4 w-4 text-green-400 mb-1" />
+                    <p className="text-lg font-bold text-foreground">₹{f.totalEarningsINR.toFixed(0)}</p>
+                    <p className="text-[10px] text-muted-foreground">Total Earnings</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-card p-3">
+                    <IndianRupee className="h-4 w-4 text-foreground mb-1" />
+                    <p className="text-lg font-bold text-foreground">₹{f.totalDueINR.toFixed(0)}</p>
+                    <p className="text-[10px] text-muted-foreground">Total Due</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-card p-3">
+                    <Users className="h-4 w-4 text-primary mb-1" />
+                    <p className="text-lg font-bold text-foreground">{s.totalStudents}</p>
+                    <p className="text-[10px] text-muted-foreground">Total Learners</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-card p-3">
+                    <Video className="h-4 w-4 text-blue-400 mb-1" />
+                    <p className="text-lg font-bold text-foreground">{f.webinarRegCount}</p>
+                    <p className="text-[10px] text-muted-foreground">Webinar Regs</p>
+                  </div>
+                </div>
+
+                {/* Commission Breakdown */}
+                <div className="rounded-lg border border-border p-4 space-y-2">
+                  <h4 className="text-sm font-semibold text-foreground">Commission Breakdown</h4>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Course Commission ({f.courseCommPercent}%)</span>
+                    <span className="text-foreground">₹{f.courseCommINR.toFixed(0)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Webinar Commission ({f.webinarCommPercent}%)</span>
+                    <span className="text-foreground">₹{f.webinarCommINR.toFixed(0)}</span>
+                  </div>
+                  <div className="border-t border-border pt-2 flex justify-between text-sm font-semibold">
+                    <span className="text-foreground">Net Payable to Coach</span>
+                    <span className="text-green-400">₹{f.totalDueINR.toFixed(0)}</span>
+                  </div>
+                </div>
+
+                {/* Course vs Webinar Split */}
+                <div className="grid gap-3 grid-cols-2">
+                  <div className="rounded-lg border border-border p-3">
+                    <h4 className="text-xs font-semibold text-muted-foreground mb-2">Courses ({s.courses})</h4>
+                    {coachCourseList.slice(0, 5).map(c => (
+                      <p key={c.id} className="text-xs text-foreground truncate">• {c.title}</p>
+                    ))}
+                    {coachCourseList.length === 0 && <p className="text-xs text-muted-foreground">No courses</p>}
+                  </div>
+                  <div className="rounded-lg border border-border p-3">
+                    <h4 className="text-xs font-semibold text-muted-foreground mb-2">Webinars ({s.webinars})</h4>
+                    {coachWebinarList.slice(0, 5).map(w => (
+                      <p key={w.id} className="text-xs text-foreground truncate">• {w.title}</p>
+                    ))}
+                    {coachWebinarList.length === 0 && <p className="text-xs text-muted-foreground">No webinars</p>}
+                  </div>
+                </div>
+
+                {/* Monthly Trend */}
+                {trendData.length > 0 && (
+                  <div className="rounded-lg border border-border p-4">
+                    <h4 className="text-sm font-semibold text-foreground mb-3">Monthly Earnings Trend</h4>
+                    <ResponsiveContainer width="100%" height={180}>
+                      <AreaChart data={trendData}>
+                        <defs>
+                          <linearGradient id="perfGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                        <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                        <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} formatter={(value: number) => [`₹${value.toFixed(0)}`, "Earnings"]} />
+                        <Area type="monotone" dataKey="amount" stroke="hsl(var(--primary))" fill="url(#perfGrad)" strokeWidth={2} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                {/* Recent Registrations */}
+                {recentEnrolls.length > 0 && (
+                  <div className="rounded-lg border border-border p-4">
+                    <h4 className="text-sm font-semibold text-foreground mb-2">Recent Registrations</h4>
+                    <div className="space-y-1.5">
+                      {recentEnrolls.map(e => (
+                        <div key={e.id} className="flex items-center justify-between text-xs">
+                          <span className="text-foreground">{e.full_name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className={`rounded-full px-2 py-0.5 ${e.payment_status === "paid" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>{e.payment_status}</span>
+                            <span className="text-muted-foreground">{new Date(e.enrolled_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
