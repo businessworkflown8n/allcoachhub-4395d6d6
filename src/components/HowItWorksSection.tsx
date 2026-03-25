@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   UserPlus, Search, CreditCard, Share2,
   Upload, BarChart3, Globe, ChevronDown,
