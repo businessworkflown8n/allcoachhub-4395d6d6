@@ -262,14 +262,15 @@ const AdminCoaches = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["Name", "Company", "Email", "Phone", "WhatsApp", "Status", "Category", "Country", "City", "Courses", "Webinars", "Enrollments", "Students", "Avg Rating", "Revenue", "Tags", "Joined"];
+    const headers = ["Name", "Email", "Phone", "City", "Country", "Courses", "Webinars", "Learners", "Total Earnings (₹)", "Total Due (₹)", "Payment Status", "Tags", "Joined"];
     const rows = filtered.map((c) => {
       const s = getCoachStats(c.user_id);
-      return [c.full_name, c.company_name, c.email, c.contact_number, c.whatsapp_number, c.is_suspended ? "Suspended" : "Active", c.category, c.country, c.city, s.courses, s.webinars, s.enrollments, s.totalStudents, s.avgRating.toFixed(1), `$${s.revenue.toFixed(2)}`, (c.tags || []).join(";"), new Date(c.created_at).toLocaleDateString()];
+      const f = getCoachFinancials(c.user_id);
+      return [c.full_name, c.email, c.contact_number, c.city, c.country, s.courses, s.webinars, s.totalStudents, `₹${f.totalEarningsINR.toFixed(2)}`, `₹${f.totalDueINR.toFixed(2)}`, coachPaymentStatuses[c.user_id] || "pending", (c.tags || []).join(";"), new Date(c.created_at).toLocaleDateString()];
     });
     const csv = [headers, ...rows].map((r) => r.map(v => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "coaches_report.csv"; a.click();
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "coaches_financial_report.csv"; a.click();
   };
 
   const exportEnrollmentsCSV = (coachEnrollments: any[]) => {
