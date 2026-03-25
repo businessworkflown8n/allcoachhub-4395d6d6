@@ -233,6 +233,8 @@ const AdminCoaches = () => {
         case "students": return dir * (sa.totalStudents - sb.totalStudents);
         case "rating": return dir * (sa.avgRating - sb.avgRating);
         case "revenue": return dir * (sa.revenue - sb.revenue);
+        case "earnings": return dir * (getCoachFinancials(a.user_id).totalEarningsINR - getCoachFinancials(b.user_id).totalEarningsINR);
+        case "due": return dir * (getCoachFinancials(a.user_id).totalDueINR - getCoachFinancials(b.user_id).totalDueINR);
         case "tags": return dir * ((a.tags || []).join(",")).localeCompare((b.tags || []).join(","));
         case "last_active": return dir * (new Date(a.last_active_at || 0).getTime() - new Date(b.last_active_at || 0).getTime());
         case "registered": return dir * (new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
@@ -240,7 +242,7 @@ const AdminCoaches = () => {
       }
     });
     return result;
-  }, [coaches, search, statusFilter, countryFilter, cityFilter, sortField, sortDir, getCoachStats]);
+  }, [coaches, search, statusFilter, countryFilter, cityFilter, sortField, sortDir, getCoachStats, getCoachFinancials]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginatedCoaches = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
