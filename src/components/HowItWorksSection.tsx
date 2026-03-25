@@ -236,7 +236,7 @@ const HowItWorksSection = () => {
             <div className="mx-auto max-w-4xl animate-fade-in">
               <div className="grid gap-5 sm:grid-cols-2">
                 {learnerSteps.map((s, i) => (
-                  <StepCard key={s.title} num={i + 1} icon={s.icon} title={s.title} bullets={s.bullets} />
+                  <StepCard key={s.title} num={i + 1} icon={s.icon} title={s.title} bullets={s.bullets} onClick={s.onClick} />
                 ))}
               </div>
               <div className="mt-6">
