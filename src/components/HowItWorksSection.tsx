@@ -180,10 +180,10 @@ const HowItWorksSection = () => {
   ];
 
   const coachSteps = [
-    { icon: Briefcase, title: t("howItWorks.coach.step1.title"), bullets: [t("howItWorks.coach.step1.b1"), t("howItWorks.coach.step1.b2"), t("howItWorks.coach.step1.b3")] },
-    { icon: Upload, title: t("howItWorks.coach.step2.title"), bullets: [t("howItWorks.coach.step2.b1"), t("howItWorks.coach.step2.b2"), t("howItWorks.coach.step2.b3")] },
-    { icon: Globe, title: t("howItWorks.coach.step3.title"), bullets: [t("howItWorks.coach.step3.b1"), t("howItWorks.coach.step3.b2"), t("howItWorks.coach.step3.b3")] },
-    { icon: BarChart3, title: t("howItWorks.coach.step4.title"), bullets: [t("howItWorks.coach.step4.b1"), t("howItWorks.coach.step4.b2"), t("howItWorks.coach.step4.b3")] },
+    { icon: Briefcase, title: t("howItWorks.coach.step1.title"), bullets: [t("howItWorks.coach.step1.b1"), t("howItWorks.coach.step1.b2"), t("howItWorks.coach.step1.b3")], onClick: () => navigate("/auth?mode=signup&role=coach") },
+    { icon: Upload, title: t("howItWorks.coach.step2.title"), bullets: [t("howItWorks.coach.step2.b1"), t("howItWorks.coach.step2.b2"), t("howItWorks.coach.step2.b3")], onClick: () => navigate("/auth?mode=signup&role=coach") },
+    { icon: Globe, title: t("howItWorks.coach.step3.title"), bullets: [t("howItWorks.coach.step3.b1"), t("howItWorks.coach.step3.b2"), t("howItWorks.coach.step3.b3")], onClick: () => navigate("/auth?mode=signup&role=coach") },
+    { icon: BarChart3, title: t("howItWorks.coach.step4.title"), bullets: [t("howItWorks.coach.step4.b1"), t("howItWorks.coach.step4.b2"), t("howItWorks.coach.step4.b3")], onClick: () => navigate("/auth?mode=signup&role=coach") },
   ];
 
   const toggle = (tab: "learner" | "coach") =>
