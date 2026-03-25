@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   UserPlus, Search, CreditCard, Share2,
   Upload, BarChart3, Globe, ChevronDown,
@@ -34,15 +35,19 @@ const AnimCounter = ({ end, prefix = "" }: { end: number; prefix?: string }) => 
 
 /* ── step card ── */
 const StepCard = ({
-  num, icon: Icon, title, bullets,
+  num, icon: Icon, title, bullets, onClick,
 }: {
   num: number;
   icon: React.ElementType;
   title: string;
   bullets: string[];
+  onClick?: () => void;
 }) => (
-  <div className="group relative rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
-    <div className="absolute -top-3 -left-3 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-md">
+  <div
+    onClick={onClick}
+    className={`group relative rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 ${onClick ? "cursor-pointer" : ""}`}
+  >
+    <div className="absolute -top-4 -left-4 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground shadow-lg ring-2 ring-primary/30">
       {num}
     </div>
     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
@@ -165,19 +170,20 @@ const Toggle3DButton = ({
 const HowItWorksSection = () => {
   const [activeTab, setActiveTab] = useState<"learner" | "coach" | null>(null);
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const learnerSteps = [
-    { icon: UserPlus, title: t("howItWorks.learner.step1.title"), bullets: [t("howItWorks.learner.step1.b1"), t("howItWorks.learner.step1.b2"), t("howItWorks.learner.step1.b3")] },
-    { icon: Search, title: t("howItWorks.learner.step2.title"), bullets: [t("howItWorks.learner.step2.b1"), t("howItWorks.learner.step2.b2"), t("howItWorks.learner.step2.b3")] },
-    { icon: CreditCard, title: t("howItWorks.learner.step3.title"), bullets: [t("howItWorks.learner.step3.b1"), t("howItWorks.learner.step3.b2"), t("howItWorks.learner.step3.b3")] },
-    { icon: Share2, title: t("howItWorks.learner.step4.title"), bullets: [t("howItWorks.learner.step4.b1"), t("howItWorks.learner.step4.b2"), t("howItWorks.learner.step4.b3")] },
+    { icon: UserPlus, title: t("howItWorks.learner.step1.title"), bullets: [t("howItWorks.learner.step1.b1"), t("howItWorks.learner.step1.b2"), t("howItWorks.learner.step1.b3")], onClick: () => navigate("/auth?mode=signup") },
+    { icon: Search, title: t("howItWorks.learner.step2.title"), bullets: [t("howItWorks.learner.step2.b1"), t("howItWorks.learner.step2.b2"), t("howItWorks.learner.step2.b3")], onClick: () => navigate("/courses") },
+    { icon: CreditCard, title: t("howItWorks.learner.step3.title"), bullets: [t("howItWorks.learner.step3.b1"), t("howItWorks.learner.step3.b2"), t("howItWorks.learner.step3.b3")], onClick: () => navigate("/courses") },
+    { icon: Share2, title: t("howItWorks.learner.step4.title"), bullets: [t("howItWorks.learner.step4.b1"), t("howItWorks.learner.step4.b2"), t("howItWorks.learner.step4.b3")], onClick: () => navigate("/auth?mode=signup") },
   ];
 
   const coachSteps = [
-    { icon: Briefcase, title: t("howItWorks.coach.step1.title"), bullets: [t("howItWorks.coach.step1.b1"), t("howItWorks.coach.step1.b2"), t("howItWorks.coach.step1.b3")] },
-    { icon: Upload, title: t("howItWorks.coach.step2.title"), bullets: [t("howItWorks.coach.step2.b1"), t("howItWorks.coach.step2.b2"), t("howItWorks.coach.step2.b3")] },
-    { icon: Globe, title: t("howItWorks.coach.step3.title"), bullets: [t("howItWorks.coach.step3.b1"), t("howItWorks.coach.step3.b2"), t("howItWorks.coach.step3.b3")] },
-    { icon: BarChart3, title: t("howItWorks.coach.step4.title"), bullets: [t("howItWorks.coach.step4.b1"), t("howItWorks.coach.step4.b2"), t("howItWorks.coach.step4.b3")] },
+    { icon: Briefcase, title: t("howItWorks.coach.step1.title"), bullets: [t("howItWorks.coach.step1.b1"), t("howItWorks.coach.step1.b2"), t("howItWorks.coach.step1.b3")], onClick: () => navigate("/auth?mode=signup&role=coach") },
+    { icon: Upload, title: t("howItWorks.coach.step2.title"), bullets: [t("howItWorks.coach.step2.b1"), t("howItWorks.coach.step2.b2"), t("howItWorks.coach.step2.b3")], onClick: () => navigate("/auth?mode=signup&role=coach") },
+    { icon: Globe, title: t("howItWorks.coach.step3.title"), bullets: [t("howItWorks.coach.step3.b1"), t("howItWorks.coach.step3.b2"), t("howItWorks.coach.step3.b3")], onClick: () => navigate("/auth?mode=signup&role=coach") },
+    { icon: BarChart3, title: t("howItWorks.coach.step4.title"), bullets: [t("howItWorks.coach.step4.b1"), t("howItWorks.coach.step4.b2"), t("howItWorks.coach.step4.b3")], onClick: () => navigate("/auth?mode=signup&role=coach") },
   ];
 
   const toggle = (tab: "learner" | "coach") =>
@@ -230,7 +236,7 @@ const HowItWorksSection = () => {
             <div className="mx-auto max-w-4xl animate-fade-in">
               <div className="grid gap-5 sm:grid-cols-2">
                 {learnerSteps.map((s, i) => (
-                  <StepCard key={s.title} num={i + 1} icon={s.icon} title={s.title} bullets={s.bullets} />
+                  <StepCard key={s.title} num={i + 1} icon={s.icon} title={s.title} bullets={s.bullets} onClick={s.onClick} />
                 ))}
               </div>
               <div className="mt-6">
@@ -244,7 +250,7 @@ const HowItWorksSection = () => {
             <div className="mx-auto max-w-4xl animate-fade-in">
               <div className="grid gap-5 sm:grid-cols-2">
                 {coachSteps.map((s, i) => (
-                  <StepCard key={s.title} num={i + 1} icon={s.icon} title={s.title} bullets={s.bullets} />
+                  <StepCard key={s.title} num={i + 1} icon={s.icon} title={s.title} bullets={s.bullets} onClick={s.onClick} />
                 ))}
               </div>
               <div className="mt-6">
