@@ -30,7 +30,7 @@ const Materials = () => {
   const location = useLocation();
   const { displayViews, displayDownloads, isTrending, isPopular } = useEngagementMultiplier();
   const { role, isAdmin, isCoach } = useUserRole();
-  const canManage = isAdmin || isCoach;
+  const canManage = isAdmin;
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
