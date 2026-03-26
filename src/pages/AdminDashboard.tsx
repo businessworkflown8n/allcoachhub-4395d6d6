@@ -28,6 +28,7 @@ import AdminCoachCampaigns from "@/components/admin/AdminCoachCampaigns";
 import AdminSharingRequests from "@/components/admin/AdminSharingRequests";
 import AdminSEODashboard from "@/components/admin/AdminSEODashboard";
 import AdminContactRequests from "@/components/admin/AdminContactRequests";
+import AdminReferrals from "@/components/admin/AdminReferrals";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
