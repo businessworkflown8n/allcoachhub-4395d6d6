@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useSEO } from "@/hooks/useSEO";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -9,9 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Download, Eye, Lock, Search, Copy, Share2, TrendingUp, Flame, ExternalLink } from "lucide-react";
+import { FileText, Download, Eye, Lock, Search, Copy, Share2, TrendingUp, Flame, ExternalLink, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useEngagementMultiplier } from "@/hooks/useEngagementMultiplier";
+import MaterialFormDialog from "@/components/materials/MaterialFormDialog";
 
 const CATEGORIES = ["All", "General", "AI Research", "AI Tools", "Templates", "Guides", "Worksheets", "Case Studies"];
 
@@ -27,6 +29,8 @@ const Materials = () => {
   const { user, loading: authLoading } = useAuth();
   const location = useLocation();
   const { displayViews, displayDownloads, isTrending, isPopular } = useEngagementMultiplier();
+  const { role, isAdmin, isCoach } = useUserRole();
+  const canManage = isAdmin || isCoach;
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,6 +38,8 @@ const Materials = () => {
   const [pageEnabled, setPageEnabled] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const viewTrackedRef = useRef<Record<string, number>>({});
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingMaterial, setEditingMaterial] = useState<any>(null);
 
   useEffect(() => {
     const checkPageEnabled = async () => {
@@ -47,20 +53,39 @@ const Materials = () => {
     checkPageEnabled();
   }, []);
 
-  useEffect(() => {
+  const fetchMaterials = useCallback(async () => {
     if (!user) return;
-    const fetchMaterials = async () => {
-      setLoading(true);
-      const { data } = await supabase
-        .from("materials")
-        .select("*")
-        .eq("is_published", true)
-        .order("created_at", { ascending: false });
-      if (data) setMaterials(data);
-      setLoading(false);
-    };
-    fetchMaterials();
+    setLoading(true);
+    const { data } = await supabase
+      .from("materials")
+      .select("*")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false });
+    if (data) setMaterials(data);
+    setLoading(false);
   }, [user]);
+
+  useEffect(() => {
+    fetchMaterials();
+  }, [fetchMaterials]);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this material permanently?")) return;
+    const { error } = await supabase.from("materials").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success("Material deleted");
+    fetchMaterials();
+  };
+
+  const openEdit = (m: any) => {
+    setEditingMaterial(m);
+    setFormOpen(true);
+  };
+
+  const openCreate = () => {
+    setEditingMaterial(null);
+    setFormOpen(true);
+  };
 
   const filtered = materials.filter((m) => {
     const matchCat = filterCategory === "All" || m.category === filterCategory;
@@ -164,9 +189,16 @@ const Materials = () => {
           </div>
         ) : (
           <>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-foreground mb-2">Learning Materials</h1>
-              <p className="text-muted-foreground">Browse and download curated AI learning resources</p>
+            <div className="mb-8 flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-foreground mb-2">Learning Materials</h1>
+                <p className="text-muted-foreground">Browse and download curated AI learning resources</p>
+              </div>
+              {canManage && (
+                <Button onClick={openCreate} className="shrink-0">
+                  <Plus className="h-4 w-4 mr-1.5" /> Add Material
+                </Button>
+              )}
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center mb-6">
@@ -245,6 +277,16 @@ const Materials = () => {
                           <Button size="sm" variant="ghost" onClick={() => handleNativeShare(m)}>
                             <Share2 className="h-3.5 w-3.5" />
                           </Button>
+                          {canManage && (
+                            <>
+                              <Button size="sm" variant="ghost" onClick={() => openEdit(m)} title="Edit">
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleDelete(m.id)} title="Delete">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -256,6 +298,16 @@ const Materials = () => {
         )}
       </main>
       <Footer />
+
+      {canManage && (
+        <MaterialFormDialog
+          open={formOpen}
+          onOpenChange={setFormOpen}
+          editingMaterial={editingMaterial}
+          onSaved={fetchMaterials}
+          coachId={user?.id}
+        />
+      )}
     </div>
   );
 };
