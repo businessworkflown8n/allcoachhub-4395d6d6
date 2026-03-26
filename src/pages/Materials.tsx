@@ -277,6 +277,16 @@ const Materials = () => {
                           <Button size="sm" variant="ghost" onClick={() => handleNativeShare(m)}>
                             <Share2 className="h-3.5 w-3.5" />
                           </Button>
+                          {canManage && (
+                            <>
+                              <Button size="sm" variant="ghost" onClick={() => openEdit(m)} title="Edit">
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleDelete(m.id)} title="Delete">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
