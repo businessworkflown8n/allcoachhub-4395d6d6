@@ -262,12 +262,12 @@ const Materials = () => {
                             </Button>
                           )}
                           {hasExtUrl && !isLinkOnly && (
-                            <Button size="sm" variant="outline" onClick={() => window.open(m.external_url, "_blank")}>
+                            <Button size="sm" variant="default" onClick={() => window.open(m.external_url, "_blank")}>
                               <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Open Link
                             </Button>
                           )}
                           {hasExtUrl && isLinkOnly && !m.is_downloadable && (
-                            <Button size="sm" variant="outline" onClick={() => window.open(m.external_url, "_blank")}>
+                            <Button size="sm" variant="default" onClick={() => window.open(m.external_url, "_blank")}>
                               <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Open Resource
                             </Button>
                           )}
