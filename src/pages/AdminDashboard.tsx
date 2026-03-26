@@ -52,6 +52,7 @@ const navItems = [
   { label: "Social Media", path: "/admin/social", icon: <Share2 className="h-4 w-4" /> },
   { label: "Campaigns", path: "/admin/campaigns", icon: <Megaphone className="h-4 w-4" /> },
   { label: "Coach Campaigns", path: "/admin/coach-campaigns", icon: <TrendingUp className="h-4 w-4" /> },
+  { label: "Referral Tracking", path: "/admin/referrals", icon: <Users className="h-4 w-4" /> },
   { label: "Integrations", path: "/admin/integrations", icon: <Plug className="h-4 w-4" /> },
   { label: "Sharing Requests", path: "/admin/sharing", icon: <FileCheck className="h-4 w-4" /> },
   { label: "SEO Dashboard", path: "/admin/seo", icon: <Search className="h-4 w-4" /> },
@@ -93,6 +94,7 @@ const AdminDashboard = () => {
         <Route path="coach-campaigns" element={<AdminCoachCampaigns />} />
         <Route path="integrations" element={<AdminIntegrationsHub />} />
         <Route path="sharing" element={<AdminSharingRequests />} />
+        <Route path="referrals" element={<AdminReferrals />} />
         <Route path="seo" element={<AdminSEODashboard />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="locale" element={<AdminLocaleSettings />} />
