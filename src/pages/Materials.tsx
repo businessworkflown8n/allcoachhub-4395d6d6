@@ -53,20 +53,39 @@ const Materials = () => {
     checkPageEnabled();
   }, []);
 
-  useEffect(() => {
+  const fetchMaterials = useCallback(async () => {
     if (!user) return;
-    const fetchMaterials = async () => {
-      setLoading(true);
-      const { data } = await supabase
-        .from("materials")
-        .select("*")
-        .eq("is_published", true)
-        .order("created_at", { ascending: false });
-      if (data) setMaterials(data);
-      setLoading(false);
-    };
-    fetchMaterials();
+    setLoading(true);
+    const { data } = await supabase
+      .from("materials")
+      .select("*")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false });
+    if (data) setMaterials(data);
+    setLoading(false);
   }, [user]);
+
+  useEffect(() => {
+    fetchMaterials();
+  }, [fetchMaterials]);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this material permanently?")) return;
+    const { error } = await supabase.from("materials").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success("Material deleted");
+    fetchMaterials();
+  };
+
+  const openEdit = (m: any) => {
+    setEditingMaterial(m);
+    setFormOpen(true);
+  };
+
+  const openCreate = () => {
+    setEditingMaterial(null);
+    setFormOpen(true);
+  };
 
   const filtered = materials.filter((m) => {
     const matchCat = filterCategory === "All" || m.category === filterCategory;
