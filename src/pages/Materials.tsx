@@ -29,6 +29,8 @@ const Materials = () => {
   const { user, loading: authLoading } = useAuth();
   const location = useLocation();
   const { displayViews, displayDownloads, isTrending, isPopular } = useEngagementMultiplier();
+  const { role, isAdmin, isCoach } = useUserRole();
+  const canManage = isAdmin || isCoach;
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,6 +38,8 @@ const Materials = () => {
   const [pageEnabled, setPageEnabled] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const viewTrackedRef = useRef<Record<string, number>>({});
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingMaterial, setEditingMaterial] = useState<any>(null);
 
   useEffect(() => {
     const checkPageEnabled = async () => {
