@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useSEO } from "@/hooks/useSEO";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -9,9 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Download, Eye, Lock, Search, Copy, Share2, TrendingUp, Flame, ExternalLink } from "lucide-react";
+import { FileText, Download, Eye, Lock, Search, Copy, Share2, TrendingUp, Flame, ExternalLink, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useEngagementMultiplier } from "@/hooks/useEngagementMultiplier";
+import MaterialFormDialog from "@/components/materials/MaterialFormDialog";
 
 const CATEGORIES = ["All", "General", "AI Research", "AI Tools", "Templates", "Guides", "Worksheets", "Case Studies"];
 
