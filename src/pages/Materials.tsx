@@ -189,9 +189,16 @@ const Materials = () => {
           </div>
         ) : (
           <>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-foreground mb-2">Learning Materials</h1>
-              <p className="text-muted-foreground">Browse and download curated AI learning resources</p>
+            <div className="mb-8 flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-foreground mb-2">Learning Materials</h1>
+                <p className="text-muted-foreground">Browse and download curated AI learning resources</p>
+              </div>
+              {canManage && (
+                <Button onClick={openCreate} className="shrink-0">
+                  <Plus className="h-4 w-4 mr-1.5" /> Add Material
+                </Button>
+              )}
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center mb-6">
