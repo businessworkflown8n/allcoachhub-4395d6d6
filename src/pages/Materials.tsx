@@ -298,6 +298,16 @@ const Materials = () => {
         )}
       </main>
       <Footer />
+
+      {canManage && (
+        <MaterialFormDialog
+          open={formOpen}
+          onOpenChange={setFormOpen}
+          editingMaterial={editingMaterial}
+          onSaved={fetchMaterials}
+          coachId={user?.id}
+        />
+      )}
     </div>
   );
 };
