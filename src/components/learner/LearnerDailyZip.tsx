@@ -34,8 +34,8 @@ const LearnerDailyZip = () => {
       const [{ data: prog }, { data: scores }, { data: lb }] = await Promise.all([
         supabase.from("daily_zip_progress").select("*").eq("user_id", user.id).maybeSingle(),
         supabase.from("daily_zip_level_scores").select("*").eq("user_id", user.id).order("level_number", { ascending: false }).limit(50),
-        supabase.from("daily_zip_progress")
-          .select("*, profiles:user_id(full_name, country, avatar_url)")
+      supabase.from("daily_zip_progress")
+          .select("*")
           .order("current_level", { ascending: false })
           .order("total_score", { ascending: false })
           .limit(100),
