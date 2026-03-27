@@ -42,7 +42,15 @@ const LearnerDailyZip = () => {
       ]);
       setProgress(prog);
       setLevelScores(scores || []);
-      setLeaderboard(lb || []);
+      const lbList = lb || [];
+      // Fetch profiles separately since there's no FK relationship
+      if (lbList.length > 0) {
+        const userIds = lbList.map((r: any) => r.user_id);
+        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, country, avatar_url").in("user_id", userIds);
+        const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+        lbList.forEach((r: any) => { r.profiles = profileMap.get(r.user_id) || null; });
+      }
+      setLeaderboard(lbList);
       setLoading(false);
     };
     load();
