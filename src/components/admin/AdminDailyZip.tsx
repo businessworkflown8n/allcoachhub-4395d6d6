@@ -54,10 +54,18 @@ const AdminDailyZip = () => {
     setLoading(true);
     const [{ data: p }, { data: progress }] = await Promise.all([
       supabase.from("daily_zip_puzzles").select("*").order("created_at", { ascending: false }),
-      supabase.from("daily_zip_progress").select("*, profiles:user_id(full_name, country, email)").order("current_level", { ascending: false }).limit(100),
+      supabase.from("daily_zip_progress").select("*").order("current_level", { ascending: false }).limit(100),
     ]);
+    const progressList = progress || [];
+    // Fetch profiles separately since there's no FK relationship
+    if (progressList.length > 0) {
+      const userIds = progressList.map((r: any) => r.user_id);
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, country, email").in("user_id", userIds);
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+      progressList.forEach((r: any) => { r.profiles = profileMap.get(r.user_id) || null; });
+    }
     setPuzzles((p as unknown as Puzzle[]) || []);
-    setPlayerStats(progress || []);
+    setPlayerStats(progressList);
     setLoading(false);
   };
 
