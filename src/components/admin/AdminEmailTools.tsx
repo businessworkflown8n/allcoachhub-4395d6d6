@@ -808,6 +808,72 @@ const AdminEmailTools = () => {
             ))}
           </div>
         </TabsContent>
+        {/* COACH ACCESS TAB */}
+        <TabsContent value="coach-access" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> Coach Email Marketing Access</CardTitle>
+              <CardDescription>Grant or revoke email marketing access for individual coaches. Only coaches with access enabled can create and send campaigns from their dashboard.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Input
+                placeholder="Search coaches by name or email..."
+                value={coachSearchTerm}
+                onChange={e => setCoachSearchTerm(e.target.value)}
+                className="max-w-sm"
+              />
+              {coachAccessLoading ? (
+                <div className="flex justify-center py-8"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Coach Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Access</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allCoaches.length === 0 && (
+                      <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No coaches found</TableCell></TableRow>
+                    )}
+                    {allCoaches
+                      .filter(c => {
+                        if (!coachSearchTerm) return true;
+                        const term = coachSearchTerm.toLowerCase();
+                        return (c.full_name || "").toLowerCase().includes(term) || (c.email || "").toLowerCase().includes(term);
+                      })
+                      .map(coach => {
+                        const hasAccess = coachAccess[coach.user_id] === true;
+                        return (
+                          <TableRow key={coach.user_id}>
+                            <TableCell className="font-medium">{coach.full_name || "—"}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{coach.email || "—"}</TableCell>
+                            <TableCell>
+                              <Badge variant={hasAccess ? "default" : "secondary"}>
+                                {hasAccess ? "Active" : "No Access"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Switch
+                                checked={hasAccess}
+                                onCheckedChange={(checked) => toggleCoachAccess(coach.user_id, checked)}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              )}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
+                <UserPlus className="h-4 w-4" />
+                <span>{Object.values(coachAccess).filter(Boolean).length} of {allCoaches.length} coaches have email marketing access</span>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Create/Edit Campaign Dialog */}
