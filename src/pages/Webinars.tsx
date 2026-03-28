@@ -21,6 +21,13 @@ interface WebinarWithCoach {
   webinar_link_status: string;
   coach_id: string;
   coach_name?: string;
+  is_paid: boolean;
+  price_usd: number;
+  price_inr: number;
+  max_attendees: number | null;
+  timezone: string;
+  is_recurring: boolean;
+  webinar_type: string;
 }
 
 const Webinars = () => {
@@ -161,9 +168,13 @@ const Webinars = () => {
               return (
                 <div key={w.id} className="rounded-xl border border-border bg-card p-5 space-y-3 flex flex-col">
                   <div className="flex items-center justify-between">
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${live ? "bg-green-500/20 text-green-400" : "bg-primary/20 text-primary"}`}>
-                      {live ? "🔴 Live Now" : "Upcoming"}
-                    </span>
+                    <div className="flex gap-1">
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${live ? "bg-green-500/20 text-green-400" : "bg-primary/20 text-primary"}`}>
+                        {live ? "🔴 Live Now" : "Upcoming"}
+                      </span>
+                      {w.is_paid && <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-yellow-500/20 text-yellow-400">Paid</span>}
+                      {w.is_recurring && <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-500/20 text-blue-400">Recurring</span>}
+                    </div>
                   </div>
                   <h3 className="text-base font-bold text-foreground">{w.title}</h3>
                   {w.description && <p className="text-sm text-muted-foreground line-clamp-3">{w.description}</p>}
@@ -175,6 +186,11 @@ const Webinars = () => {
                     <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{w.webinar_time.slice(0, 5)}</span>
                     <span>{w.duration_minutes} min</span>
                   </div>
+                  {w.is_paid && (
+                    <div className="text-sm font-semibold text-yellow-400">
+                      ₹{w.price_inr} <span className="text-muted-foreground font-normal">/ ${w.price_usd}</span>
+                    </div>
+                  )}
                   <div className="pt-3 border-t border-border mt-auto">
                     {registered ? (
                       live && w.webinar_link_status === "approved" ? (
