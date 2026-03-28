@@ -1488,6 +1488,33 @@ export type Database = {
         }
         Relationships: []
       }
+      email_marketing_access: {
+        Row: {
+          coach_id: string
+          created_at: string
+          granted_by: string
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          granted_by: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          granted_by?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
