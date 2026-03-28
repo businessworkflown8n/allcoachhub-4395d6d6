@@ -2726,35 +2726,115 @@ export type Database = {
         }
         Relationships: []
       }
-      webinar_registrations: {
+      webinar_payments: {
         Row: {
-          email_sent: boolean
+          amount: number
+          coupon_code: string | null
+          created_at: string
+          currency: string
+          discount_percent: number | null
           id: string
           learner_id: string
+          payment_id: string | null
+          payment_status: string
+          webinar_id: string
+        }
+        Insert: {
+          amount?: number
+          coupon_code?: string | null
+          created_at?: string
+          currency?: string
+          discount_percent?: number | null
+          id?: string
+          learner_id: string
+          payment_id?: string | null
+          payment_status?: string
+          webinar_id: string
+        }
+        Update: {
+          amount?: number
+          coupon_code?: string | null
+          created_at?: string
+          currency?: string
+          discount_percent?: number | null
+          id?: string
+          learner_id?: string
+          payment_id?: string | null
+          payment_status?: string
+          webinar_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webinar_payments_webinar_id_fkey"
+            columns: ["webinar_id"]
+            isOneToOne: false
+            referencedRelation: "webinars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webinar_registrations: {
+        Row: {
+          amount_paid: number
+          attended: boolean
+          converted: boolean
+          email_sent: boolean
+          id: string
+          join_time: string | null
+          learner_id: string
+          leave_time: string | null
+          payment_id: string | null
+          payment_status: string
           registered_at: string
           registrant_email: string | null
           registrant_name: string | null
           registrant_phone: string | null
+          reminder_10m_sent: boolean
+          reminder_1h_sent: boolean
+          reminder_24h_sent: boolean
+          watch_duration_minutes: number | null
           webinar_id: string
         }
         Insert: {
+          amount_paid?: number
+          attended?: boolean
+          converted?: boolean
           email_sent?: boolean
           id?: string
+          join_time?: string | null
           learner_id: string
+          leave_time?: string | null
+          payment_id?: string | null
+          payment_status?: string
           registered_at?: string
           registrant_email?: string | null
           registrant_name?: string | null
           registrant_phone?: string | null
+          reminder_10m_sent?: boolean
+          reminder_1h_sent?: boolean
+          reminder_24h_sent?: boolean
+          watch_duration_minutes?: number | null
           webinar_id: string
         }
         Update: {
+          amount_paid?: number
+          attended?: boolean
+          converted?: boolean
           email_sent?: boolean
           id?: string
+          join_time?: string | null
           learner_id?: string
+          leave_time?: string | null
+          payment_id?: string | null
+          payment_status?: string
           registered_at?: string
           registrant_email?: string | null
           registrant_name?: string | null
           registrant_phone?: string | null
+          reminder_10m_sent?: boolean
+          reminder_1h_sent?: boolean
+          reminder_24h_sent?: boolean
+          watch_duration_minutes?: number | null
           webinar_id?: string
         }
         Relationships: [
@@ -2769,46 +2849,88 @@ export type Database = {
       }
       webinars: {
         Row: {
+          auto_record: boolean
           coach_id: string
+          coupon_code: string | null
           created_at: string
           description: string | null
           duration_minutes: number
           id: string
+          is_paid: boolean
           is_published: boolean
+          is_recurring: boolean
+          max_attendees: number | null
+          meeting_type: string
+          price_inr: number
+          price_usd: number
+          recurring_pattern: string | null
+          registration_required: boolean
+          timezone: string
           title: string
+          total_revenue: number
           updated_at: string
+          waiting_room: boolean
           webinar_date: string
           webinar_link: string
           webinar_link_status: string
           webinar_time: string
+          webinar_type: string
         }
         Insert: {
+          auto_record?: boolean
           coach_id: string
+          coupon_code?: string | null
           created_at?: string
           description?: string | null
           duration_minutes?: number
           id?: string
+          is_paid?: boolean
           is_published?: boolean
+          is_recurring?: boolean
+          max_attendees?: number | null
+          meeting_type?: string
+          price_inr?: number
+          price_usd?: number
+          recurring_pattern?: string | null
+          registration_required?: boolean
+          timezone?: string
           title: string
+          total_revenue?: number
           updated_at?: string
+          waiting_room?: boolean
           webinar_date: string
           webinar_link: string
           webinar_link_status?: string
           webinar_time: string
+          webinar_type?: string
         }
         Update: {
+          auto_record?: boolean
           coach_id?: string
+          coupon_code?: string | null
           created_at?: string
           description?: string | null
           duration_minutes?: number
           id?: string
+          is_paid?: boolean
           is_published?: boolean
+          is_recurring?: boolean
+          max_attendees?: number | null
+          meeting_type?: string
+          price_inr?: number
+          price_usd?: number
+          recurring_pattern?: string | null
+          registration_required?: boolean
+          timezone?: string
           title?: string
+          total_revenue?: number
           updated_at?: string
+          waiting_room?: boolean
           webinar_date?: string
           webinar_link?: string
           webinar_link_status?: string
           webinar_time?: string
+          webinar_type?: string
         }
         Relationships: []
       }
