@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Mail, Send, Upload, Users, FileText, Plus, Pencil, Trash2, Eye, Clock, LayoutTemplate, MessageCircle, Phone, Code, Download } from "lucide-react";
+import { Mail, Send, Upload, Users, FileText, Plus, Pencil, Trash2, Eye, Clock, LayoutTemplate, MessageCircle, Phone, Code, Download, ShieldCheck, UserPlus } from "lucide-react";
 
 type Campaign = {
   id: string;
@@ -579,6 +580,7 @@ const AdminEmailTools = () => {
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           <TabsTrigger value="contacts">Contacts ({totalContacts})</TabsTrigger>
           <TabsTrigger value="templates">Templates ({templates.length})</TabsTrigger>
+          <TabsTrigger value="coach-access" className="gap-1"><ShieldCheck className="h-3 w-3" /> Coach Access</TabsTrigger>
         </TabsList>
 
         {/* CAMPAIGNS TAB */}
