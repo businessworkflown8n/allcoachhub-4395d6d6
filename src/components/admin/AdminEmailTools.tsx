@@ -171,7 +171,7 @@ const AdminEmailTools = () => {
     setCoachAccess(prev => ({ ...prev, [coachId]: grant }));
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { fetchAll(); fetchCoachAccess(); }, []);
 
   // CSV Upload
   const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
