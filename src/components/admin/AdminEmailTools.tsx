@@ -110,6 +110,12 @@ const AdminEmailTools = () => {
   const htmlUploadRef = useRef<HTMLInputElement>(null);
   const templateHtmlRef = useRef<HTMLInputElement>(null);
 
+  // Coach access management state
+  const [allCoaches, setAllCoaches] = useState<{ user_id: string; full_name: string; email: string }[]>([]);
+  const [coachAccess, setCoachAccess] = useState<Record<string, boolean>>({});
+  const [coachAccessLoading, setCoachAccessLoading] = useState(false);
+  const [coachSearchTerm, setCoachSearchTerm] = useState("");
+
   const fetchAll = async () => {
     setLoading(true);
     const [campRes, tempRes, contRes] = await Promise.all([
@@ -121,6 +127,48 @@ const AdminEmailTools = () => {
     if (tempRes.data) setTemplates(tempRes.data as unknown as EmailTemplate[]);
     if (contRes.data) setContacts(contRes.data as unknown as Contact[]);
     setLoading(false);
+  };
+
+  const fetchCoachAccess = async () => {
+    setCoachAccessLoading(true);
+    const [rolesRes, accessRes] = await Promise.all([
+      supabase.from("user_roles").select("user_id").eq("role", "coach"),
+      supabase.from("email_marketing_access").select("coach_id, is_active"),
+    ]);
+    if (rolesRes.data) {
+      const coachIds = rolesRes.data.map((r: any) => r.user_id);
+      if (coachIds.length > 0) {
+        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, email").in("user_id", coachIds);
+        if (profiles) setAllCoaches(profiles as any[]);
+      }
+    }
+    if (accessRes.data) {
+      const map: Record<string, boolean> = {};
+      accessRes.data.forEach((a: any) => { map[a.coach_id] = a.is_active; });
+      setCoachAccess(map);
+    }
+    setCoachAccessLoading(false);
+  };
+
+  const toggleCoachAccess = async (coachId: string, grant: boolean) => {
+    if (grant) {
+      const { error } = await supabase.from("email_marketing_access").upsert({
+        coach_id: coachId,
+        granted_by: (await supabase.auth.getUser()).data.user?.id || "",
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "coach_id" });
+      if (error) { toast.error("Failed to grant access"); return; }
+      toast.success("Email marketing access granted");
+    } else {
+      const { error } = await supabase.from("email_marketing_access").update({
+        is_active: false,
+        updated_at: new Date().toISOString(),
+      }).eq("coach_id", coachId);
+      if (error) { toast.error("Failed to revoke access"); return; }
+      toast.success("Email marketing access revoked");
+    }
+    setCoachAccess(prev => ({ ...prev, [coachId]: grant }));
   };
 
   useEffect(() => { fetchAll(); }, []);
