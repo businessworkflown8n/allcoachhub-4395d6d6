@@ -18,6 +18,12 @@ interface WebinarWithCoach {
   webinar_link_status: string;
   coach_id: string;
   coach_name?: string;
+  is_paid: boolean;
+  price_usd: number;
+  price_inr: number;
+  max_attendees: number | null;
+  timezone: string;
+  is_recurring: boolean;
 }
 
 const LearnerWebinars = () => {
@@ -121,9 +127,10 @@ const LearnerWebinars = () => {
     return (
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <span className={`rounded-full px-2 py-0.5 text-xs ${isPast ? "bg-muted text-muted-foreground" : live ? "bg-green-500/20 text-green-400" : "bg-primary/20 text-primary"}`}>
+      <span className={`rounded-full px-2 py-0.5 text-xs ${isPast ? "bg-muted text-muted-foreground" : live ? "bg-green-500/20 text-green-400" : "bg-primary/20 text-primary"}`}>
             {isPast ? "Completed" : live ? "🔴 Live Now" : "Upcoming"}
           </span>
+          {w.is_paid && <span className="rounded-full px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-400">₹{w.price_inr}</span>}
         </div>
         <h3 className="text-sm font-bold text-foreground">{w.title}</h3>
         {w.description && <p className="text-xs text-muted-foreground line-clamp-2">{w.description}</p>}
