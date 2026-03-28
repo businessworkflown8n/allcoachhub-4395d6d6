@@ -29,6 +29,7 @@ import AdminSharingRequests from "@/components/admin/AdminSharingRequests";
 import AdminSEODashboard from "@/components/admin/AdminSEODashboard";
 import AdminContactRequests from "@/components/admin/AdminContactRequests";
 import AdminReferrals from "@/components/admin/AdminReferrals";
+import AdminWebinarAnalytics from "@/components/admin/AdminWebinarAnalytics";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
@@ -40,6 +41,7 @@ const navItems = [
   { label: "Materials", path: "/admin/materials", icon: <FolderOpen className="h-4 w-4" /> },
   { label: "Webinars", path: "/admin/webinars", icon: <Video className="h-4 w-4" /> },
   { label: "Webinar Registrations", path: "/admin/webinar-registrations", icon: <UserCheck className="h-4 w-4" /> },
+  { label: "Webinar Analytics", path: "/admin/webinar-analytics", icon: <BarChart3 className="h-4 w-4" /> },
   { label: "Enrollments", path: "/admin/enrollments", icon: <ClipboardList className="h-4 w-4" /> },
   { label: "Coach Performance", path: "/admin/performance", icon: <TrendingUp className="h-4 w-4" /> },
   { label: "Revenue", path: "/admin/revenue", icon: <DollarSign className="h-4 w-4" /> },
@@ -80,6 +82,7 @@ const AdminDashboard = () => {
         <Route path="materials" element={<AdminMaterials />} />
         <Route path="webinars" element={<AdminWebinars />} />
         <Route path="webinar-registrations" element={<AdminWebinarRegistrations />} />
+        <Route path="webinar-analytics" element={<AdminWebinarAnalytics />} />
         <Route path="enrollments" element={<AdminEnrollments />} />
         <Route path="performance" element={<AdminCoachPerformance />} />
         <Route path="revenue" element={<AdminRevenue />} />
