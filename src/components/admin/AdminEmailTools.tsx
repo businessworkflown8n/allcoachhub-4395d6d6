@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Mail, Send, Upload, Users, FileText, Plus, Pencil, Trash2, Eye, Clock, LayoutTemplate, MessageCircle, Phone, Code, Download } from "lucide-react";
+import { Mail, Send, Upload, Users, FileText, Plus, Pencil, Trash2, Eye, Clock, LayoutTemplate, MessageCircle, Phone, Code, Download, ShieldCheck, UserPlus } from "lucide-react";
 
 type Campaign = {
   id: string;
@@ -109,6 +110,12 @@ const AdminEmailTools = () => {
   const htmlUploadRef = useRef<HTMLInputElement>(null);
   const templateHtmlRef = useRef<HTMLInputElement>(null);
 
+  // Coach access management state
+  const [allCoaches, setAllCoaches] = useState<{ user_id: string; full_name: string; email: string }[]>([]);
+  const [coachAccess, setCoachAccess] = useState<Record<string, boolean>>({});
+  const [coachAccessLoading, setCoachAccessLoading] = useState(false);
+  const [coachSearchTerm, setCoachSearchTerm] = useState("");
+
   const fetchAll = async () => {
     setLoading(true);
     const [campRes, tempRes, contRes] = await Promise.all([
@@ -122,7 +129,49 @@ const AdminEmailTools = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  const fetchCoachAccess = async () => {
+    setCoachAccessLoading(true);
+    const [rolesRes, accessRes] = await Promise.all([
+      supabase.from("user_roles").select("user_id").eq("role", "coach"),
+      supabase.from("email_marketing_access").select("coach_id, is_active"),
+    ]);
+    if (rolesRes.data) {
+      const coachIds = rolesRes.data.map((r: any) => r.user_id);
+      if (coachIds.length > 0) {
+        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, email").in("user_id", coachIds);
+        if (profiles) setAllCoaches(profiles as any[]);
+      }
+    }
+    if (accessRes.data) {
+      const map: Record<string, boolean> = {};
+      accessRes.data.forEach((a: any) => { map[a.coach_id] = a.is_active; });
+      setCoachAccess(map);
+    }
+    setCoachAccessLoading(false);
+  };
+
+  const toggleCoachAccess = async (coachId: string, grant: boolean) => {
+    if (grant) {
+      const { error } = await supabase.from("email_marketing_access").upsert({
+        coach_id: coachId,
+        granted_by: (await supabase.auth.getUser()).data.user?.id || "",
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "coach_id" });
+      if (error) { toast.error("Failed to grant access"); return; }
+      toast.success("Email marketing access granted");
+    } else {
+      const { error } = await supabase.from("email_marketing_access").update({
+        is_active: false,
+        updated_at: new Date().toISOString(),
+      }).eq("coach_id", coachId);
+      if (error) { toast.error("Failed to revoke access"); return; }
+      toast.success("Email marketing access revoked");
+    }
+    setCoachAccess(prev => ({ ...prev, [coachId]: grant }));
+  };
+
+  useEffect(() => { fetchAll(); fetchCoachAccess(); }, []);
 
   // CSV Upload
   const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -579,6 +628,7 @@ const AdminEmailTools = () => {
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           <TabsTrigger value="contacts">Contacts ({totalContacts})</TabsTrigger>
           <TabsTrigger value="templates">Templates ({templates.length})</TabsTrigger>
+          <TabsTrigger value="coach-access" className="gap-1"><ShieldCheck className="h-3 w-3" /> Coach Access</TabsTrigger>
         </TabsList>
 
         {/* CAMPAIGNS TAB */}
@@ -757,6 +807,72 @@ const AdminEmailTools = () => {
               </Card>
             ))}
           </div>
+        </TabsContent>
+        {/* COACH ACCESS TAB */}
+        <TabsContent value="coach-access" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> Coach Email Marketing Access</CardTitle>
+              <CardDescription>Grant or revoke email marketing access for individual coaches. Only coaches with access enabled can create and send campaigns from their dashboard.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Input
+                placeholder="Search coaches by name or email..."
+                value={coachSearchTerm}
+                onChange={e => setCoachSearchTerm(e.target.value)}
+                className="max-w-sm"
+              />
+              {coachAccessLoading ? (
+                <div className="flex justify-center py-8"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Coach Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Access</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allCoaches.length === 0 && (
+                      <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No coaches found</TableCell></TableRow>
+                    )}
+                    {allCoaches
+                      .filter(c => {
+                        if (!coachSearchTerm) return true;
+                        const term = coachSearchTerm.toLowerCase();
+                        return (c.full_name || "").toLowerCase().includes(term) || (c.email || "").toLowerCase().includes(term);
+                      })
+                      .map(coach => {
+                        const hasAccess = coachAccess[coach.user_id] === true;
+                        return (
+                          <TableRow key={coach.user_id}>
+                            <TableCell className="font-medium">{coach.full_name || "—"}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{coach.email || "—"}</TableCell>
+                            <TableCell>
+                              <Badge variant={hasAccess ? "default" : "secondary"}>
+                                {hasAccess ? "Active" : "No Access"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Switch
+                                checked={hasAccess}
+                                onCheckedChange={(checked) => toggleCoachAccess(coach.user_id, checked)}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              )}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
+                <UserPlus className="h-4 w-4" />
+                <span>{Object.values(coachAccess).filter(Boolean).length} of {allCoaches.length} coaches have email marketing access</span>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
