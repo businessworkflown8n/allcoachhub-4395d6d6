@@ -1,7 +1,8 @@
 import { ArrowRight, Users, BookOpen, Shield, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import heroBg from "@/assets/hero-bg.jpg";
+import heroBgWebp from "@/assets/hero-bg.webp";
+import heroBgJpg from "@/assets/hero-bg.jpg";
 import { useTranslation } from "@/i18n/TranslationProvider";
 
 const stats = [
@@ -113,10 +114,20 @@ const HeroSection = () => {
 
   return (
     <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden px-2 pt-16">
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-40"
-        style={{ backgroundImage: `url(${heroBg})` }}
-      />
+      {/* Hero background with WebP + JPG fallback */}
+      <picture>
+        <source srcSet={heroBgWebp} type="image/webp" />
+        <img
+          src={heroBgJpg}
+          alt=""
+          role="presentation"
+          width={1920}
+          height={1080}
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover opacity-40"
+        />
+      </picture>
       <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background" />
 
       <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">

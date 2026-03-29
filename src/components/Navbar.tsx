@@ -1,5 +1,5 @@
 import { Menu, X, ChevronDown, ChevronRight } from "lucide-react";
-import logo from "@/assets/logo.png";
+import logoOptimized from "@/assets/logo-optimized.png";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -47,7 +47,6 @@ const Navbar = () => {
     }
   };
 
-  // Close desktop dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -75,14 +74,13 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="AI Coach Portal" className="h-8 w-8 rounded-lg" />
+          <img src={logoOptimized} alt="AI Coach Portal" width={32} height={32} className="h-8 w-8 rounded-lg" />
           <span className="text-lg font-bold text-foreground">AI Coach Portal</span>
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
           <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-primary">{t("nav.browseCoaches")}</button>
           
-          {/* Courses dropdown */}
           <div
             ref={dropdownRef}
             className="relative"
@@ -137,7 +135,6 @@ const Navbar = () => {
 
           <button onClick={() => handleSectionClick("#how-it-works")} className="text-sm text-muted-foreground transition-colors hover:text-primary">{t("nav.howItWorks")}</button>
           <Link to="/daily-zip" className="text-sm text-muted-foreground transition-colors hover:text-primary">Daily Zip</Link>
-          {/* AI Jobs & News dropdown */}
           <div
             className="relative"
             onMouseEnter={() => { if (blogTimeoutRef.current) clearTimeout(blogTimeoutRef.current); setBlogMenuOpen(true); }}
@@ -216,13 +213,11 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="border-t border-border bg-background px-4 pb-4 md:hidden">
           <div className="flex flex-col gap-1 pt-3">
             <button onClick={() => { setMobileOpen(false); handleSectionClick("#coaches"); }} className="rounded-md px-3 py-2 text-sm text-muted-foreground text-left hover:bg-accent">{t("nav.browseCoaches")}</button>
             
-            {/* Mobile Courses accordion */}
             <div>
               <button
                 onClick={() => setMobileCoursesOpen(!mobileCoursesOpen)}
@@ -258,7 +253,6 @@ const Navbar = () => {
 
             <button onClick={() => { setMobileOpen(false); handleSectionClick("#how-it-works"); }} className="rounded-md px-3 py-2 text-sm text-muted-foreground text-left hover:bg-accent">{t("nav.howItWorks")}</button>
             <Link to="/daily-zip" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">Daily Zip</Link>
-            {/* Mobile AI Jobs & News accordion */}
             <div>
               <button
                 onClick={() => setMobileBlogOpen(!mobileBlogOpen)}

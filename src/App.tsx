@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Phone, MessageCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useCommunicationSettings } from "@/hooks/useCommunicationSettings";
@@ -12,50 +13,57 @@ import { useAuth } from "@/hooks/useAuth";
 import { LocaleProvider } from "@/hooks/useLocale";
 import { TranslationProvider } from "@/i18n/TranslationProvider";
 import Index from "./pages/Index";
-import RoleSelect from "./pages/RoleSelect";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import AdminLogin from "./pages/AdminLogin";
-import AdminOTPLogin from "./pages/AdminOTPLogin";
-import CourseDetail from "./pages/CourseDetail";
-import Enroll from "./pages/Enroll";
-import LearnerDashboard from "./pages/LearnerDashboard";
-import CoachDashboard from "./pages/CoachDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import ResetPassword from "./pages/ResetPassword";
-import AIBlogs from "./pages/AIBlogs";
-import AIBlogsCategory from "./pages/AIBlogsCategory";
-import BlogPost from "./pages/BlogPost";
-import Courses from "./pages/Courses";
-import Webinars from "./pages/Webinars";
-import DailyZip from "./pages/DailyZip";
-import Unsubscribe from "./pages/Unsubscribe";
-import Install from "./pages/Install";
-import CoachLanding from "./pages/CoachLanding";
-import Sitemap from "./pages/Sitemap";
-import AISeoPrompt from "./pages/AISeoPrompt";
-import Materials from "./pages/Materials";
-import MaterialDetail from "./pages/MaterialDetail";
-import PromptGenerator from "./pages/PromptGenerator";
-import CategoryPage from "./pages/CategoryPage";
-import NotFound from "./pages/NotFound";
-import AICursor from "./components/AICursor";
-import ChatbotWidget from "./components/ChatbotWidget";
-import AnalyticsTracker from "./components/AnalyticsTracker";
-import WebsitePopup from "./components/WebsitePopup";
-import FloatingPromptButton from "./components/prompt/FloatingPromptButton";
+
+// Lazy-loaded routes
+const RoleSelect = lazy(() => import("./pages/RoleSelect"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminOTPLogin = lazy(() => import("./pages/AdminOTPLogin"));
+const CourseDetail = lazy(() => import("./pages/CourseDetail"));
+const Enroll = lazy(() => import("./pages/Enroll"));
+const LearnerDashboard = lazy(() => import("./pages/LearnerDashboard"));
+const CoachDashboard = lazy(() => import("./pages/CoachDashboard"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const AIBlogs = lazy(() => import("./pages/AIBlogs"));
+const AIBlogsCategory = lazy(() => import("./pages/AIBlogsCategory"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Courses = lazy(() => import("./pages/Courses"));
+const Webinars = lazy(() => import("./pages/Webinars"));
+const DailyZip = lazy(() => import("./pages/DailyZip"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const Install = lazy(() => import("./pages/Install"));
+const CoachLanding = lazy(() => import("./pages/CoachLanding"));
+const Sitemap = lazy(() => import("./pages/Sitemap"));
+const AISeoPrompt = lazy(() => import("./pages/AISeoPrompt"));
+const Materials = lazy(() => import("./pages/Materials"));
+const MaterialDetail = lazy(() => import("./pages/MaterialDetail"));
+const PromptGenerator = lazy(() => import("./pages/PromptGenerator"));
+const CategoryPage = lazy(() => import("./pages/CategoryPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Lazy-loaded global widgets (non-critical)
+const AICursor = lazy(() => import("./components/AICursor"));
+const ChatbotWidget = lazy(() => import("./components/ChatbotWidget"));
+const WebsitePopup = lazy(() => import("./components/WebsitePopup"));
+const FloatingPromptButton = lazy(() => import("./components/prompt/FloatingPromptButton"));
+const AnalyticsTracker = lazy(() => import("./components/AnalyticsTracker"));
+
 const queryClient = new QueryClient();
+
+const PageFallback = () => (
+  <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+  </div>
+);
 
 const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode; allowedRole: string }) => {
   const { user, loading: authLoading } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
 
   if (authLoading || roleLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
+    return <PageFallback />;
   }
 
   if (!user) return <Navigate to="/auth?mode=login" replace />;
@@ -70,8 +78,6 @@ const FloatingButtons = () => {
   const { role, loading: roleLoading } = useUserRole();
 
   if (loading || roleLoading) return null;
-
-  // Hide all communication buttons based on role
   if (role === "learner" && !settings.show_to_learners) return null;
   if (role === "coach" && !settings.show_to_coaches) return null;
 
@@ -101,7 +107,11 @@ const FloatingButtons = () => {
           </a>
         )}
       </div>
-      {settings.chatbot_enabled && <ChatbotWidget />}
+      {settings.chatbot_enabled && (
+        <Suspense fallback={null}>
+          <ChatbotWidget />
+        </Suspense>
+      )}
     </>
   );
 };
@@ -115,66 +125,73 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AnalyticsTracker />
+          <Suspense fallback={null}>
+            <AnalyticsTracker />
+          </Suspense>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<RoleSelect />} />
-            <Route path="/login/:role" element={<Login />} />
-            <Route path="/signup/:role" element={<Signup />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/otp-login" element={<AdminOTPLogin />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/ai-blogs" element={<AIBlogs />} />
-            <Route path="/ai-jobs-news/ai-research/ai-seo-prompt" element={<AISeoPrompt />} />
-            <Route path="/ai-jobs-news/:category" element={<AIBlogsCategory />} />
-            <Route path="/ai-blogs/:slug" element={<BlogPost />} />
-            <Route path="/daily-zip" element={<DailyZip />} />
-            <Route path="/unsubscribe" element={<Unsubscribe />} />
-            <Route path="/install" element={<Install />} />
-            <Route path="/sitemap" element={<Sitemap />} />
-            <Route path="/courses" element={<Courses />} />
-            <Route path="/courses/:slug" element={<CategoryPage />} />
-            {/* Legacy redirects */}
-            <Route path="/prompt-engineering" element={<CategoryPage />} />
-            <Route path="/ai-agents" element={<CategoryPage />} />
-            <Route path="/llms-fine-tuning" element={<CategoryPage />} />
-            <Route path="/ai-automation" element={<CategoryPage />} />
-            <Route path="/no-code-ai" element={<CategoryPage />} />
-            <Route path="/ai-marketing" element={<CategoryPage />} />
-            <Route path="/generative-ai-for-developers" element={<CategoryPage />} />
-            <Route path="/ai-business" element={<CategoryPage />} />
-            <Route path="/webinars" element={<Webinars />} />
-            <Route path="/materials" element={<Materials />} />
-            <Route path="/materials/:slug" element={<MaterialDetail />} />
-            <Route path="/prompt-generator" element={<PromptGenerator />} />
+            <Route path="/auth" element={<Suspense fallback={<PageFallback />}><RoleSelect /></Suspense>} />
+            <Route path="/login/:role" element={<Suspense fallback={<PageFallback />}><Login /></Suspense>} />
+            <Route path="/signup/:role" element={<Suspense fallback={<PageFallback />}><Signup /></Suspense>} />
+            <Route path="/admin/login" element={<Suspense fallback={<PageFallback />}><AdminLogin /></Suspense>} />
+            <Route path="/admin/otp-login" element={<Suspense fallback={<PageFallback />}><AdminOTPLogin /></Suspense>} />
+            <Route path="/reset-password" element={<Suspense fallback={<PageFallback />}><ResetPassword /></Suspense>} />
+            <Route path="/ai-blogs" element={<Suspense fallback={<PageFallback />}><AIBlogs /></Suspense>} />
+            <Route path="/ai-jobs-news/ai-research/ai-seo-prompt" element={<Suspense fallback={<PageFallback />}><AISeoPrompt /></Suspense>} />
+            <Route path="/ai-jobs-news/:category" element={<Suspense fallback={<PageFallback />}><AIBlogsCategory /></Suspense>} />
+            <Route path="/ai-blogs/:slug" element={<Suspense fallback={<PageFallback />}><BlogPost /></Suspense>} />
+            <Route path="/daily-zip" element={<Suspense fallback={<PageFallback />}><DailyZip /></Suspense>} />
+            <Route path="/unsubscribe" element={<Suspense fallback={<PageFallback />}><Unsubscribe /></Suspense>} />
+            <Route path="/install" element={<Suspense fallback={<PageFallback />}><Install /></Suspense>} />
+            <Route path="/sitemap" element={<Suspense fallback={<PageFallback />}><Sitemap /></Suspense>} />
+            <Route path="/courses" element={<Suspense fallback={<PageFallback />}><Courses /></Suspense>} />
+            <Route path="/courses/:slug" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
+            <Route path="/prompt-engineering" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
+            <Route path="/ai-agents" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
+            <Route path="/llms-fine-tuning" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
+            <Route path="/ai-automation" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
+            <Route path="/no-code-ai" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
+            <Route path="/ai-marketing" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
+            <Route path="/generative-ai-for-developers" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
+            <Route path="/ai-business" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
+            <Route path="/webinars" element={<Suspense fallback={<PageFallback />}><Webinars /></Suspense>} />
+            <Route path="/materials" element={<Suspense fallback={<PageFallback />}><Materials /></Suspense>} />
+            <Route path="/materials/:slug" element={<Suspense fallback={<PageFallback />}><MaterialDetail /></Suspense>} />
+            <Route path="/prompt-generator" element={<Suspense fallback={<PageFallback />}><PromptGenerator /></Suspense>} />
             <Route path="/coach/*" element={
               <ProtectedRoute allowedRole="coach">
-                <CoachDashboard />
+                <Suspense fallback={<PageFallback />}><CoachDashboard /></Suspense>
               </ProtectedRoute>
             } />
-            <Route path="/coach-profile/:slug" element={<CoachLanding />} />
-            <Route path="/course/:slug" element={<CourseDetail />} />
+            <Route path="/coach-profile/:slug" element={<Suspense fallback={<PageFallback />}><CoachLanding /></Suspense>} />
+            <Route path="/course/:slug" element={<Suspense fallback={<PageFallback />}><CourseDetail /></Suspense>} />
             <Route path="/enroll/:courseId" element={
               <ProtectedRoute allowedRole="learner">
-                <Enroll />
+                <Suspense fallback={<PageFallback />}><Enroll /></Suspense>
               </ProtectedRoute>
             } />
             <Route path="/learner/*" element={
               <ProtectedRoute allowedRole="learner">
-                <LearnerDashboard />
+                <Suspense fallback={<PageFallback />}><LearnerDashboard /></Suspense>
               </ProtectedRoute>
             } />
             <Route path="/admin/*" element={
               <ProtectedRoute allowedRole="admin">
-                <AdminDashboard />
+                <Suspense fallback={<PageFallback />}><AdminDashboard /></Suspense>
               </ProtectedRoute>
             } />
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
           </Routes>
           <FloatingButtons />
-          <FloatingPromptButton />
-          <WebsitePopup />
-          <AICursor />
+          <Suspense fallback={null}>
+            <FloatingPromptButton />
+          </Suspense>
+          <Suspense fallback={null}>
+            <WebsitePopup />
+          </Suspense>
+          <Suspense fallback={null}>
+            <AICursor />
+          </Suspense>
         </BrowserRouter>
       </AuthProvider>
       </TranslationProvider>
