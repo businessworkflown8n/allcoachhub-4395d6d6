@@ -32,7 +32,7 @@ const LoginForm = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
 
     setLoading(false);
 
@@ -51,7 +51,27 @@ const LoginForm = () => {
     }
 
     trackLogin("email");
-    navigate("/");
+
+    // Redirect based on user role
+    if (authData?.user) {
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", authData.user.id)
+        .single();
+
+      if (roleData?.role === "coach") {
+        navigate("/coach");
+      } else if (roleData?.role === "learner") {
+        navigate("/learner");
+      } else if (roleData?.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
+    } else {
+      navigate("/");
+    }
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {
