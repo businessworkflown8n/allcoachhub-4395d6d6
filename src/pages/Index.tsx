@@ -1,16 +1,18 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import CategoriesSection from "@/components/CategoriesSection";
-import CoachesSection from "@/components/CoachesSection";
-import CoursesSection from "@/components/CoursesSection";
-import HowItWorksSection from "@/components/HowItWorksSection";
-import TestimonialsSection from "@/components/TestimonialsSection";
-import CTASection from "@/components/CTASection";
-import HomeBlogSection from "@/components/HomeBlogSection";
 import Footer from "@/components/Footer";
 import { useSEO } from "@/hooks/useSEO";
+
+// Lazy load below-fold sections
+const CategoriesSection = lazy(() => import("@/components/CategoriesSection"));
+const CoachesSection = lazy(() => import("@/components/CoachesSection"));
+const CoursesSection = lazy(() => import("@/components/CoursesSection"));
+const HowItWorksSection = lazy(() => import("@/components/HowItWorksSection"));
+const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection"));
+const CTASection = lazy(() => import("@/components/CTASection"));
+const HomeBlogSection = lazy(() => import("@/components/HomeBlogSection"));
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -49,6 +51,12 @@ const jsonLd = {
   }
 };
 
+const SectionFallback = () => (
+  <div className="flex min-h-[200px] items-center justify-center">
+    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+  </div>
+);
+
 const Index = () => {
   const location = useLocation();
 
@@ -77,13 +85,27 @@ const Index = () => {
         <HeroSection />
       </header>
       <main>
-        <section id="categories"><CategoriesSection /></section>
-        <section id="coaches"><CoachesSection /></section>
-        <section id="courses"><CoursesSection /></section>
-        <section id="how-it-works"><HowItWorksSection /></section>
-        <section id="testimonials"><TestimonialsSection /></section>
-        <section id="blogs"><HomeBlogSection /></section>
-        <section id="cta"><CTASection /></section>
+        <Suspense fallback={<SectionFallback />}>
+          <section id="categories"><CategoriesSection /></section>
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
+          <section id="coaches"><CoachesSection /></section>
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
+          <section id="courses"><CoursesSection /></section>
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
+          <section id="how-it-works"><HowItWorksSection /></section>
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
+          <section id="testimonials"><TestimonialsSection /></section>
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
+          <section id="blogs"><HomeBlogSection /></section>
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
+          <section id="cta"><CTASection /></section>
+        </Suspense>
       </main>
       <Footer />
     </div>
