@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -50,13 +48,19 @@
 @layer base {
   * {
     @apply border-border;
-    @media (pointer: fine) {
+  }
+
+  /* Custom cursor only on non-touch devices - applied via JS, not blocking */
+  @media (pointer: fine) {
+    .ai-cursor-active,
+    .ai-cursor-active * {
       cursor: none !important;
     }
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 }
 
