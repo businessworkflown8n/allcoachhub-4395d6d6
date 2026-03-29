@@ -12,7 +12,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
 import { LocaleProvider } from "@/hooks/useLocale";
 import { TranslationProvider } from "@/i18n/TranslationProvider";
-import Index from "./pages/Index";
+const Index = lazy(() => import("./pages/Index"));
 
 // Lazy-loaded routes
 const RoleSelect = lazy(() => import("./pages/RoleSelect"));
@@ -129,7 +129,7 @@ const App = () => (
             <AnalyticsTracker />
           </Suspense>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Suspense fallback={<PageFallback />}><Index /></Suspense>} />
             <Route path="/auth" element={<Suspense fallback={<PageFallback />}><RoleSelect /></Suspense>} />
             <Route path="/login/:role" element={<Suspense fallback={<PageFallback />}><Login /></Suspense>} />
             <Route path="/signup/:role" element={<Suspense fallback={<PageFallback />}><Signup /></Suspense>} />
