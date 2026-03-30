@@ -67,33 +67,46 @@ const CategoriesSection = () => {
         </div>
 
         {loading ? (
-          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <Skeleton key={i} className="h-32 rounded-xl" />
+          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <Skeleton key={i} className="h-28 rounded-xl" />
             ))}
           </div>
         ) : categories.length === 0 ? (
           <p className="text-center text-muted-foreground">No categories available yet.</p>
         ) : (
-          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                to={`/categories/${cat.slug}`}
-                className="group cursor-pointer rounded-xl border border-border bg-card p-4 text-center transition-all duration-200 hover:scale-[1.03] hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 sm:p-6"
-              >
-                <div className="mb-2 text-2xl sm:mb-3 sm:text-3xl">
-                  {cat.icon || "📂"}
-                </div>
-                <h3 className="mb-1 text-xs font-semibold text-foreground sm:text-sm">
-                  {cat.name}
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  {cat.coachCount} {cat.coachCount === 1 ? "coach" : "coaches"}
-                </p>
-              </Link>
-            ))}
-          </div>
+          <>
+            <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+              {categories.slice(0, visibleCount).map((cat) => (
+                <Link
+                  key={cat.id}
+                  to={`/categories/${cat.slug}`}
+                  className="group cursor-pointer rounded-xl border border-border bg-card p-3 text-center transition-all duration-200 hover:scale-[1.03] hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 sm:p-4"
+                >
+                  <div className="mb-1.5 text-xl sm:mb-2 sm:text-2xl">
+                    {cat.icon || "📂"}
+                  </div>
+                  <h3 className="mb-0.5 text-xs font-semibold text-foreground">
+                    {cat.name}
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    {cat.coachCount} {cat.coachCount === 1 ? "coach" : "coaches"}
+                  </p>
+                </Link>
+              ))}
+            </div>
+
+            {visibleCount < categories.length && (
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setVisibleCount((prev) => Math.min(prev + 12, categories.length))}
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-all hover:border-primary/40 hover:bg-accent"
+                >
+                  View More →
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         <div className="mt-8 text-center">
