@@ -1,0 +1,22 @@
+
+UPDATE public.coach_categories SET icon = '💼' WHERE slug = 'career';
+UPDATE public.coach_categories SET icon = '💻' WHERE slug = 'coding';
+UPDATE public.coach_categories SET icon = '🧘' WHERE slug = 'wellness';
+UPDATE public.coach_categories SET icon = '💰' WHERE slug = 'finance';
+UPDATE public.coach_categories SET icon = '🗣️' WHERE slug = 'language';
+UPDATE public.coach_categories SET icon = '🏢' WHERE slug = 'business';
+UPDATE public.coach_categories SET icon = '🎨' WHERE slug = 'creative';
+UPDATE public.coach_categories SET icon = '🎵' WHERE slug = 'music';
+UPDATE public.coach_categories SET icon = '✏️' WHERE slug = 'design';
+UPDATE public.coach_categories SET icon = '📈' WHERE slug = 'marketing';
+UPDATE public.coach_categories SET icon = '👑' WHERE slug = 'leadership';
+UPDATE public.coach_categories SET icon = '🤝' WHERE slug = 'sales';
+UPDATE public.coach_categories SET icon = '🎤' WHERE slug = 'public-speaking';
+UPDATE public.coach_categories SET icon = '👶' WHERE slug = 'parenting';
+UPDATE public.coach_categories SET icon = '🔬' WHERE slug = 'math-science';
+UPDATE public.coach_categories SET icon = '🧠' WHERE slug = 'mental-health';
+UPDATE public.coach_categories SET icon = '⚡' WHERE slug = 'productivity';
+UPDATE public.coach_categories SET icon = '📷' WHERE slug = 'photography';
+UPDATE public.coach_categories SET icon = '🕊️' WHERE slug = 'spirituality';
+UPDATE public.coach_categories SET icon = '⚖️' WHERE slug = 'legal';
+UPDATE public.coach_categories SET icon = '📦' WHERE slug = 'others';
