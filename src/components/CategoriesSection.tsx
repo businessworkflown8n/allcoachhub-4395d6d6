@@ -13,9 +13,12 @@ interface CategoryWithCount {
   coachCount: number;
 }
 
+const INITIAL_VISIBLE = 12;
+
 const CategoriesSection = () => {
   const [categories, setCategories] = useState<CategoryWithCount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const { t } = useTranslation();
 
   useEffect(() => {
