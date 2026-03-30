@@ -494,6 +494,97 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_category_permissions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          category_id: string
+          coach_id: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category_id: string
+          coach_id: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category_id?: string
+          coach_id?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_category_permissions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "coach_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_category_requests: {
+        Row: {
+          admin_response_note: string | null
+          coach_id: string
+          created_at: string
+          id: string
+          reason: string | null
+          requested_category_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_response_note?: string | null
+          coach_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          requested_category_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_response_note?: string | null
+          coach_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          requested_category_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_category_requests_requested_category_id_fkey"
+            columns: ["requested_category_id"]
+            isOneToOne: false
+            referencedRelation: "coach_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_commissions: {
         Row: {
           coach_id: string

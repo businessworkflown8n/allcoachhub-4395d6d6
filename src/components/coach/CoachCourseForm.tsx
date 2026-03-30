@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
-import { PREDEFINED_CATEGORIES } from "@/lib/categories";
+import { ArrowLeft, Plus } from "lucide-react";
+import { useCoachCategoryPermissions } from "@/hooks/useCoachCategoryPermissions";
+import { useCoachCategories } from "@/hooks/useCoachCategories";
+import CategoryRequestModal from "@/components/coach/CategoryRequestModal";
 
 const CoachCourseForm = () => {
   const { id } = useParams();
@@ -16,11 +18,15 @@ const CoachCourseForm = () => {
   const navigate = useNavigate();
   const isEdit = !!id;
   const [saving, setSaving] = useState(false);
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
+
+  const { approvedCategories, requests, loading: permLoading, refetch: refetchPerms } = useCoachCategoryPermissions(user?.id);
+  const { categories: allCategories } = useCoachCategories(true);
+
   const [form, setForm] = useState({
     title: "",
     description: "",
     category: "",
-    custom_category: "",
     level: "Beginner",
     language: "English",
     duration_hours: "",
@@ -31,16 +37,22 @@ const CoachCourseForm = () => {
     discount_percent: "",
   });
 
+  // Set default category to primary approved category
+  useEffect(() => {
+    if (!isEdit && approvedCategories.length > 0 && !form.category) {
+      const primary = approvedCategories.find((c) => c.is_primary);
+      setForm((prev) => ({ ...prev, category: primary?.category_name || approvedCategories[0].category_name }));
+    }
+  }, [approvedCategories, isEdit]);
+
   useEffect(() => {
     if (isEdit && user) {
       supabase.from("courses").select("*").eq("id", id).eq("coach_id", user.id).single().then(({ data }) => {
         if (data) {
-          const isPredefined = PREDEFINED_CATEGORIES.some((c) => c.name === data.category);
           setForm({
             title: data.title,
             description: data.description || "",
-            category: isPredefined ? data.category : "Others",
-            custom_category: isPredefined ? "" : data.category,
+            category: data.category,
             level: data.level,
             language: data.language,
             duration_hours: String(data.duration_hours),
@@ -57,6 +69,13 @@ const CoachCourseForm = () => {
 
   const updateField = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
 
+  // Categories not yet approved and not pending
+  const pendingCategoryIds = new Set(requests.filter((r) => r.status === "pending").map((r) => r.requested_category_id));
+  const approvedCategoryIds = new Set(approvedCategories.map((c) => c.category_id));
+  const requestableCategories = allCategories.filter(
+    (c) => !approvedCategoryIds.has(c.id) && !pendingCategoryIds.has(c.id)
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -65,20 +84,21 @@ const CoachCourseForm = () => {
       toast({ title: "Category is required", variant: "destructive" });
       return;
     }
-    if (form.category === "Others" && !form.custom_category.trim()) {
-      toast({ title: "Please enter a custom category name", variant: "destructive" });
+
+    // Validate category is approved
+    const isApproved = approvedCategories.some((c) => c.category_name === form.category);
+    if (!isApproved) {
+      toast({ title: "You can only create courses in your approved categories", variant: "destructive" });
       return;
     }
 
     setSaving(true);
 
-    const resolvedCategory = form.category === "Others" ? form.custom_category.trim() : form.category;
-
     const payload = {
       coach_id: user.id,
       title: form.title,
       description: form.description,
-      category: resolvedCategory,
+      category: form.category,
       level: form.level,
       language: form.language,
       duration_hours: Number(form.duration_hours) || 0,
@@ -105,6 +125,8 @@ const CoachCourseForm = () => {
     }
   };
 
+  if (permLoading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
+
   return (
     <div className="max-w-2xl space-y-6">
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
@@ -126,32 +148,28 @@ const CoachCourseForm = () => {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label className="text-foreground">Category *</Label>
-            <Select value={form.category} onValueChange={(v) => { updateField("category", v); if (v !== "Others") updateField("custom_category", ""); }}>
+            <Select value={form.category} onValueChange={(v) => updateField("category", v)}>
               <SelectTrigger className="bg-secondary border-border">
                 <SelectValue placeholder="Select Category" />
               </SelectTrigger>
               <SelectContent>
-                {PREDEFINED_CATEGORIES.map((cat) => (
-                  <SelectItem key={cat.slug} value={cat.name}>
-                    {cat.emoji} {cat.name}
+                {approvedCategories.map((cat) => (
+                  <SelectItem key={cat.category_id} value={cat.category_name}>
+                    {cat.category_icon ? `${cat.category_icon} ` : ""}{cat.category_name}
+                    {cat.is_primary ? " (Primary)" : ""}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">You can create courses only in your approved categories.</p>
+            <button
+              type="button"
+              onClick={() => setRequestModalOpen(true)}
+              className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              <Plus className="h-3 w-3" /> Want to teach in another category? Request approval
+            </button>
           </div>
-
-          {form.category === "Others" && (
-            <div className="space-y-2">
-              <Label className="text-foreground">Custom Category Name *</Label>
-              <Input
-                value={form.custom_category}
-                onChange={(e) => updateField("custom_category", e.target.value)}
-                placeholder="e.g. AI in Healthcare"
-                required
-                className="bg-secondary border-border"
-              />
-            </div>
-          )}
 
           <div className="space-y-2">
             <Label className="text-foreground">Level</Label>
@@ -202,6 +220,28 @@ const CoachCourseForm = () => {
           {saving ? "Saving..." : isEdit ? "Update Course" : "Create Course"}
         </button>
       </form>
+
+      {/* Pending requests info */}
+      {requests.filter((r) => r.status === "pending").length > 0 && (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h4 className="text-sm font-semibold text-foreground mb-2">Pending Category Requests</h4>
+          <div className="space-y-1">
+            {requests.filter((r) => r.status === "pending").map((r) => (
+              <p key={r.id} className="text-xs text-muted-foreground">
+                {r.category_icon} {r.category_name} — <span className="text-yellow-400">Pending</span>
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <CategoryRequestModal
+        open={requestModalOpen}
+        onOpenChange={setRequestModalOpen}
+        coachId={user?.id || ""}
+        availableCategories={requestableCategories}
+        onSuccess={refetchPerms}
+      />
     </div>
   );
 };
