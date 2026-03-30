@@ -407,7 +407,7 @@ const AdminCoaches = () => {
           <div className="rounded-xl border border-border bg-card p-5">
             <h3 className="text-sm font-semibold text-foreground mb-3">Contact Information</h3>
             <div className="grid gap-3 sm:grid-cols-2">
-              {[["Email", selectedCoach.email], ["Company", selectedCoach.company_name], ["Phone", selectedCoach.contact_number], ["WhatsApp", selectedCoach.whatsapp_number], ["LinkedIn", selectedCoach.linkedin_profile], ["City", selectedCoach.city], ["Country", selectedCoach.country]].map(([label, val]) => (
+              {[["Email", selectedCoach.email], ["Company", selectedCoach.company_name], ["Category", coachCategories.find(cat => cat.id === selectedCoach.category_id)?.name || selectedCoach.category || "—"], ["Phone", selectedCoach.contact_number], ["WhatsApp", selectedCoach.whatsapp_number], ["LinkedIn", selectedCoach.linkedin_profile], ["City", selectedCoach.city], ["Country", selectedCoach.country]].map(([label, val]) => (
                 <div key={label}><p className="text-xs text-muted-foreground">{label}</p><p className="text-sm text-foreground break-all">{val || "—"}</p></div>
               ))}
             </div>
