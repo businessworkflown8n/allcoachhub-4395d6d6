@@ -220,7 +220,8 @@ const AdminCoaches = () => {
       const matchesStatus = statusFilter === "all" || (statusFilter === "active" ? !c.is_suspended : c.is_suspended);
       const matchesCountry = countryFilter === "all" || c.country === countryFilter;
       const matchesCity = cityFilter === "all" || c.city === cityFilter;
-      return matchesSearch && matchesStatus && matchesCountry && matchesCity;
+      const matchesCategory = categoryFilter === "all" || c.category_id === categoryFilter;
+      return matchesSearch && matchesStatus && matchesCountry && matchesCity && matchesCategory;
     });
     result = [...result].sort((a, b) => {
       const dir = sortDir === "asc" ? 1 : -1;
@@ -245,7 +246,7 @@ const AdminCoaches = () => {
       }
     });
     return result;
-  }, [coaches, search, statusFilter, countryFilter, cityFilter, sortField, sortDir, getCoachStats, getCoachFinancials]);
+  }, [coaches, search, statusFilter, countryFilter, cityFilter, categoryFilter, sortField, sortDir, getCoachStats, getCoachFinancials]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginatedCoaches = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
