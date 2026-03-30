@@ -161,6 +161,27 @@ const CoachSignupForm = () => {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="category" className="text-foreground">Category *</Label>
+        <Select value={categoryId} onValueChange={setCategoryId}>
+          <SelectTrigger className="bg-secondary border-border">
+            <SelectValue placeholder="Select Category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categoriesLoading ? (
+              <SelectItem value="loading" disabled>Loading...</SelectItem>
+            ) : categories.length === 0 ? (
+              <SelectItem value="none" disabled>No categories available</SelectItem>
+            ) : categories.map(cat => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.icon ? `${cat.icon} ${cat.name}` : cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {!categoryId && <p className="text-xs text-destructive">Please select a category</p>}
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="expertise" className="text-foreground">Area of Expertise</Label>
         <Input id="expertise" value={expertise} onChange={(e) => setExpertise(e.target.value)} placeholder="e.g. Prompt Engineering, AI Agents" className="bg-secondary border-border" />
       </div>
