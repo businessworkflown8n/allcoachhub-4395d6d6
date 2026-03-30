@@ -41,6 +41,8 @@ const Materials = lazy(() => import("./pages/Materials"));
 const MaterialDetail = lazy(() => import("./pages/MaterialDetail"));
 const PromptGenerator = lazy(() => import("./pages/PromptGenerator"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
+const Categories = lazy(() => import("./pages/Categories"));
+const CoachCategoryPage = lazy(() => import("./pages/CoachCategoryPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Lazy-loaded global widgets (non-critical)
@@ -146,6 +148,8 @@ const App = () => (
             <Route path="/sitemap" element={<Suspense fallback={<PageFallback />}><Sitemap /></Suspense>} />
             <Route path="/courses" element={<Suspense fallback={<PageFallback />}><Courses /></Suspense>} />
             <Route path="/courses/:slug" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
+            <Route path="/categories" element={<Suspense fallback={<PageFallback />}><Categories /></Suspense>} />
+            <Route path="/categories/:slug" element={<Suspense fallback={<PageFallback />}><CoachCategoryPage /></Suspense>} />
             <Route path="/prompt-engineering" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
             <Route path="/ai-agents" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
             <Route path="/llms-fine-tuning" element={<Suspense fallback={<PageFallback />}><CategoryPage /></Suspense>} />
