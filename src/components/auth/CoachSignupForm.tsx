@@ -6,14 +6,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, CheckCircle, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCoachCategories } from "@/hooks/useCoachCategories";
 
 const CoachSignupForm = () => {
+  const { categories, loading: categoriesLoading } = useCoachCategories(true);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [expertise, setExpertise] = useState("");
   const [bio, setBio] = useState("");
   const [experience, setExperience] = useState("");
