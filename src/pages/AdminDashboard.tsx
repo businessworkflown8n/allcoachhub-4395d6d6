@@ -38,6 +38,7 @@ const navItems = [
   { label: "Traffic Analytics", path: "/admin/traffic", icon: <MousePointerClick className="h-4 w-4" /> },
   { label: "Coaches", path: "/admin/coaches", icon: <Shield className="h-4 w-4" /> },
   { label: "Coach Categories", path: "/admin/coach-categories", icon: <LayoutGrid className="h-4 w-4" /> },
+  { label: "Category Requests", path: "/admin/category-requests", icon: <ClipboardList className="h-4 w-4" /> },
   { label: "Learners", path: "/admin/learners", icon: <GraduationCap className="h-4 w-4" /> },
   { label: "Courses", path: "/admin/courses", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Blog Management", path: "/admin/blogs", icon: <BookOpen className="h-4 w-4" /> },
@@ -80,6 +81,7 @@ const AdminDashboard = () => {
         <Route path="traffic" element={<AdminTrafficAnalytics />} />
         <Route path="coaches" element={<AdminCoaches />} />
         <Route path="coach-categories" element={<AdminCoachCategories />} />
+        <Route path="category-requests" element={<AdminCategoryRequests />} />
         <Route path="learners" element={<AdminLearners />} />
         <Route path="courses" element={<AdminCourses />} />
         <Route path="blogs" element={<AdminBlogs />} />
