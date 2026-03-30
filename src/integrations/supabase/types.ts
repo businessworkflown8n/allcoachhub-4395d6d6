@@ -461,6 +461,39 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_categories: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coach_commissions: {
         Row: {
           coach_id: string
@@ -2151,6 +2184,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           category: string | null
+          category_id: string | null
           certifications: string[] | null
           city: string | null
           company_name: string | null
@@ -2184,6 +2218,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           category?: string | null
+          category_id?: string | null
           certifications?: string[] | null
           city?: string | null
           company_name?: string | null
@@ -2217,6 +2252,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           category?: string | null
+          category_id?: string | null
           certifications?: string[] | null
           city?: string | null
           company_name?: string | null
@@ -2246,7 +2282,15 @@ export type Database = {
           utm_source?: string | null
           whatsapp_number?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "coach_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       program_bundles: {
         Row: {
