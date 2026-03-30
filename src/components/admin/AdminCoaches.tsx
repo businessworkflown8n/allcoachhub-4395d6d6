@@ -288,8 +288,8 @@ const AdminCoaches = () => {
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "coach_enrollments.csv"; a.click();
   };
 
-  const clearFilters = () => { setSearch(""); setStatusFilter("all"); setCountryFilter("all"); setCityFilter("all"); setSortField("last_active"); setSortDir("desc"); };
-  const hasFilters = search || statusFilter !== "all" || countryFilter !== "all" || cityFilter !== "all" || sortField !== "last_active";
+  const clearFilters = () => { setSearch(""); setStatusFilter("all"); setCountryFilter("all"); setCityFilter("all"); setCategoryFilter("all"); setSortField("last_active"); setSortDir("desc"); };
+  const hasFilters = search || statusFilter !== "all" || countryFilter !== "all" || cityFilter !== "all" || categoryFilter !== "all" || sortField !== "last_active";
 
   // Metrics
   const totalRevenue = useMemo(() => coaches.reduce((s, c) => s + getCoachStats(c.user_id).revenue, 0), [coaches, getCoachStats]);
