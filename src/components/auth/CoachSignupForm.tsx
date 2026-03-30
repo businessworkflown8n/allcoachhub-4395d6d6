@@ -6,14 +6,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, CheckCircle, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCoachCategories } from "@/hooks/useCoachCategories";
 
 const CoachSignupForm = () => {
+  const { categories, loading: categoriesLoading } = useCoachCategories(true);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [expertise, setExpertise] = useState("");
   const [bio, setBio] = useState("");
   const [experience, setExperience] = useState("");
@@ -25,8 +29,8 @@ const CoachSignupForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !email || !mobile || !password || !companyName) {
-      toast({ title: "Missing fields", description: "Please fill in all required fields.", variant: "destructive" });
+    if (!fullName || !email || !mobile || !password || !companyName || !categoryId) {
+      toast({ title: "Missing fields", description: "Please fill in all required fields including category.", variant: "destructive" });
       return;
     }
     if (password !== confirmPassword) {
@@ -64,6 +68,7 @@ const CoachSignupForm = () => {
         bio,
         experience,
         category: expertise,
+        category_id: categoryId,
       }).eq("user_id", user.id);
     }
 
@@ -153,6 +158,27 @@ const CoachSignupForm = () => {
       <div className="space-y-2">
         <Label htmlFor="companyName" className="text-foreground">Company / Brand Name *</Label>
         <Input id="companyName" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Your company or brand" required className="bg-secondary border-border" />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="category" className="text-foreground">Category *</Label>
+        <Select value={categoryId} onValueChange={setCategoryId}>
+          <SelectTrigger className="bg-secondary border-border">
+            <SelectValue placeholder="Select Category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categoriesLoading ? (
+              <SelectItem value="loading" disabled>Loading...</SelectItem>
+            ) : categories.length === 0 ? (
+              <SelectItem value="none" disabled>No categories available</SelectItem>
+            ) : categories.map(cat => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.icon ? `${cat.icon} ${cat.name}` : cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {!categoryId && <p className="text-xs text-destructive">Please select a category</p>}
       </div>
 
       <div className="space-y-2">

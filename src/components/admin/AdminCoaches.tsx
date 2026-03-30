@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCoachCategories } from "@/hooks/useCoachCategories";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Shield, Search, Download, Eye, BookOpen, DollarSign, Users, Ban, CheckCircle, Trash2, Tag, Mail, X, ArrowUpDown, Filter, Video, Activity, Clock, TrendingUp, Star, AlertTriangle, ChevronLeft, ChevronRight, Trophy, ArrowUp, ArrowDown, IndianRupee, BarChart3 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -19,6 +20,7 @@ const SYNC_INTERVAL = 20000;
 
 const AdminCoaches = () => {
   const { user } = useAuth();
+  const { categories: coachCategories } = useCoachCategories(false);
   const [coaches, setCoaches] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [enrollments, setEnrollments] = useState<any[]>([]);
@@ -31,6 +33,7 @@ const AdminCoaches = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortField, setSortField] = useState<string>("last_active");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -217,7 +220,8 @@ const AdminCoaches = () => {
       const matchesStatus = statusFilter === "all" || (statusFilter === "active" ? !c.is_suspended : c.is_suspended);
       const matchesCountry = countryFilter === "all" || c.country === countryFilter;
       const matchesCity = cityFilter === "all" || c.city === cityFilter;
-      return matchesSearch && matchesStatus && matchesCountry && matchesCity;
+      const matchesCategory = categoryFilter === "all" || c.category_id === categoryFilter;
+      return matchesSearch && matchesStatus && matchesCountry && matchesCity && matchesCategory;
     });
     result = [...result].sort((a, b) => {
       const dir = sortDir === "asc" ? 1 : -1;
@@ -242,7 +246,7 @@ const AdminCoaches = () => {
       }
     });
     return result;
-  }, [coaches, search, statusFilter, countryFilter, cityFilter, sortField, sortDir, getCoachStats, getCoachFinancials]);
+  }, [coaches, search, statusFilter, countryFilter, cityFilter, categoryFilter, sortField, sortDir, getCoachStats, getCoachFinancials]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginatedCoaches = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -284,8 +288,8 @@ const AdminCoaches = () => {
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "coach_enrollments.csv"; a.click();
   };
 
-  const clearFilters = () => { setSearch(""); setStatusFilter("all"); setCountryFilter("all"); setCityFilter("all"); setSortField("last_active"); setSortDir("desc"); };
-  const hasFilters = search || statusFilter !== "all" || countryFilter !== "all" || cityFilter !== "all" || sortField !== "last_active";
+  const clearFilters = () => { setSearch(""); setStatusFilter("all"); setCountryFilter("all"); setCityFilter("all"); setCategoryFilter("all"); setSortField("last_active"); setSortDir("desc"); };
+  const hasFilters = search || statusFilter !== "all" || countryFilter !== "all" || cityFilter !== "all" || categoryFilter !== "all" || sortField !== "last_active";
 
   // Metrics
   const totalRevenue = useMemo(() => coaches.reduce((s, c) => s + getCoachStats(c.user_id).revenue, 0), [coaches, getCoachStats]);
@@ -403,7 +407,7 @@ const AdminCoaches = () => {
           <div className="rounded-xl border border-border bg-card p-5">
             <h3 className="text-sm font-semibold text-foreground mb-3">Contact Information</h3>
             <div className="grid gap-3 sm:grid-cols-2">
-              {[["Email", selectedCoach.email], ["Company", selectedCoach.company_name], ["Phone", selectedCoach.contact_number], ["WhatsApp", selectedCoach.whatsapp_number], ["LinkedIn", selectedCoach.linkedin_profile], ["City", selectedCoach.city], ["Country", selectedCoach.country]].map(([label, val]) => (
+              {[["Email", selectedCoach.email], ["Company", selectedCoach.company_name], ["Category", coachCategories.find(cat => cat.id === selectedCoach.category_id)?.name || selectedCoach.category || "—"], ["Phone", selectedCoach.contact_number], ["WhatsApp", selectedCoach.whatsapp_number], ["LinkedIn", selectedCoach.linkedin_profile], ["City", selectedCoach.city], ["Country", selectedCoach.country]].map(([label, val]) => (
                 <div key={label}><p className="text-xs text-muted-foreground">{label}</p><p className="text-sm text-foreground break-all">{val || "—"}</p></div>
               ))}
             </div>
@@ -651,6 +655,13 @@ const AdminCoaches = () => {
             <SelectTrigger className="w-32 bg-secondary border-border"><SelectValue placeholder="City" /></SelectTrigger>
             <SelectContent><SelectItem value="all">All Cities</SelectItem>{cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
           </Select>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-36 bg-secondary border-border"><SelectValue placeholder="Category" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {coachCategories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
           {hasFilters && <Button size="sm" variant="ghost" onClick={clearFilters} className="gap-1 text-muted-foreground"><X className="h-3.5 w-3.5" /> Clear</Button>}
         </div>
       </div>
@@ -672,6 +683,7 @@ const AdminCoaches = () => {
                     { label: "Due (₹)", field: "due" },
                     { label: "Payment", field: "status" },
                     { label: "Email", field: "email" },
+                    { label: "Category", field: "category" },
                     { label: "Phone", field: "country" },
                     { label: "City", field: "last_active" },
                   ].map(col => (
@@ -720,6 +732,11 @@ const AdminCoaches = () => {
                         </Select>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-xs">{c.email || "—"}</TableCell>
+                      <TableCell className="text-xs">
+                        {c.category_id ? (
+                          <Badge variant="secondary" className="text-xs">{coachCategories.find(cat => cat.id === c.category_id)?.name || "—"}</Badge>
+                        ) : "—"}
+                      </TableCell>
                       <TableCell className="text-muted-foreground text-xs">{c.contact_number || "—"}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">{c.city || "—"}</TableCell>
                       <TableCell>
