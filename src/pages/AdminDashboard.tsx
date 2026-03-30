@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search, KeyRound } from "lucide-react";
+import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search, KeyRound, LayoutGrid } from "lucide-react";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminCoaches from "@/components/admin/AdminCoaches";
 import AdminLearners from "@/components/admin/AdminLearners";
@@ -30,11 +30,13 @@ import AdminSEODashboard from "@/components/admin/AdminSEODashboard";
 import AdminContactRequests from "@/components/admin/AdminContactRequests";
 import AdminReferrals from "@/components/admin/AdminReferrals";
 import AdminWebinarAnalytics from "@/components/admin/AdminWebinarAnalytics";
+import AdminCoachCategories from "@/components/admin/AdminCoachCategories";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
   { label: "Traffic Analytics", path: "/admin/traffic", icon: <MousePointerClick className="h-4 w-4" /> },
   { label: "Coaches", path: "/admin/coaches", icon: <Shield className="h-4 w-4" /> },
+  { label: "Coach Categories", path: "/admin/coach-categories", icon: <LayoutGrid className="h-4 w-4" /> },
   { label: "Learners", path: "/admin/learners", icon: <GraduationCap className="h-4 w-4" /> },
   { label: "Courses", path: "/admin/courses", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Blog Management", path: "/admin/blogs", icon: <BookOpen className="h-4 w-4" /> },
@@ -76,6 +78,7 @@ const AdminDashboard = () => {
         <Route index element={<AdminOverview />} />
         <Route path="traffic" element={<AdminTrafficAnalytics />} />
         <Route path="coaches" element={<AdminCoaches />} />
+        <Route path="coach-categories" element={<AdminCoachCategories />} />
         <Route path="learners" element={<AdminLearners />} />
         <Route path="courses" element={<AdminCourses />} />
         <Route path="blogs" element={<AdminBlogs />} />
