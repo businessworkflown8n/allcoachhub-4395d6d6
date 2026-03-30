@@ -29,8 +29,8 @@ const CoachSignupForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !email || !mobile || !password || !companyName) {
-      toast({ title: "Missing fields", description: "Please fill in all required fields.", variant: "destructive" });
+    if (!fullName || !email || !mobile || !password || !companyName || !categoryId) {
+      toast({ title: "Missing fields", description: "Please fill in all required fields including category.", variant: "destructive" });
       return;
     }
     if (password !== confirmPassword) {
@@ -68,6 +68,7 @@ const CoachSignupForm = () => {
         bio,
         experience,
         category: expertise,
+        category_id: categoryId,
       }).eq("user_id", user.id);
     }
 
