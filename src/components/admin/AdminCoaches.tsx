@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCoachCategories } from "@/hooks/useCoachCategories";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Shield, Search, Download, Eye, BookOpen, DollarSign, Users, Ban, CheckCircle, Trash2, Tag, Mail, X, ArrowUpDown, Filter, Video, Activity, Clock, TrendingUp, Star, AlertTriangle, ChevronLeft, ChevronRight, Trophy, ArrowUp, ArrowDown, IndianRupee, BarChart3 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -19,6 +20,7 @@ const SYNC_INTERVAL = 20000;
 
 const AdminCoaches = () => {
   const { user } = useAuth();
+  const { categories: coachCategories } = useCoachCategories(false);
   const [coaches, setCoaches] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [enrollments, setEnrollments] = useState<any[]>([]);
@@ -31,6 +33,7 @@ const AdminCoaches = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortField, setSortField] = useState<string>("last_active");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
