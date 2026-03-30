@@ -683,6 +683,7 @@ const AdminCoaches = () => {
                     { label: "Due (₹)", field: "due" },
                     { label: "Payment", field: "status" },
                     { label: "Email", field: "email" },
+                    { label: "Category", field: "category" },
                     { label: "Phone", field: "country" },
                     { label: "City", field: "last_active" },
                   ].map(col => (
@@ -731,6 +732,11 @@ const AdminCoaches = () => {
                         </Select>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-xs">{c.email || "—"}</TableCell>
+                      <TableCell className="text-xs">
+                        {c.category_id ? (
+                          <Badge variant="secondary" className="text-xs">{coachCategories.find(cat => cat.id === c.category_id)?.name || "—"}</Badge>
+                        ) : "—"}
+                      </TableCell>
                       <TableCell className="text-muted-foreground text-xs">{c.contact_number || "—"}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">{c.city || "—"}</TableCell>
                       <TableCell>
