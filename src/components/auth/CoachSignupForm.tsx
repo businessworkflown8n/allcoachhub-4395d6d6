@@ -62,14 +62,25 @@ const CoachSignupForm = () => {
     }
 
     // Update profile with extra coach fields after signup
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
+    const { data: { user: signedUpUser } } = await supabase.auth.getUser();
+    if (signedUpUser) {
       await supabase.from("profiles").update({
         bio,
         experience,
         category: expertise,
         category_id: categoryId,
-      }).eq("user_id", user.id);
+      }).eq("user_id", signedUpUser.id);
+
+      // Auto-create primary category permission
+      if (categoryId) {
+        await supabase.from("coach_category_permissions").upsert({
+          coach_id: signedUpUser.id,
+          category_id: categoryId,
+          is_primary: true,
+          status: "approved",
+          approved_at: new Date().toISOString(),
+        }, { onConflict: "coach_id,category_id" });
+      }
     }
 
     // Send admin notification email (fire-and-forget)
