@@ -660,6 +660,96 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_websites: {
+        Row: {
+          about_text: string | null
+          admin_note: string | null
+          banner_url: string | null
+          coach_id: string
+          contact_info: Json | null
+          created_at: string
+          description: string | null
+          gallery_images: string[] | null
+          id: string
+          institute_name: string
+          is_live: boolean
+          logo_url: string | null
+          meta_description: string | null
+          meta_title: string | null
+          show_about: boolean | null
+          show_contact: boolean | null
+          show_courses: boolean | null
+          show_gallery: boolean | null
+          show_testimonials: boolean | null
+          show_video: boolean | null
+          slug: string
+          social_links: Json | null
+          status: string
+          tagline: string | null
+          theme_color: string | null
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          about_text?: string | null
+          admin_note?: string | null
+          banner_url?: string | null
+          coach_id: string
+          contact_info?: Json | null
+          created_at?: string
+          description?: string | null
+          gallery_images?: string[] | null
+          id?: string
+          institute_name: string
+          is_live?: boolean
+          logo_url?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          show_about?: boolean | null
+          show_contact?: boolean | null
+          show_courses?: boolean | null
+          show_gallery?: boolean | null
+          show_testimonials?: boolean | null
+          show_video?: boolean | null
+          slug: string
+          social_links?: Json | null
+          status?: string
+          tagline?: string | null
+          theme_color?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          about_text?: string | null
+          admin_note?: string | null
+          banner_url?: string | null
+          coach_id?: string
+          contact_info?: Json | null
+          created_at?: string
+          description?: string | null
+          gallery_images?: string[] | null
+          id?: string
+          institute_name?: string
+          is_live?: boolean
+          logo_url?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          show_about?: boolean | null
+          show_contact?: boolean | null
+          show_courses?: boolean | null
+          show_gallery?: boolean | null
+          show_testimonials?: boolean | null
+          show_video?: boolean | null
+          slug?: string
+          social_links?: Json | null
+          status?: string
+          tagline?: string | null
+          theme_color?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       communication_settings: {
         Row: {
           id: string
