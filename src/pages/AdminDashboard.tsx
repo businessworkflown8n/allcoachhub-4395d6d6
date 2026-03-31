@@ -33,6 +33,7 @@ import AdminWebinarAnalytics from "@/components/admin/AdminWebinarAnalytics";
 import AdminCoachCategories from "@/components/admin/AdminCoachCategories";
 import AdminCategoryRequests from "@/components/admin/AdminCategoryRequests";
 import AdminCoachWebsites from "@/components/admin/AdminCoachWebsites";
+import AdminCoachLPLeads from "@/components/admin/AdminCoachLPLeads";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
