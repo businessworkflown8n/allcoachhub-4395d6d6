@@ -112,6 +112,7 @@ const CoachWebsiteManager = () => {
   const [saving, setSaving] = useState(false);
   const [exists, setExists] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [leadCount, setLeadCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
