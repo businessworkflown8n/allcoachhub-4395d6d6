@@ -108,6 +108,7 @@ const AdminDashboard = () => {
         <Route path="integrations" element={<AdminIntegrationsHub />} />
         <Route path="sharing" element={<AdminSharingRequests />} />
         <Route path="coach-websites" element={<AdminCoachWebsites />} />
+        <Route path="coach-lp-leads" element={<AdminCoachLPLeads />} />
         <Route path="referrals" element={<AdminReferrals />} />
         <Route path="seo" element={<AdminSEODashboard />} />
         <Route path="settings" element={<AdminSettings />} />
