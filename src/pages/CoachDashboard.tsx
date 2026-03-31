@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles } from "lucide-react";
+import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles, Globe } from "lucide-react";
 import CoachProfile from "@/components/coach/CoachProfile";
 import CoachCourses from "@/components/coach/CoachCourses";
 import CoachCourseForm from "@/components/coach/CoachCourseForm";
@@ -15,6 +15,7 @@ import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import CoachCampaignInsights from "@/components/coach/CoachCampaignInsights";
 import CoachReportBuilder from "@/components/coach/CoachReportBuilder";
 import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
+import CoachWebsiteManager from "@/components/coach/CoachWebsiteManager";
 import { useEmailMarketingAccess } from "@/hooks/useEmailMarketingAccess";
 
 const CoachDashboard = () => {
