@@ -41,6 +41,7 @@ const CoachDashboard = () => {
     ...(hasEmailAccess ? [{ label: "Campaigns", path: "/coach/campaigns", icon: <Megaphone className="h-4 w-4" /> }] : []),
     { label: "Earnings", path: "/coach/earnings", icon: <DollarSign className="h-4 w-4" /> },
     { label: "Prompt Generator", path: "/coach/prompt-generator", icon: <Sparkles className="h-4 w-4" /> },
+    { label: "My Website", path: "/coach/website", icon: <Globe className="h-4 w-4" /> },
     { label: "Profile", path: "/coach/profile", icon: <User className="h-4 w-4" /> },
   ];
 
