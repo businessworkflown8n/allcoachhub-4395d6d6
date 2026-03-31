@@ -61,6 +61,7 @@ const CoachDashboard = () => {
         <Route path="earnings" element={<CoachEarnings />} />
         <Route path="profile" element={<CoachProfile />} />
         <Route path="prompt-generator" element={<div className="space-y-4"><h2 className="text-xl font-bold text-foreground">Prompt Generator</h2><div className="rounded-xl border border-border bg-card p-6"><PromptGeneratorForm showSave userRole="coach" /></div></div>} />
+        <Route path="website" element={<CoachWebsiteManager />} />
         <Route path="overview" element={<CoachOverview />} />
         <Route path="*" element={<Navigate to="overview" replace />} />
       </Routes>
