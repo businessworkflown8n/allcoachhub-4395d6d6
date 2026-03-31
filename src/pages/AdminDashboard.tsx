@@ -33,6 +33,7 @@ import AdminWebinarAnalytics from "@/components/admin/AdminWebinarAnalytics";
 import AdminCoachCategories from "@/components/admin/AdminCoachCategories";
 import AdminCategoryRequests from "@/components/admin/AdminCategoryRequests";
 import AdminCoachWebsites from "@/components/admin/AdminCoachWebsites";
+import AdminCoachLPLeads from "@/components/admin/AdminCoachLPLeads";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
@@ -63,6 +64,7 @@ const navItems = [
   { label: "Integrations", path: "/admin/integrations", icon: <Plug className="h-4 w-4" /> },
   { label: "Sharing Requests", path: "/admin/sharing", icon: <FileCheck className="h-4 w-4" /> },
   { label: "Coach Websites", path: "/admin/coach-websites", icon: <Globe className="h-4 w-4" /> },
+  { label: "Coach Leads from LP", path: "/admin/coach-lp-leads", icon: <Users className="h-4 w-4" /> },
   { label: "SEO Dashboard", path: "/admin/seo", icon: <Search className="h-4 w-4" /> },
   { label: "Settings", path: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
   { label: "Locale & Currency", path: "/admin/locale", icon: <Globe className="h-4 w-4" /> },
@@ -106,6 +108,7 @@ const AdminDashboard = () => {
         <Route path="integrations" element={<AdminIntegrationsHub />} />
         <Route path="sharing" element={<AdminSharingRequests />} />
         <Route path="coach-websites" element={<AdminCoachWebsites />} />
+        <Route path="coach-lp-leads" element={<AdminCoachLPLeads />} />
         <Route path="referrals" element={<AdminReferrals />} />
         <Route path="seo" element={<AdminSEODashboard />} />
         <Route path="settings" element={<AdminSettings />} />
