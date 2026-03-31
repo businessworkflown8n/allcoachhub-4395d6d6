@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { GraduationCap, MapPin, Star, Users, BookOpen, Play } from "lucide-react";
-import { Link } from "react-router-dom";
+import { GraduationCap, MapPin, Star, Users, BookOpen, Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface Props {
   site: any;
@@ -11,21 +11,53 @@ interface Props {
 }
 
 const CoachWebsiteHero = ({ site, coach, courseCount, themeColor }: Props) => {
+  const bannerUrls: string[] = (site.banner_urls?.length > 0 ? site.banner_urls : site.banner_url ? [site.banner_url] : []);
+  const [currentBanner, setCurrentBanner] = useState(0);
+
+  useEffect(() => {
+    if (bannerUrls.length <= 1) return;
+    const timer = setInterval(() => setCurrentBanner((i) => (i + 1) % bannerUrls.length), 5000);
+    return () => clearInterval(timer);
+  }, [bannerUrls.length]);
+
   const scrollToCourses = () => document.getElementById("cw-courses")?.scrollIntoView({ behavior: "smooth" });
   const scrollToDemo = () => document.getElementById("cw-demo")?.scrollIntoView({ behavior: "smooth" });
 
+  const cs = (site.content_sections || {}) as any;
+  const stats = cs.stats;
+
   return (
     <section className="relative overflow-hidden border-b border-border py-20 lg:py-32">
-      {site.banner_url && (
+      {/* Banner Slider */}
+      {bannerUrls.length > 0 && (
         <div className="absolute inset-0">
-          <img src={site.banner_url} alt="Banner" className="h-full w-full object-cover opacity-15" />
+          {bannerUrls.map((url: string, i: number) => (
+            <img
+              key={i}
+              src={url}
+              alt={`Banner ${i + 1}`}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${i === currentBanner ? "opacity-15" : "opacity-0"}`}
+            />
+          ))}
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
         </div>
       )}
-      <div
-        className="absolute inset-0"
-        style={{ background: `radial-gradient(ellipse at top, ${themeColor}18, transparent 70%)` }}
-      />
+
+      {/* Banner navigation dots */}
+      {bannerUrls.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+          {bannerUrls.map((_: string, i: number) => (
+            <button
+              key={i}
+              onClick={() => setCurrentBanner(i)}
+              className={`h-2 w-2 rounded-full transition-all ${i === currentBanner ? "w-6" : "bg-muted-foreground/40"}`}
+              style={i === currentBanner ? { backgroundColor: themeColor } : {}}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at top, ${themeColor}18, transparent 70%)` }} />
 
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-3xl text-center">
@@ -42,18 +74,12 @@ const CoachWebsiteHero = ({ site, coach, courseCount, themeColor }: Props) => {
             {site.institute_name}
           </h1>
 
-          {site.tagline && (
-            <p className="mt-4 text-lg text-muted-foreground sm:text-xl">{site.tagline}</p>
-          )}
+          {site.tagline && <p className="mt-4 text-lg text-muted-foreground sm:text-xl">{site.tagline}</p>}
 
           {coach && (
             <p className="mt-3 flex items-center justify-center gap-2 text-sm text-muted-foreground">
               by <span className="font-medium text-foreground">{coach.full_name}</span>
-              {coach.country && (
-                <>
-                  <MapPin className="h-3.5 w-3.5" /> {coach.country}
-                </>
-              )}
+              {coach.country && (<><MapPin className="h-3.5 w-3.5" /> {coach.country}</>)}
             </p>
           )}
 
@@ -64,12 +90,16 @@ const CoachWebsiteHero = ({ site, coach, courseCount, themeColor }: Props) => {
                 <BookOpen className="h-3.5 w-3.5" /> {courseCount} Courses
               </Badge>
             )}
-            <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-xs">
-              <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" /> 4.8 Rating
-            </Badge>
-            <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-xs">
-              <Users className="h-3.5 w-3.5" /> 500+ Students
-            </Badge>
+            {stats && stats.length > 0 && (
+              <>
+                <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-xs">
+                  <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" /> {stats.find((s: any) => s.label?.toLowerCase().includes("rate"))?.value || "4.8 Rating"}
+                </Badge>
+                <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-xs">
+                  <Users className="h-3.5 w-3.5" /> {stats.find((s: any) => s.label?.toLowerCase().includes("student"))?.value || "500+ Students"}
+                </Badge>
+              </>
+            )}
           </div>
 
           {/* CTAs */}

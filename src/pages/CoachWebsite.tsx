@@ -38,34 +38,19 @@ const CoachWebsite = () => {
     if (!slug) return;
     const load = async () => {
       const { data: website } = await supabase
-        .from("coach_websites")
-        .select("*")
-        .eq("slug", slug)
-        .eq("status", "approved")
-        .eq("is_live", true)
+        .from("coach_websites").select("*")
+        .eq("slug", slug).eq("status", "approved").eq("is_live", true)
         .maybeSingle();
 
-      if (!website) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
+      if (!website) { setNotFound(true); setLoading(false); return; }
       setSite(website);
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", website.coach_id)
-        .single();
+      const { data: profile } = await supabase.from("profiles").select("*").eq("user_id", website.coach_id).single();
       setCoach(profile);
 
       if (website.show_courses) {
-        const { data: coursesData } = await supabase
-          .from("courses")
-          .select("*")
-          .eq("coach_id", website.coach_id)
-          .eq("is_published", true)
-          .eq("approval_status", "approved")
+        const { data: coursesData } = await supabase.from("courses").select("*")
+          .eq("coach_id", website.coach_id).eq("is_published", true).eq("approval_status", "approved")
           .order("created_at", { ascending: false });
         setCourses(coursesData || []);
       }
@@ -75,11 +60,7 @@ const CoachWebsite = () => {
   }, [slug]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
+    return <div className="flex min-h-screen items-center justify-center bg-background"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
   }
 
   if (notFound) {
@@ -98,17 +79,18 @@ const CoachWebsite = () => {
 
   const socialLinks = (site.social_links || {}) as Record<string, string>;
   const themeColor = site.theme_color || "#6366f1";
+  const cs = (site.content_sections || {}) as any;
 
   return (
     <>
       <Navbar />
       <main className="min-h-screen bg-background pb-16 md:pb-0">
         <CoachWebsiteHero site={site} coach={coach} courseCount={courses.length} themeColor={themeColor} />
-        <CoachWebsiteStats courseCount={courses.length} themeColor={themeColor} />
+        <CoachWebsiteStats courseCount={courses.length} themeColor={themeColor} contentSections={cs} />
 
         {site.show_about && site.about_text && <CoachWebsiteAbout aboutText={site.about_text} />}
 
-        <CoachWebsiteUSP themeColor={themeColor} />
+        <CoachWebsiteUSP themeColor={themeColor} contentSections={cs} />
 
         {site.show_courses && <CoachWebsiteCourses courses={courses} themeColor={themeColor} />}
 
@@ -116,15 +98,15 @@ const CoachWebsite = () => {
 
         {site.show_video && site.video_url && <CoachWebsiteVideo videoUrl={site.video_url} themeColor={themeColor} />}
 
-        {site.show_testimonials !== false && <CoachWebsiteTestimonials themeColor={themeColor} />}
+        {site.show_testimonials !== false && <CoachWebsiteTestimonials themeColor={themeColor} contentSections={cs} />}
 
-        <CoachWebsiteDemoForm coachId={site.coach_id} instituteName={site.institute_name} themeColor={themeColor} />
+        <CoachWebsiteDemoForm coachId={site.coach_id} instituteName={site.institute_name} themeColor={themeColor} contentSections={cs} />
 
-        <CoachWebsiteFAQ />
+        <CoachWebsiteFAQ contentSections={cs} />
 
         <CoachWebsiteSocial socialLinks={socialLinks} />
 
-        <CoachWebsiteFinalCTA themeColor={themeColor} />
+        <CoachWebsiteFinalCTA themeColor={themeColor} contentSections={cs} />
       </main>
       <Footer />
       <CoachWebsiteStickyCTA themeColor={themeColor} />

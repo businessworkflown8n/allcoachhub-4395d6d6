@@ -3,17 +3,21 @@ import { useState } from "react";
 
 interface Props {
   themeColor: string;
+  contentSections?: any;
 }
 
-const testimonials = [
+const defaultTestimonials = [
   { name: "Raj S.", role: "Data Analyst", text: "This program completely changed my career trajectory. The hands-on projects were incredibly valuable.", rating: 5 },
   { name: "Priya M.", role: "Marketing Manager", text: "The coach was extremely knowledgeable and always available for doubts. Best investment I've made.", rating: 5 },
   { name: "Amit K.", role: "Software Engineer", text: "Practical and well-structured. I landed a new role within 2 months of completing the course.", rating: 5 },
-  { name: "Sneha R.", role: "Business Analyst", text: "Exceeded my expectations. The real-world case studies made all the difference.", rating: 4 },
 ];
 
-const CoachWebsiteTestimonials = ({ themeColor }: Props) => {
+const CoachWebsiteTestimonials = ({ themeColor, contentSections }: Props) => {
+  const testimonials = (contentSections?.testimonials?.length > 0 ? contentSections.testimonials : defaultTestimonials).filter((t: any) => t.name && t.text);
   const [idx, setIdx] = useState(0);
+
+  if (testimonials.length === 0) return null;
+
   const prev = () => setIdx((i) => (i === 0 ? testimonials.length - 1 : i - 1));
   const next = () => setIdx((i) => (i === testimonials.length - 1 ? 0 : i + 1));
   const t = testimonials[idx];
@@ -32,15 +36,17 @@ const CoachWebsiteTestimonials = ({ themeColor }: Props) => {
           <p className="mt-4 font-semibold text-foreground">{t.name}</p>
           <p className="text-xs text-muted-foreground">{t.role}</p>
 
-          <div className="mt-6 flex items-center justify-center gap-4">
-            <button onClick={prev} className="rounded-full border border-border p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-xs text-muted-foreground">{idx + 1} / {testimonials.length}</span>
-            <button onClick={next} className="rounded-full border border-border p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
+          {testimonials.length > 1 && (
+            <div className="mt-6 flex items-center justify-center gap-4">
+              <button onClick={prev} className="rounded-full border border-border p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="text-xs text-muted-foreground">{idx + 1} / {testimonials.length}</span>
+              <button onClick={next} className="rounded-full border border-border p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </section>

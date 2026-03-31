@@ -665,8 +665,10 @@ export type Database = {
           about_text: string | null
           admin_note: string | null
           banner_url: string | null
+          banner_urls: string[] | null
           coach_id: string
           contact_info: Json | null
+          content_sections: Json | null
           created_at: string
           description: string | null
           gallery_images: string[] | null
@@ -694,8 +696,10 @@ export type Database = {
           about_text?: string | null
           admin_note?: string | null
           banner_url?: string | null
+          banner_urls?: string[] | null
           coach_id: string
           contact_info?: Json | null
+          content_sections?: Json | null
           created_at?: string
           description?: string | null
           gallery_images?: string[] | null
@@ -723,8 +727,10 @@ export type Database = {
           about_text?: string | null
           admin_note?: string | null
           banner_url?: string | null
+          banner_urls?: string[] | null
           coach_id?: string
           contact_info?: Json | null
+          content_sections?: Json | null
           created_at?: string
           description?: string | null
           gallery_images?: string[] | null

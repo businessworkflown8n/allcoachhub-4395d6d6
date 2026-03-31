@@ -10,9 +10,14 @@ interface Props {
   coachId: string;
   instituteName: string;
   themeColor: string;
+  contentSections?: any;
 }
 
-const CoachWebsiteDemoForm = ({ coachId, instituteName, themeColor }: Props) => {
+const CoachWebsiteDemoForm = ({ coachId, instituteName, themeColor, contentSections }: Props) => {
+  const cs = contentSections || {};
+  const heading = cs.demo_heading || "Book a Free Demo";
+  const subtext = cs.demo_subtext || "Experience our teaching style firsthand";
+
   const [form, setForm] = useState({ name: "", email: "", whatsapp: "" });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -25,20 +30,12 @@ const CoachWebsiteDemoForm = ({ coachId, instituteName, themeColor }: Props) => 
     }
     setLoading(true);
     const { error } = await supabase.from("chatbot_leads").insert({
-      name: form.name.trim(),
-      email: form.email.trim(),
-      whatsapp: form.whatsapp.trim(),
-      user_type: "learner",
-      user_id: coachId,
-      company: instituteName,
+      name: form.name.trim(), email: form.email.trim(), whatsapp: form.whatsapp.trim(),
+      user_type: "learner", user_id: coachId, company: instituteName,
     });
     setLoading(false);
-    if (error) {
-      toast.error("Something went wrong. Please try again.");
-    } else {
-      setSubmitted(true);
-      toast.success("Demo request submitted successfully!");
-    }
+    if (error) { toast.error("Something went wrong. Please try again."); }
+    else { setSubmitted(true); toast.success("Demo request submitted successfully!"); }
   };
 
   if (submitted) {
@@ -57,8 +54,8 @@ const CoachWebsiteDemoForm = ({ coachId, instituteName, themeColor }: Props) => 
     <section id="cw-demo" className="border-b border-border py-14">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-md rounded-xl border border-border bg-card p-6 shadow-lg">
-          <h2 className="mb-1 text-center text-2xl font-bold text-foreground">Book a Free Demo</h2>
-          <p className="mb-6 text-center text-sm text-muted-foreground">Experience our teaching style firsthand</p>
+          <h2 className="mb-1 text-center text-2xl font-bold text-foreground">{heading}</h2>
+          <p className="mb-6 text-center text-sm text-muted-foreground">{subtext}</p>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="demo-name">Full Name</Label>
