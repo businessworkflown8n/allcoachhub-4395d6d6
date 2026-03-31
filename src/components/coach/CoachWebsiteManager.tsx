@@ -112,6 +112,7 @@ const CoachWebsiteManager = () => {
   const [saving, setSaving] = useState(false);
   const [exists, setExists] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [leadCount, setLeadCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -156,6 +157,12 @@ const CoachWebsiteManager = () => {
           },
         });
         setExists(true);
+        // Fetch lead count
+        const { count } = await supabase
+          .from("chatbot_leads")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
+        setLeadCount(count || 0);
       } else {
         const { data: profile } = await supabase.from("profiles").select("full_name, company_name").eq("user_id", user.id).single();
         if (profile) {
@@ -300,6 +307,23 @@ const CoachWebsiteManager = () => {
         </div>
         <Progress value={completionPercent()} className="h-2" />
       </CardContent></Card>
+
+      {exists && (
+        <Card className="border-primary/30">
+          <CardContent className="pt-4 pb-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                <Send className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Demo Leads Captured</p>
+                <p className="text-xs text-muted-foreground">From "Book Free Demo" form on your landing page</p>
+              </div>
+            </div>
+            <span className="text-2xl font-bold text-primary">{leadCount}</span>
+          </CardContent>
+        </Card>
+      )}
 
       {data.admin_note && (data.status === "rejected" || data.status === "draft") && (
         <Card className="border-destructive/50"><CardContent className="pt-4 pb-4">
