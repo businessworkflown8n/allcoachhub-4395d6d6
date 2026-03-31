@@ -157,6 +157,12 @@ const CoachWebsiteManager = () => {
           },
         });
         setExists(true);
+        // Fetch lead count
+        const { count } = await supabase
+          .from("chatbot_leads")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
+        setLeadCount(count || 0);
       } else {
         const { data: profile } = await supabase.from("profiles").select("full_name, company_name").eq("user_id", user.id).single();
         if (profile) {
