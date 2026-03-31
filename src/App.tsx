@@ -44,6 +44,7 @@ const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 const Categories = lazy(() => import("./pages/Categories"));
 const CoachCategoryPage = lazy(() => import("./pages/CoachCategoryPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const CoachWebsite = lazy(() => import("./pages/CoachWebsite"));
 
 // Lazy-loaded global widgets (non-critical)
 const AICursor = lazy(() => import("./components/AICursor"));
