@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useContactAccess } from "@/hooks/useContactAccess";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Download, Search, DollarSign, IndianRupee, Globe, RefreshCw, Lock, KeyRound } from "lucide-react";
+import { Users, Download, Search, DollarSign, IndianRupee, Globe, RefreshCw, Lock, KeyRound, BookOpen, Video } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -37,18 +37,83 @@ const CoachEnrollments = () => {
   const { isAdmin } = useUserRole();
   const { hasAccess, isPending, requestAccess } = useContactAccess();
   const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [combinedRows, setCombinedRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const { rate: usdToInr } = useExchangeRate();
   const { dateRange, setDateRange, dateFrom, dateTo } = useDateRange("last30");
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("enrollments").select("*, courses(title, price_usd, price_inr)").eq("coach_id", user.id).order("enrolled_at", { ascending: false }).then(({ data }) => {
-      setEnrollments(data || []);
+    const fetchAll = async () => {
+      // Fetch course enrollments
+      const { data: enrollData } = await supabase
+        .from("enrollments")
+        .select("*, courses(title, price_usd, price_inr)")
+        .eq("coach_id", user.id)
+        .order("enrolled_at", { ascending: false });
+
+      const courseRows = (enrollData || []).map((e: any) => ({ ...e, row_type: "Course" }));
+      setEnrollments(courseRows);
+
+      // Fetch webinar registrations
+      const { data: webinarData } = await supabase
+        .from("webinars")
+        .select("id, title")
+        .eq("coach_id", user.id);
+
+      if (webinarData && webinarData.length > 0) {
+        const webinarMap = new Map(webinarData.map((w: any) => [w.id, w.title]));
+        const { data: regs } = await supabase
+          .from("webinar_registrations")
+          .select("id, learner_id, registered_at, attended, converted, amount_paid, registrant_name, registrant_email, registrant_phone, payment_status, webinar_id")
+          .in("webinar_id", webinarData.map((w: any) => w.id))
+          .order("registered_at", { ascending: false });
+
+        if (regs && regs.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("user_id, full_name, email, contact_number, country, city, industry, current_job_title, whatsapp_number, education_qualification, experience_level")
+            .in("user_id", regs.map((r: any) => r.learner_id));
+          const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+
+          const webinarRows = regs.map((r: any) => {
+            const profile = profileMap.get(r.learner_id);
+            return {
+              id: r.id,
+              row_type: "Webinar",
+              full_name: profile?.full_name || r.registrant_name || "Unknown",
+              email: profile?.email || r.registrant_email || "—",
+              contact_number: profile?.contact_number || r.registrant_phone || "—",
+              whatsapp_number: profile?.whatsapp_number || "—",
+              country: profile?.country || "—",
+              city: profile?.city || "—",
+              industry: profile?.industry || "—",
+              current_job_title: profile?.current_job_title || "—",
+              experience_level: profile?.experience_level || "—",
+              education_qualification: profile?.education_qualification || "—",
+              linkedin_profile: null,
+              learner_id: r.learner_id,
+              enrolled_at: r.registered_at,
+              payment_status: r.payment_status || (r.amount_paid > 0 ? "paid" : "free"),
+              amount_paid: r.amount_paid,
+              currency: "INR",
+              payment_locked: true,
+              courses: { title: webinarMap.get(r.webinar_id) || "Webinar", price_usd: 0, price_inr: r.amount_paid || 0 },
+            };
+          });
+          setCombinedRows([...courseRows, ...webinarRows]);
+        } else {
+          setCombinedRows(courseRows);
+        }
+      } else {
+        setCombinedRows(courseRows);
+      }
       setLoading(false);
-    });
+    };
+    fetchAll();
   }, [user]);
 
   const handlePaymentStatusChange = async (enrollmentId: string, newStatus: string) => {
@@ -116,16 +181,17 @@ const CoachEnrollments = () => {
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
-  const filtered = enrollments.filter((e) => {
+  const filtered = combinedRows.filter((e) => {
     const q = search.toLowerCase();
     const d = e.enrolled_at?.slice(0, 10);
     if (dateFrom && d < dateFrom) return false;
     if (dateTo && d > dateTo) return false;
+    if (typeFilter !== "all" && e.row_type !== typeFilter) return false;
     return !q || e.full_name?.toLowerCase().includes(q) || (e.courses as any)?.title?.toLowerCase().includes(q) || e.country?.toLowerCase().includes(q);
   });
 
-  const totalEnrollments = enrollments.length;
-  const paidEnrollments = enrollments.filter((e) => e.payment_status === "paid");
+  const totalEnrollments = combinedRows.length;
+  const paidEnrollments = combinedRows.filter((e) => e.payment_status === "paid");
 
   let rawUSD = 0;
   let rawINR = 0;
@@ -141,16 +207,16 @@ const CoachEnrollments = () => {
   const combinedTotalUSD = rawUSD + (rawINR / usdToInr);
   const combinedTotalINR = (rawUSD * usdToInr) + rawINR;
 
-  const countries = [...new Set(enrollments.map((e) => e.country))];
+  const countries = [...new Set(combinedRows.map((e) => e.country))];
 
   const exportCSV = () => {
-    const headers = ["Name", "Course", "Course Fee", "Amount Paid", "Country", "City", "Industry", "Job Title", "Experience", "Education", "Payment", "Locked", "Date"];
+    const headers = ["Type", "Name", "Course/Webinar", "Fee", "Amount Paid", "Country", "City", "Industry", "Job Title", "Experience", "Education", "Payment", "Locked", "Date"];
     const rows = filtered.map((e) => {
       const course = e.courses as any;
       const fee = e.currency === "USD" ? `$${course?.price_usd || 0}` : `₹${course?.price_inr || 0}`;
       const paid = e.amount_paid ? (e.currency === "USD" ? `$${e.amount_paid}` : `₹${e.amount_paid}`) : "—";
       return [
-        e.full_name, course?.title, fee, paid, e.country, e.city, e.industry,
+        e.row_type, e.full_name, course?.title, fee, paid, e.country, e.city, e.industry,
         e.current_job_title, e.experience_level, e.education_qualification,
         e.payment_status, e.payment_locked ? "Yes" : "No", new Date(e.enrolled_at).toLocaleDateString()
       ];
@@ -204,6 +270,20 @@ const CoachEnrollments = () => {
         <h2 className="text-xl font-bold text-foreground">Enrollment Analytics</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-[130px] h-9 text-xs">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="Course">
+                <span className="flex items-center gap-1.5"><BookOpen className="h-3 w-3" /> Course</span>
+              </SelectItem>
+              <SelectItem value="Webinar">
+                <span className="flex items-center gap-1.5"><Video className="h-3 w-3" /> Webinar</span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search by name, course..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 w-64" />
@@ -255,12 +335,13 @@ const CoachEnrollments = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Type</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Mobile</TableHead>
                 <TableHead>WhatsApp</TableHead>
-                <TableHead>Course</TableHead>
-                <TableHead>Course Fee</TableHead>
+                <TableHead>Course / Webinar</TableHead>
+                <TableHead>Fee</TableHead>
                 <TableHead>Amount Paid</TableHead>
                 <TableHead>Country</TableHead>
                 <TableHead>City</TableHead>
@@ -276,6 +357,12 @@ const CoachEnrollments = () => {
             <TableBody>
               {filtered.map((e) => (
                 <TableRow key={e.id}>
+                  <TableCell>
+                    <Badge variant="outline" className={`text-[10px] gap-1 ${e.row_type === "Course" ? "text-primary border-primary/30" : "text-blue-400 border-blue-500/30"}`}>
+                      {e.row_type === "Course" ? <BookOpen className="h-3 w-3" /> : <Video className="h-3 w-3" />}
+                      {e.row_type}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-foreground font-medium whitespace-nowrap">{e.full_name}</TableCell>
                   <ContactCell enrollment={e} />
                   <TableCell className="text-foreground whitespace-nowrap">{(e.courses as any)?.title}</TableCell>

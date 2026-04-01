@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useContactAccess } from "@/hooks/useContactAccess";
 import { Video, Plus, Edit, Trash2, Users, Calendar, Clock, Download, Lock, KeyRound, DollarSign, BarChart3, Globe } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,10 @@ interface Registrant {
   watch_duration_minutes: number;
   converted: boolean;
   amount_paid: number;
-  profiles: { full_name: string | null; email: string | null; contact_number: string | null } | null;
+  registrant_name: string | null;
+  registrant_email: string | null;
+  registrant_phone: string | null;
+  profiles: { full_name: string | null; email: string | null; contact_number: string | null; country: string | null; city: string | null; industry: string | null; current_job_title: string | null; whatsapp_number: string | null } | null;
 }
 
 const TIMEZONES = [
@@ -200,14 +204,14 @@ const CoachWebinars = () => {
     setShowRegistrants(webinarId);
     const { data } = await supabase
       .from("webinar_registrations")
-      .select("id, learner_id, registered_at, attended, watch_duration_minutes, converted, amount_paid")
+      .select("id, learner_id, registered_at, attended, watch_duration_minutes, converted, amount_paid, registrant_name, registrant_email, registrant_phone")
       .eq("webinar_id", webinarId)
       .order("registered_at", { ascending: false });
 
     if (data && data.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, full_name, email, contact_number")
+        .select("user_id, full_name, email, contact_number, country, city, industry, current_job_title, whatsapp_number")
         .in("user_id", data.map((r: any) => r.learner_id));
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
       setRegistrants(data.map((r: any) => ({ ...r, profiles: profileMap.get(r.learner_id) || null })));
@@ -239,10 +243,19 @@ const CoachWebinars = () => {
 
   const downloadCSV = () => {
     const webinar = webinars.find((w) => w.id === showRegistrants);
-    const rows = [["Name", "Attended", "Watch Time (min)", "Converted", "Amount Paid", "Registered At"]];
+    const headers = ["Name", "Email", "Phone", "WhatsApp", "Country", "City", "Industry", "Job Title", "Attended", "Watch Time (min)", "Converted", "Amount Paid", "Registered At"];
+    const rows: string[][] = [headers];
     registrants.forEach((r) => {
+      const name = r.profiles?.full_name || r.registrant_name || "Unknown";
+      const email = hasAccess(r.learner_id) ? (r.profiles?.email || r.registrant_email || "—") : "Hidden";
+      const phone = hasAccess(r.learner_id) ? (r.profiles?.contact_number || r.registrant_phone || "—") : "Hidden";
+      const whatsapp = hasAccess(r.learner_id) ? (r.profiles?.whatsapp_number || "—") : "Hidden";
       rows.push([
-        r.profiles?.full_name || "Unknown",
+        name, email, phone, whatsapp,
+        r.profiles?.country || "—",
+        r.profiles?.city || "—",
+        r.profiles?.industry || "—",
+        r.profiles?.current_job_title || "—",
         r.attended ? "Yes" : "No",
         String(r.watch_duration_minutes || 0),
         r.converted ? "Yes" : "No",
@@ -250,7 +263,7 @@ const CoachWebinars = () => {
         format(new Date(r.registered_at), "yyyy-MM-dd HH:mm"),
       ]);
     });
-    const csv = rows.map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+    const csv = rows.map((r) => r.map((c) => `"${(c || "").replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -437,13 +450,13 @@ const CoachWebinars = () => {
 
       {/* Registrants Dialog */}
       <Dialog open={!!showRegistrants} onOpenChange={(o) => { if (!o) setShowRegistrants(null); }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between">
               <DialogTitle>Registered Learners ({registrants.length})</DialogTitle>
               {registrants.length > 0 && (
                 <Button size="sm" variant="outline" onClick={downloadCSV} className="gap-1.5">
-                  <Download className="h-3.5 w-3.5" /> CSV
+                  <Download className="h-3.5 w-3.5" /> Export CSV
                 </Button>
               )}
             </div>
@@ -451,37 +464,65 @@ const CoachWebinars = () => {
           {registrants.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">No registrations yet</p>
           ) : (
-            <div className="space-y-2 max-h-80 overflow-y-auto">
-              {registrants.map((r) => (
-                <div key={r.id} className="rounded-lg border border-border p-3 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-foreground">{r.profiles?.full_name || "Unknown"}</p>
-                    <div className="flex gap-1">
-                      {r.attended && <Badge variant="outline" className="text-green-400 border-green-500/30 text-[10px]">Attended</Badge>}
-                      {r.converted && <Badge variant="outline" className="text-primary border-primary/30 text-[10px]">Converted</Badge>}
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground">{format(new Date(r.registered_at), "MMM d, yyyy")}</span>
-                  {hasAccess(r.learner_id) ? (
-                    <div className="text-xs text-muted-foreground space-y-0.5">
-                      <p>{r.profiles?.email || "—"}</p>
-                      <p>{(r.profiles as any)?.contact_number || "—"}</p>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Lock className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">Contact info hidden</span>
-                      {isPending(r.learner_id) ? (
-                        <Badge variant="outline" className="text-yellow-400 border-yellow-500/30 text-xs">Pending</Badge>
+            <div className="rounded-xl border border-border overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>WhatsApp</TableHead>
+                    <TableHead>Country</TableHead>
+                    <TableHead>City</TableHead>
+                    <TableHead>Industry</TableHead>
+                    <TableHead>Job Title</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Amount Paid</TableHead>
+                    <TableHead>Registered</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {registrants.map((r) => (
+                    <TableRow key={r.id}>
+                      <TableCell className="text-foreground font-medium whitespace-nowrap">{r.profiles?.full_name || r.registrant_name || "Unknown"}</TableCell>
+                      {hasAccess(r.learner_id) ? (
+                        <>
+                          <TableCell className="text-foreground whitespace-nowrap">{r.profiles?.email || r.registrant_email || "—"}</TableCell>
+                          <TableCell className="text-foreground whitespace-nowrap">{r.profiles?.contact_number || r.registrant_phone || "—"}</TableCell>
+                          <TableCell className="text-foreground whitespace-nowrap">{r.profiles?.whatsapp_number || "—"}</TableCell>
+                        </>
                       ) : (
-                        <Button size="sm" variant="outline" className="gap-1 text-xs h-6" onClick={() => handleRequestWebinarAccess(r.learner_id)}>
-                          <KeyRound className="h-3 w-3" /> Request
-                        </Button>
+                        <TableCell colSpan={3} className="text-center">
+                          <div className="flex items-center gap-2 justify-center">
+                            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">Hidden</span>
+                            {isPending(r.learner_id) ? (
+                              <Badge variant="outline" className="text-yellow-400 border-yellow-500/30 text-xs">Pending</Badge>
+                            ) : (
+                              <Button size="sm" variant="outline" className="gap-1 text-xs h-6" onClick={() => handleRequestWebinarAccess(r.learner_id)}>
+                                <KeyRound className="h-3 w-3" /> Request
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
                       )}
-                    </div>
-                  )}
-                </div>
-              ))}
+                      <TableCell className="text-muted-foreground">{r.profiles?.country || "—"}</TableCell>
+                      <TableCell className="text-muted-foreground">{r.profiles?.city || "—"}</TableCell>
+                      <TableCell className="text-muted-foreground">{r.profiles?.industry || "—"}</TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">{r.profiles?.current_job_title || "—"}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {r.attended && <Badge variant="outline" className="text-green-400 border-green-500/30 text-[10px]">Attended</Badge>}
+                          {r.converted && <Badge variant="outline" className="text-primary border-primary/30 text-[10px]">Converted</Badge>}
+                          {!r.attended && !r.converted && <span className="text-xs text-muted-foreground">Registered</span>}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-foreground">{r.amount_paid ? `₹${r.amount_paid}` : "Free"}</TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">{format(new Date(r.registered_at), "MMM d, yyyy")}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
         </DialogContent>
