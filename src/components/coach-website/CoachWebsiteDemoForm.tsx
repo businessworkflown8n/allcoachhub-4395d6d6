@@ -12,9 +12,11 @@ interface Props {
   instituteName: string;
   themeColor: string;
   contentSections?: any;
+  slug?: string;
 }
 
-const CoachWebsiteDemoForm = ({ coachId, instituteName, themeColor, contentSections }: Props) => {
+const CoachWebsiteDemoForm = ({ coachId, instituteName, themeColor, contentSections, slug }: Props) => {
+  const navigate = useNavigate();
   const cs = contentSections || {};
   const heading = cs.demo_heading || "Book a Free Demo";
   const subtext = cs.demo_subtext || "Experience our teaching style firsthand";
