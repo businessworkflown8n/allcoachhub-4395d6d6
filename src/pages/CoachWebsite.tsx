@@ -18,6 +18,7 @@ import CoachWebsiteFAQ from "@/components/coach-website/CoachWebsiteFAQ";
 import CoachWebsiteSocial from "@/components/coach-website/CoachWebsiteSocial";
 import CoachWebsiteFinalCTA from "@/components/coach-website/CoachWebsiteFinalCTA";
 import CoachWebsiteStickyCTA from "@/components/coach-website/CoachWebsiteStickyCTA";
+import CoachWebsiteFloatingCTA from "@/components/coach-website/CoachWebsiteFloatingCTA";
 
 const CoachWebsite = () => {
   const { slug } = useParams<{ slug: string }>();
