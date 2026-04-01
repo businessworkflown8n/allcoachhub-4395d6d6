@@ -27,40 +27,59 @@ const CoachWebsiteHero = ({ site, coach, courseCount, themeColor }: Props) => {
   const stats = cs.stats;
 
   return (
-    <section className="relative overflow-hidden border-b border-border py-20 lg:py-32">
+    <section className="relative overflow-hidden border-b border-border">
       {/* Banner Slider */}
       {bannerUrls.length > 0 && (
-        <div className="absolute inset-0">
+        <div className="relative w-full" style={{ aspectRatio: '16/5' }}>
           {bannerUrls.map((url: string, i: number) => (
             <img
               key={i}
               src={url}
               alt={`Banner ${i + 1}`}
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${i === currentBanner ? "opacity-15" : "opacity-0"}`}
+              loading="lazy"
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${i === currentBanner ? "opacity-100" : "opacity-0"}`}
             />
           ))}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+
+          {/* Banner navigation arrows */}
+          {bannerUrls.length > 1 && (
+            <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-4 z-10 pointer-events-none">
+              <button
+                onClick={() => setCurrentBanner((i) => (i - 1 + bannerUrls.length) % bannerUrls.length)}
+                className="pointer-events-auto h-10 w-10 rounded-full bg-background/60 backdrop-blur flex items-center justify-center text-foreground hover:bg-background/80 transition"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => setCurrentBanner((i) => (i + 1) % bannerUrls.length)}
+                className="pointer-events-auto h-10 w-10 rounded-full bg-background/60 backdrop-blur flex items-center justify-center text-foreground hover:bg-background/80 transition"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          )}
+
+          {/* Navigation dots */}
+          {bannerUrls.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+              {bannerUrls.map((_: string, i: number) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentBanner(i)}
+                  className={`h-2.5 w-2.5 rounded-full transition-all ${i === currentBanner ? "w-7" : "bg-white/50"}`}
+                  style={i === currentBanner ? { backgroundColor: themeColor } : {}}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Banner navigation dots */}
-      {bannerUrls.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
-          {bannerUrls.map((_: string, i: number) => (
-            <button
-              key={i}
-              onClick={() => setCurrentBanner(i)}
-              className={`h-2 w-2 rounded-full transition-all ${i === currentBanner ? "w-6" : "bg-muted-foreground/40"}`}
-              style={i === currentBanner ? { backgroundColor: themeColor } : {}}
-            />
-          ))}
-        </div>
-      )}
-
-      <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at top, ${themeColor}18, transparent 70%)` }} />
-
-      <div className="container relative mx-auto px-4">
-        <div className="mx-auto max-w-3xl text-center">
+      <div className="relative py-16 lg:py-24">
+        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at top, ${themeColor}18, transparent 70%)` }} />
+        <div className="container relative mx-auto px-4">
+          <div className="mx-auto max-w-3xl text-center">
           {site.logo_url && (
             <img
               src={site.logo_url}
@@ -113,6 +132,7 @@ const CoachWebsiteHero = ({ site, coach, courseCount, themeColor }: Props) => {
               </Button>
             )}
           </div>
+        </div>
         </div>
       </div>
     </section>
