@@ -84,7 +84,7 @@ const CoachWebsite = () => {
 
   return (
     <>
-      <Navbar />
+      <Navbar customLogo={site.logo_url} customName={site.institute_name} customHomeLink={`/coach-website/${slug}`} />
       <main className="min-h-screen bg-background pb-16 md:pb-0">
         <CoachWebsiteHero site={site} coach={coach} courseCount={courses.length} themeColor={themeColor} />
         <CoachWebsiteStats courseCount={courses.length} themeColor={themeColor} contentSections={cs} />
