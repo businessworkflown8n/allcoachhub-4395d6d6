@@ -80,11 +80,11 @@ const CoachWebsiteHero = ({ site, coach, courseCount, themeColor }: Props) => {
         <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at top, ${themeColor}18, transparent 70%)` }} />
         <div className="container relative mx-auto px-4">
           <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-6xl">
-            {site.tagline || site.institute_name}
-          </h1>
-
-          {site.tagline && <p className="mt-4 text-lg text-muted-foreground sm:text-xl">{site.tagline}</p>}
+          {site.tagline && (
+            <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-6xl">
+              {site.tagline}
+            </h1>
+          )}
 
           {coach && (
             <p className="mt-3 flex items-center justify-center gap-2 text-sm text-muted-foreground">
