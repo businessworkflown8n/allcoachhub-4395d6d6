@@ -8,7 +8,13 @@ import SearchDialog from "@/components/SearchDialog";
 import LocationSelector from "@/components/LocationSelector";
 import { useTranslation } from "@/i18n/TranslationProvider";
 
-const Navbar = () => {
+interface NavbarProps {
+  customLogo?: string | null;
+  customName?: string | null;
+  customHomeLink?: string;
+}
+
+const Navbar = ({ customLogo, customName, customHomeLink }: NavbarProps = {}) => {
   const { user, signOut } = useAuth();
   const { role } = useUserRole();
   const [mobileOpen, setMobileOpen] = useState(false);
