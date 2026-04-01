@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useContactAccess } from "@/hooks/useContactAccess";
 import { Video, Plus, Edit, Trash2, Users, Calendar, Clock, Download, Lock, KeyRound, DollarSign, BarChart3, Globe } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
