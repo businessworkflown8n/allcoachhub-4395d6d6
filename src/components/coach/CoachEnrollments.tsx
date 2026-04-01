@@ -181,16 +181,17 @@ const CoachEnrollments = () => {
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
-  const filtered = enrollments.filter((e) => {
+  const filtered = combinedRows.filter((e) => {
     const q = search.toLowerCase();
     const d = e.enrolled_at?.slice(0, 10);
     if (dateFrom && d < dateFrom) return false;
     if (dateTo && d > dateTo) return false;
+    if (typeFilter !== "all" && e.row_type !== typeFilter) return false;
     return !q || e.full_name?.toLowerCase().includes(q) || (e.courses as any)?.title?.toLowerCase().includes(q) || e.country?.toLowerCase().includes(q);
   });
 
-  const totalEnrollments = enrollments.length;
-  const paidEnrollments = enrollments.filter((e) => e.payment_status === "paid");
+  const totalEnrollments = combinedRows.length;
+  const paidEnrollments = combinedRows.filter((e) => e.payment_status === "paid");
 
   let rawUSD = 0;
   let rawINR = 0;
@@ -206,16 +207,16 @@ const CoachEnrollments = () => {
   const combinedTotalUSD = rawUSD + (rawINR / usdToInr);
   const combinedTotalINR = (rawUSD * usdToInr) + rawINR;
 
-  const countries = [...new Set(enrollments.map((e) => e.country))];
+  const countries = [...new Set(combinedRows.map((e) => e.country))];
 
   const exportCSV = () => {
-    const headers = ["Name", "Course", "Course Fee", "Amount Paid", "Country", "City", "Industry", "Job Title", "Experience", "Education", "Payment", "Locked", "Date"];
+    const headers = ["Type", "Name", "Course/Webinar", "Fee", "Amount Paid", "Country", "City", "Industry", "Job Title", "Experience", "Education", "Payment", "Locked", "Date"];
     const rows = filtered.map((e) => {
       const course = e.courses as any;
       const fee = e.currency === "USD" ? `$${course?.price_usd || 0}` : `₹${course?.price_inr || 0}`;
       const paid = e.amount_paid ? (e.currency === "USD" ? `$${e.amount_paid}` : `₹${e.amount_paid}`) : "—";
       return [
-        e.full_name, course?.title, fee, paid, e.country, e.city, e.industry,
+        e.row_type, e.full_name, course?.title, fee, paid, e.country, e.city, e.industry,
         e.current_job_title, e.experience_level, e.education_qualification,
         e.payment_status, e.payment_locked ? "Yes" : "No", new Date(e.enrolled_at).toLocaleDateString()
       ];
