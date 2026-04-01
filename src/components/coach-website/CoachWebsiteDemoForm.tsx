@@ -38,7 +38,19 @@ const CoachWebsiteDemoForm = ({ coachId, instituteName, themeColor, contentSecti
     });
     setLoading(false);
     if (error) { toast.error("Something went wrong. Please try again."); }
-    else { setSubmitted(true); toast.success("Demo request submitted successfully!"); }
+    else {
+      setSubmitted(true);
+      toast.success("Demo request submitted successfully!");
+      if (slug) {
+        const params = new URLSearchParams({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.whatsapp.trim(),
+          ...(window.location.search ? Object.fromEntries(new URLSearchParams(window.location.search)) : {}),
+        });
+        navigate(`/coach-website/${slug}/thank-you?${params.toString()}`);
+      }
+    }
   };
 
   if (submitted) {
