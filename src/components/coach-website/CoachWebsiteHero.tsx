@@ -76,24 +76,10 @@ const CoachWebsiteHero = ({ site, coach, courseCount, themeColor }: Props) => {
         </div>
       )}
 
-      {/* Banner navigation dots */}
-      {bannerUrls.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
-          {bannerUrls.map((_: string, i: number) => (
-            <button
-              key={i}
-              onClick={() => setCurrentBanner(i)}
-              className={`h-2 w-2 rounded-full transition-all ${i === currentBanner ? "w-6" : "bg-muted-foreground/40"}`}
-              style={i === currentBanner ? { backgroundColor: themeColor } : {}}
-            />
-          ))}
-        </div>
-      )}
-
-      <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at top, ${themeColor}18, transparent 70%)` }} />
-
-      <div className="container relative mx-auto px-4">
-        <div className="mx-auto max-w-3xl text-center">
+      <div className="relative py-16 lg:py-24">
+        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at top, ${themeColor}18, transparent 70%)` }} />
+        <div className="container relative mx-auto px-4">
+          <div className="mx-auto max-w-3xl text-center">
           {site.logo_url && (
             <img
               src={site.logo_url}
