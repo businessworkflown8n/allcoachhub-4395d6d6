@@ -79,9 +79,9 @@ const Navbar = ({ customLogo, customName, customHomeLink }: NavbarProps = {}) =>
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logoOptimized} alt="AI Coach Portal" width={32} height={32} className="h-8 w-8 rounded-lg" />
-          <span className="text-lg font-bold text-foreground">AI Coach Portal</span>
+        <Link to={customHomeLink || "/"} className="flex items-center gap-2">
+          <img src={customLogo || logoOptimized} alt={customName || "AI Coach Portal"} width={32} height={32} className="h-8 w-8 rounded-lg object-cover" />
+          <span className="text-lg font-bold text-foreground">{customName || "AI Coach Portal"}</span>
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
