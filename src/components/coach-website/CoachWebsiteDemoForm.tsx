@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,9 +12,11 @@ interface Props {
   instituteName: string;
   themeColor: string;
   contentSections?: any;
+  slug?: string;
 }
 
-const CoachWebsiteDemoForm = ({ coachId, instituteName, themeColor, contentSections }: Props) => {
+const CoachWebsiteDemoForm = ({ coachId, instituteName, themeColor, contentSections, slug }: Props) => {
+  const navigate = useNavigate();
   const cs = contentSections || {};
   const heading = cs.demo_heading || "Book a Free Demo";
   const subtext = cs.demo_subtext || "Experience our teaching style firsthand";
@@ -35,7 +38,19 @@ const CoachWebsiteDemoForm = ({ coachId, instituteName, themeColor, contentSecti
     });
     setLoading(false);
     if (error) { toast.error("Something went wrong. Please try again."); }
-    else { setSubmitted(true); toast.success("Demo request submitted successfully!"); }
+    else {
+      setSubmitted(true);
+      toast.success("Demo request submitted successfully!");
+      if (slug) {
+        const params = new URLSearchParams({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.whatsapp.trim(),
+          ...(window.location.search ? Object.fromEntries(new URLSearchParams(window.location.search)) : {}),
+        });
+        navigate(`/coach-website/${slug}/thank-you?${params.toString()}`);
+      }
+    }
   };
 
   if (submitted) {

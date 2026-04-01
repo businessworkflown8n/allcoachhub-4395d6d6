@@ -18,6 +18,7 @@ import CoachWebsiteFAQ from "@/components/coach-website/CoachWebsiteFAQ";
 import CoachWebsiteSocial from "@/components/coach-website/CoachWebsiteSocial";
 import CoachWebsiteFinalCTA from "@/components/coach-website/CoachWebsiteFinalCTA";
 import CoachWebsiteStickyCTA from "@/components/coach-website/CoachWebsiteStickyCTA";
+import CoachWebsiteFloatingCTA from "@/components/coach-website/CoachWebsiteFloatingCTA";
 
 const CoachWebsite = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -100,7 +101,7 @@ const CoachWebsite = () => {
 
         {site.show_testimonials !== false && <CoachWebsiteTestimonials themeColor={themeColor} contentSections={cs} />}
 
-        <CoachWebsiteDemoForm coachId={site.coach_id} instituteName={site.institute_name} themeColor={themeColor} contentSections={cs} />
+        <CoachWebsiteDemoForm coachId={site.coach_id} instituteName={site.institute_name} themeColor={themeColor} contentSections={cs} slug={slug} />
 
         <CoachWebsiteFAQ contentSections={cs} />
 
@@ -110,6 +111,7 @@ const CoachWebsite = () => {
       </main>
       <Footer />
       <CoachWebsiteStickyCTA themeColor={themeColor} />
+      <CoachWebsiteFloatingCTA themeColor={themeColor} />
     </>
   );
 };
