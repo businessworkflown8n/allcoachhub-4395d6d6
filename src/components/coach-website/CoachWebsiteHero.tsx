@@ -133,6 +133,7 @@ const CoachWebsiteHero = ({ site, coach, courseCount, themeColor }: Props) => {
             )}
           </div>
         </div>
+        </div>
       </div>
     </section>
   );
