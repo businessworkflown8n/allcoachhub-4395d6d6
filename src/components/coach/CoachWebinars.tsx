@@ -242,10 +242,19 @@ const CoachWebinars = () => {
 
   const downloadCSV = () => {
     const webinar = webinars.find((w) => w.id === showRegistrants);
-    const rows = [["Name", "Attended", "Watch Time (min)", "Converted", "Amount Paid", "Registered At"]];
+    const headers = ["Name", "Email", "Phone", "WhatsApp", "Country", "City", "Industry", "Job Title", "Attended", "Watch Time (min)", "Converted", "Amount Paid", "Registered At"];
+    const rows: string[][] = [headers];
     registrants.forEach((r) => {
+      const name = r.profiles?.full_name || r.registrant_name || "Unknown";
+      const email = hasAccess(r.learner_id) ? (r.profiles?.email || r.registrant_email || "—") : "Hidden";
+      const phone = hasAccess(r.learner_id) ? (r.profiles?.contact_number || r.registrant_phone || "—") : "Hidden";
+      const whatsapp = hasAccess(r.learner_id) ? (r.profiles?.whatsapp_number || "—") : "Hidden";
       rows.push([
-        r.profiles?.full_name || "Unknown",
+        name, email, phone, whatsapp,
+        r.profiles?.country || "—",
+        r.profiles?.city || "—",
+        r.profiles?.industry || "—",
+        r.profiles?.current_job_title || "—",
         r.attended ? "Yes" : "No",
         String(r.watch_duration_minutes || 0),
         r.converted ? "Yes" : "No",
@@ -253,7 +262,7 @@ const CoachWebinars = () => {
         format(new Date(r.registered_at), "yyyy-MM-dd HH:mm"),
       ]);
     });
-    const csv = rows.map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+    const csv = rows.map((r) => r.map((c) => `"${(c || "").replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
