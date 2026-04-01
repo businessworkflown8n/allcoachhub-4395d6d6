@@ -37,18 +37,83 @@ const CoachEnrollments = () => {
   const { isAdmin } = useUserRole();
   const { hasAccess, isPending, requestAccess } = useContactAccess();
   const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [combinedRows, setCombinedRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const { rate: usdToInr } = useExchangeRate();
   const { dateRange, setDateRange, dateFrom, dateTo } = useDateRange("last30");
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("enrollments").select("*, courses(title, price_usd, price_inr)").eq("coach_id", user.id).order("enrolled_at", { ascending: false }).then(({ data }) => {
-      setEnrollments(data || []);
+    const fetchAll = async () => {
+      // Fetch course enrollments
+      const { data: enrollData } = await supabase
+        .from("enrollments")
+        .select("*, courses(title, price_usd, price_inr)")
+        .eq("coach_id", user.id)
+        .order("enrolled_at", { ascending: false });
+
+      const courseRows = (enrollData || []).map((e: any) => ({ ...e, row_type: "Course" }));
+      setEnrollments(courseRows);
+
+      // Fetch webinar registrations
+      const { data: webinarData } = await supabase
+        .from("webinars")
+        .select("id, title")
+        .eq("coach_id", user.id);
+
+      if (webinarData && webinarData.length > 0) {
+        const webinarMap = new Map(webinarData.map((w: any) => [w.id, w.title]));
+        const { data: regs } = await supabase
+          .from("webinar_registrations")
+          .select("id, learner_id, registered_at, attended, converted, amount_paid, registrant_name, registrant_email, registrant_phone, payment_status, webinar_id")
+          .in("webinar_id", webinarData.map((w: any) => w.id))
+          .order("registered_at", { ascending: false });
+
+        if (regs && regs.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("user_id, full_name, email, contact_number, country, city, industry, current_job_title, whatsapp_number, education_qualification, experience_level")
+            .in("user_id", regs.map((r: any) => r.learner_id));
+          const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+
+          const webinarRows = regs.map((r: any) => {
+            const profile = profileMap.get(r.learner_id);
+            return {
+              id: r.id,
+              row_type: "Webinar",
+              full_name: profile?.full_name || r.registrant_name || "Unknown",
+              email: profile?.email || r.registrant_email || "—",
+              contact_number: profile?.contact_number || r.registrant_phone || "—",
+              whatsapp_number: profile?.whatsapp_number || "—",
+              country: profile?.country || "—",
+              city: profile?.city || "—",
+              industry: profile?.industry || "—",
+              current_job_title: profile?.current_job_title || "—",
+              experience_level: profile?.experience_level || "—",
+              education_qualification: profile?.education_qualification || "—",
+              linkedin_profile: null,
+              learner_id: r.learner_id,
+              enrolled_at: r.registered_at,
+              payment_status: r.payment_status || (r.amount_paid > 0 ? "paid" : "free"),
+              amount_paid: r.amount_paid,
+              currency: "INR",
+              payment_locked: true,
+              courses: { title: webinarMap.get(r.webinar_id) || "Webinar", price_usd: 0, price_inr: r.amount_paid || 0 },
+            };
+          });
+          setCombinedRows([...courseRows, ...webinarRows]);
+        } else {
+          setCombinedRows(courseRows);
+        }
+      } else {
+        setCombinedRows(courseRows);
+      }
       setLoading(false);
-    });
+    };
+    fetchAll();
   }, [user]);
 
   const handlePaymentStatusChange = async (enrollmentId: string, newStatus: string) => {
