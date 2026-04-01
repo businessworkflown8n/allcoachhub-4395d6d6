@@ -111,6 +111,7 @@ const CoachWebsite = () => {
       </main>
       <Footer />
       <CoachWebsiteStickyCTA themeColor={themeColor} />
+      <CoachWebsiteFloatingCTA themeColor={themeColor} />
     </>
   );
 };

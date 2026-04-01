@@ -171,6 +171,7 @@ const App = () => (
             } />
             <Route path="/coach-profile/:slug" element={<Suspense fallback={<PageFallback />}><CoachLanding /></Suspense>} />
             <Route path="/coach-website/:slug" element={<Suspense fallback={<PageFallback />}><CoachWebsite /></Suspense>} />
+            <Route path="/coach-website/:slug/thank-you" element={<Suspense fallback={<PageFallback />}><CoachWebsiteThankYou /></Suspense>} />
             <Route path="/course/:slug" element={<Suspense fallback={<PageFallback />}><CourseDetail /></Suspense>} />
             <Route path="/enroll/:courseId" element={
               <ProtectedRoute allowedRole="learner">
