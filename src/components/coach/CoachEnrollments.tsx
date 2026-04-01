@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useContactAccess } from "@/hooks/useContactAccess";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Download, Search, DollarSign, IndianRupee, Globe, RefreshCw, Lock, KeyRound } from "lucide-react";
+import { Users, Download, Search, DollarSign, IndianRupee, Globe, RefreshCw, Lock, KeyRound, BookOpen, Video } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
