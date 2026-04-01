@@ -49,7 +49,10 @@ interface Registrant {
   watch_duration_minutes: number;
   converted: boolean;
   amount_paid: number;
-  profiles: { full_name: string | null; email: string | null; contact_number: string | null } | null;
+  registrant_name: string | null;
+  registrant_email: string | null;
+  registrant_phone: string | null;
+  profiles: { full_name: string | null; email: string | null; contact_number: string | null; country: string | null; city: string | null; industry: string | null; current_job_title: string | null; whatsapp_number: string | null } | null;
 }
 
 const TIMEZONES = [
