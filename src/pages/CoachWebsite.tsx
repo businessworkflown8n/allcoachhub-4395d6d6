@@ -101,7 +101,7 @@ const CoachWebsite = () => {
 
         {site.show_testimonials !== false && <CoachWebsiteTestimonials themeColor={themeColor} contentSections={cs} />}
 
-        <CoachWebsiteDemoForm coachId={site.coach_id} instituteName={site.institute_name} themeColor={themeColor} contentSections={cs} />
+        <CoachWebsiteDemoForm coachId={site.coach_id} instituteName={site.institute_name} themeColor={themeColor} contentSections={cs} slug={slug} />
 
         <CoachWebsiteFAQ contentSections={cs} />
 
