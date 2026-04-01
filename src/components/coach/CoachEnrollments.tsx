@@ -270,6 +270,20 @@ const CoachEnrollments = () => {
         <h2 className="text-xl font-bold text-foreground">Enrollment Analytics</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <GlobalDateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-[130px] h-9 text-xs">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="Course">
+                <span className="flex items-center gap-1.5"><BookOpen className="h-3 w-3" /> Course</span>
+              </SelectItem>
+              <SelectItem value="Webinar">
+                <span className="flex items-center gap-1.5"><Video className="h-3 w-3" /> Webinar</span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search by name, course..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 w-64" />
