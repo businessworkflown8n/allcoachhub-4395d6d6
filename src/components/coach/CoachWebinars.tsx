@@ -203,14 +203,14 @@ const CoachWebinars = () => {
     setShowRegistrants(webinarId);
     const { data } = await supabase
       .from("webinar_registrations")
-      .select("id, learner_id, registered_at, attended, watch_duration_minutes, converted, amount_paid")
+      .select("id, learner_id, registered_at, attended, watch_duration_minutes, converted, amount_paid, registrant_name, registrant_email, registrant_phone")
       .eq("webinar_id", webinarId)
       .order("registered_at", { ascending: false });
 
     if (data && data.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, full_name, email, contact_number")
+        .select("user_id, full_name, email, contact_number, country, city, industry, current_job_title, whatsapp_number")
         .in("user_id", data.map((r: any) => r.learner_id));
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
       setRegistrants(data.map((r: any) => ({ ...r, profiles: profileMap.get(r.learner_id) || null })));
