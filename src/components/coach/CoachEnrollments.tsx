@@ -357,6 +357,12 @@ const CoachEnrollments = () => {
             <TableBody>
               {filtered.map((e) => (
                 <TableRow key={e.id}>
+                  <TableCell>
+                    <Badge variant="outline" className={`text-[10px] gap-1 ${e.row_type === "Course" ? "text-primary border-primary/30" : "text-blue-400 border-blue-500/30"}`}>
+                      {e.row_type === "Course" ? <BookOpen className="h-3 w-3" /> : <Video className="h-3 w-3" />}
+                      {e.row_type}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-foreground font-medium whitespace-nowrap">{e.full_name}</TableCell>
                   <ContactCell enrollment={e} />
                   <TableCell className="text-foreground whitespace-nowrap">{(e.courses as any)?.title}</TableCell>
