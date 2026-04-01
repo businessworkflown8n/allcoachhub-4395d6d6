@@ -335,12 +335,13 @@ const CoachEnrollments = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Type</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Mobile</TableHead>
                 <TableHead>WhatsApp</TableHead>
-                <TableHead>Course</TableHead>
-                <TableHead>Course Fee</TableHead>
+                <TableHead>Course / Webinar</TableHead>
+                <TableHead>Fee</TableHead>
                 <TableHead>Amount Paid</TableHead>
                 <TableHead>Country</TableHead>
                 <TableHead>City</TableHead>
