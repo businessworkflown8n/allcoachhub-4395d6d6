@@ -6,12 +6,17 @@ Disallow: /learner/*
 Disallow: /coach/*
 Disallow: /reset-password
 Disallow: /enroll/*
+Disallow: /unsubscribe
 
 User-agent: Googlebot
 Allow: /
 Allow: /courses
+Allow: /courses/*
 Allow: /course/*
+Allow: /categories
+Allow: /categories/*
 Allow: /coach-profile/*
+Allow: /coach-website/*
 Allow: /ai-blogs
 Allow: /ai-blogs/*
 Allow: /ai-jobs-news/*
@@ -19,6 +24,7 @@ Allow: /webinars
 Allow: /materials
 Allow: /materials/*
 Allow: /daily-zip
+Allow: /prompt-generator
 Allow: /prompt-engineering
 Allow: /ai-agents
 Allow: /llms-fine-tuning
@@ -27,6 +33,8 @@ Allow: /no-code-ai
 Allow: /ai-marketing
 Allow: /generative-ai-for-developers
 Allow: /ai-business
+Allow: /install
+Allow: /sitemap
 
 User-agent: Bingbot
 Allow: /
