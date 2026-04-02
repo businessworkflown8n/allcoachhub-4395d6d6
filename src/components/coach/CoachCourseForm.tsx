@@ -327,8 +327,8 @@ const CoachCourseForm = () => {
           </div>
         </div>
 
-        <button type="submit" disabled={saving} className="glow-lime rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
-          {saving ? "Saving..." : isEdit ? "Update Course" : "Create Course"}
+        <button type="submit" disabled={saving || uploadingThumb} className="glow-lime rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
+          {uploadingThumb ? "Uploading thumbnail..." : saving ? "Saving..." : isEdit ? "Update Course" : "Create Course"}
         </button>
       </form>
 
