@@ -83,6 +83,51 @@ const CoachCourseForm = () => {
     (c) => !approvedCategoryIds.has(c.id) && !pendingCategoryIds.has(c.id)
   );
 
+  const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Please select an image file", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Image must be under 5MB", variant: "destructive" });
+      return;
+    }
+    setThumbnailFile(file);
+    setThumbnailPreview(URL.createObjectURL(file));
+  };
+
+  const removeThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const uploadThumbnail = async (courseId: string): Promise<string | null> => {
+    if (!thumbnailFile || !user) return null;
+    const ext = thumbnailFile.name.split(".").pop();
+    const path = `course-thumbnails/${user.id}/${courseId}.${ext}`;
+    const { error } = await supabase.storage.from("logos").upload(path, thumbnailFile, { upsert: true });
+    if (error) { console.error("Thumbnail upload error:", error); return null; }
+    const { data: urlData } = supabase.storage.from("logos").getPublicUrl(path);
+    return urlData.publicUrl;
+  };
+
+  const handleRequestThumbnail = async () => {
+    if (!user || !isEdit || !id) {
+      toast({ title: "Save the course first, then request a thumbnail", variant: "destructive" });
+      return;
+    }
+    const { error } = await supabase.from("courses").update({
+      rejection_reason: `THUMBNAIL_REQUEST: ${thumbnailRequestNote || "Please add a thumbnail for this course."}`
+    }).eq("id", id);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Thumbnail request sent to admin" });
+    setShowThumbRequest(false);
+    setThumbnailRequestNote("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -92,7 +137,6 @@ const CoachCourseForm = () => {
       return;
     }
 
-    // Validate category is approved
     const isApproved = approvedCategories.some((c) => c.category_name === form.category);
     if (!isApproved) {
       toast({ title: "You can only create courses in your approved categories", variant: "destructive" });
@@ -101,7 +145,7 @@ const CoachCourseForm = () => {
 
     setSaving(true);
 
-    const payload = {
+    const payload: any = {
       coach_id: user.id,
       title: form.title,
       description: form.description,
@@ -117,19 +161,34 @@ const CoachCourseForm = () => {
     };
 
     let error;
+    let courseId = id;
     if (isEdit) {
       ({ error } = await supabase.from("courses").update(payload).eq("id", id));
     } else {
-      ({ error } = await supabase.from("courses").insert(payload));
+      const res = await supabase.from("courses").insert(payload).select("id").single();
+      error = res.error;
+      courseId = res.data?.id;
+    }
+
+    if (error) {
+      setSaving(false);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    // Upload thumbnail if selected
+    if (thumbnailFile && courseId) {
+      setUploadingThumb(true);
+      const thumbUrl = await uploadThumbnail(courseId);
+      if (thumbUrl) {
+        await supabase.from("courses").update({ thumbnail_url: thumbUrl }).eq("id", courseId);
+      }
+      setUploadingThumb(false);
     }
 
     setSaving(false);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: isEdit ? "Course updated" : "Course created" });
-      navigate("/coach/courses");
-    }
+    toast({ title: isEdit ? "Course updated" : "Course created" });
+    navigate("/coach/courses");
   };
 
   if (permLoading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
