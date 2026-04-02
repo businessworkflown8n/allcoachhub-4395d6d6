@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BookOpen, Search, CheckCircle, XCircle, MessageSquare, Eye } from "lucide-react";
+import { BookOpen, Search, CheckCircle, XCircle, MessageSquare, Eye, Upload, ImageIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
