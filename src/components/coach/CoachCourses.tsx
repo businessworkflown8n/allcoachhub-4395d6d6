@@ -142,7 +142,15 @@ const CoachCourses = () => {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((c) => (
-            <div key={c.id} className="rounded-xl border border-border bg-card p-4 space-y-3">
+            <div key={c.id} className="rounded-xl border border-border bg-card overflow-hidden space-y-0">
+              {c.thumbnail_url ? (
+                <img src={c.thumbnail_url} alt={c.title} className="w-full h-32 object-cover" />
+              ) : (
+                <div className="w-full h-32 bg-secondary flex items-center justify-center">
+                  <BookOpen className="h-8 w-8 text-muted-foreground/40" />
+                </div>
+              )}
+              <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-primary">{c.category}</span>
                 <span className={`rounded-full px-2 py-0.5 text-xs ${c.is_published ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
