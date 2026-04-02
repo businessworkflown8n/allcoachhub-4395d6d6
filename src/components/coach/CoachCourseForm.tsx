@@ -211,6 +211,51 @@ const CoachCourseForm = () => {
           <Textarea value={form.description} onChange={(e) => updateField("description", e.target.value)} className="bg-secondary border-border" rows={4} />
         </div>
 
+        {/* Thumbnail Upload */}
+        <div className="space-y-2">
+          <Label className="text-foreground">Thumbnail Image (Optional)</Label>
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleThumbnailSelect} className="hidden" />
+          {thumbnailPreview ? (
+            <div className="relative w-full max-w-xs">
+              <img src={thumbnailPreview} alt="Thumbnail preview" className="w-full h-40 object-cover rounded-lg border border-border" />
+              <button type="button" onClick={removeThumbnail} className="absolute top-2 right-2 rounded-full bg-card/80 p-1 hover:bg-destructive/20">
+                <X className="h-4 w-4 text-foreground" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 rounded-lg border border-dashed border-border bg-secondary px-4 py-8 w-full max-w-xs hover:border-primary/50 transition-colors"
+            >
+              <Upload className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Click to upload thumbnail</span>
+            </button>
+          )}
+          <p className="text-xs text-muted-foreground">Max 5MB. Recommended: 1280×720px (16:9)</p>
+          {isEdit && (
+            <div className="pt-1">
+              <button type="button" onClick={() => setShowThumbRequest(!showThumbRequest)} className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                <ImageIcon className="h-3 w-3" /> Request admin to add/update thumbnail
+              </button>
+              {showThumbRequest && (
+                <div className="mt-2 space-y-2 rounded-lg border border-border bg-card p-3">
+                  <Textarea
+                    value={thumbnailRequestNote}
+                    onChange={(e) => setThumbnailRequestNote(e.target.value)}
+                    placeholder="Describe what kind of thumbnail you'd like..."
+                    className="bg-secondary border-border text-sm"
+                    rows={2}
+                  />
+                  <button type="button" onClick={handleRequestThumbnail} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:brightness-110">
+                    Send Request
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label className="text-foreground">Category *</Label>
