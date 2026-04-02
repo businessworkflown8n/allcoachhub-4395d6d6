@@ -19,6 +19,12 @@ const CoachCourseForm = () => {
   const isEdit = !!id;
   const [saving, setSaving] = useState(false);
   const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [uploadingThumb, setUploadingThumb] = useState(false);
+  const [thumbnailRequestNote, setThumbnailRequestNote] = useState("");
+  const [showThumbRequest, setShowThumbRequest] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { approvedCategories, requests, loading: permLoading, refetch: refetchPerms } = useCoachCategoryPermissions(user?.id);
   const { categories: allCategories } = useCoachCategories(true);
