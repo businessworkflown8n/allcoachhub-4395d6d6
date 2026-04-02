@@ -16,6 +16,9 @@ const AdminCourses = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [changingId, setChangingId] = useState<string | null>(null);
   const [changeMessage, setChangeMessage] = useState("");
+  const [thumbUploadId, setThumbUploadId] = useState<string | null>(null);
+  const [thumbUploading, setThumbUploading] = useState(false);
+  const thumbInputRef = useRef<HTMLInputElement>(null);
 
   const fetchAll = async () => {
     const [courseData, enrollData, profileData] = await Promise.all([
