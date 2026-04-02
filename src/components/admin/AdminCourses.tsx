@@ -137,6 +137,19 @@ const AdminCourses = () => {
         </div>
       )}
 
+      {/* Thumbnail requests banner */}
+      {courses.filter((c) => c.rejection_reason?.startsWith("THUMBNAIL_REQUEST:")).length > 0 && (
+        <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 flex items-center gap-2">
+          <ImageIcon className="h-4 w-4 text-blue-400" />
+          <span className="text-sm text-blue-400 font-medium">
+            {courses.filter((c) => c.rejection_reason?.startsWith("THUMBNAIL_REQUEST:")).length} thumbnail request(s) from coaches
+          </span>
+        </div>
+      )}
+
+      {/* Hidden file input for admin thumbnail upload */}
+      <input ref={thumbInputRef} type="file" accept="image/*" onChange={handleAdminThumbUpload} className="hidden" />
+
       {filtered.length === 0 ? (
         <div className="text-center py-16">
           <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
