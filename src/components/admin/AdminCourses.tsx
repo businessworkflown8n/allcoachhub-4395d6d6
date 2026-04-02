@@ -157,9 +157,10 @@ const AdminCourses = () => {
         </div>
       ) : (
         <div className="rounded-xl border border-border overflow-auto">
-          <Table>
+           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Thumbnail</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Coach</TableHead>
                 <TableHead>Category</TableHead>
