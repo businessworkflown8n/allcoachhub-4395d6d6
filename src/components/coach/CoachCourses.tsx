@@ -181,6 +181,7 @@ const CoachCourses = () => {
                   <Trash2 className="h-3 w-3" /> Delete
                 </button>
               </div>
+              </div>
             </div>
           ))}
         </div>
