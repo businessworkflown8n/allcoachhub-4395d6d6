@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Upload, X, ImageIcon } from "lucide-react";
 import { useCoachCategoryPermissions } from "@/hooks/useCoachCategoryPermissions";
 import { useCoachCategories } from "@/hooks/useCoachCategories";
 import CategoryRequestModal from "@/components/coach/CategoryRequestModal";
@@ -19,6 +19,12 @@ const CoachCourseForm = () => {
   const isEdit = !!id;
   const [saving, setSaving] = useState(false);
   const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [uploadingThumb, setUploadingThumb] = useState(false);
+  const [thumbnailRequestNote, setThumbnailRequestNote] = useState("");
+  const [showThumbRequest, setShowThumbRequest] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { approvedCategories, requests, loading: permLoading, refetch: refetchPerms } = useCoachCategoryPermissions(user?.id);
   const { categories: allCategories } = useCoachCategories(true);
@@ -62,6 +68,7 @@ const CoachCourseForm = () => {
             original_price_inr: data.original_price_inr ? String(data.original_price_inr) : "",
             discount_percent: data.discount_percent ? String(data.discount_percent) : "",
           });
+          if (data.thumbnail_url) setThumbnailPreview(data.thumbnail_url);
         }
       });
     }
@@ -76,6 +83,51 @@ const CoachCourseForm = () => {
     (c) => !approvedCategoryIds.has(c.id) && !pendingCategoryIds.has(c.id)
   );
 
+  const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Please select an image file", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Image must be under 5MB", variant: "destructive" });
+      return;
+    }
+    setThumbnailFile(file);
+    setThumbnailPreview(URL.createObjectURL(file));
+  };
+
+  const removeThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const uploadThumbnail = async (courseId: string): Promise<string | null> => {
+    if (!thumbnailFile || !user) return null;
+    const ext = thumbnailFile.name.split(".").pop();
+    const path = `course-thumbnails/${user.id}/${courseId}.${ext}`;
+    const { error } = await supabase.storage.from("logos").upload(path, thumbnailFile, { upsert: true });
+    if (error) { console.error("Thumbnail upload error:", error); return null; }
+    const { data: urlData } = supabase.storage.from("logos").getPublicUrl(path);
+    return urlData.publicUrl;
+  };
+
+  const handleRequestThumbnail = async () => {
+    if (!user || !isEdit || !id) {
+      toast({ title: "Save the course first, then request a thumbnail", variant: "destructive" });
+      return;
+    }
+    const { error } = await supabase.from("courses").update({
+      rejection_reason: `THUMBNAIL_REQUEST: ${thumbnailRequestNote || "Please add a thumbnail for this course."}`
+    }).eq("id", id);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Thumbnail request sent to admin" });
+    setShowThumbRequest(false);
+    setThumbnailRequestNote("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -85,7 +137,6 @@ const CoachCourseForm = () => {
       return;
     }
 
-    // Validate category is approved
     const isApproved = approvedCategories.some((c) => c.category_name === form.category);
     if (!isApproved) {
       toast({ title: "You can only create courses in your approved categories", variant: "destructive" });
@@ -94,7 +145,7 @@ const CoachCourseForm = () => {
 
     setSaving(true);
 
-    const payload = {
+    const payload: any = {
       coach_id: user.id,
       title: form.title,
       description: form.description,
@@ -110,19 +161,34 @@ const CoachCourseForm = () => {
     };
 
     let error;
+    let courseId = id;
     if (isEdit) {
       ({ error } = await supabase.from("courses").update(payload).eq("id", id));
     } else {
-      ({ error } = await supabase.from("courses").insert(payload));
+      const res = await supabase.from("courses").insert(payload).select("id").single();
+      error = res.error;
+      courseId = res.data?.id;
+    }
+
+    if (error) {
+      setSaving(false);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    // Upload thumbnail if selected
+    if (thumbnailFile && courseId) {
+      setUploadingThumb(true);
+      const thumbUrl = await uploadThumbnail(courseId);
+      if (thumbUrl) {
+        await supabase.from("courses").update({ thumbnail_url: thumbUrl }).eq("id", courseId);
+      }
+      setUploadingThumb(false);
     }
 
     setSaving(false);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: isEdit ? "Course updated" : "Course created" });
-      navigate("/coach/courses");
-    }
+    toast({ title: isEdit ? "Course updated" : "Course created" });
+    navigate("/coach/courses");
   };
 
   if (permLoading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
@@ -143,6 +209,51 @@ const CoachCourseForm = () => {
         <div className="space-y-2">
           <Label className="text-foreground">Description</Label>
           <Textarea value={form.description} onChange={(e) => updateField("description", e.target.value)} className="bg-secondary border-border" rows={4} />
+        </div>
+
+        {/* Thumbnail Upload */}
+        <div className="space-y-2">
+          <Label className="text-foreground">Thumbnail Image (Optional)</Label>
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleThumbnailSelect} className="hidden" />
+          {thumbnailPreview ? (
+            <div className="relative w-full max-w-xs">
+              <img src={thumbnailPreview} alt="Thumbnail preview" className="w-full h-40 object-cover rounded-lg border border-border" />
+              <button type="button" onClick={removeThumbnail} className="absolute top-2 right-2 rounded-full bg-card/80 p-1 hover:bg-destructive/20">
+                <X className="h-4 w-4 text-foreground" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 rounded-lg border border-dashed border-border bg-secondary px-4 py-8 w-full max-w-xs hover:border-primary/50 transition-colors"
+            >
+              <Upload className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Click to upload thumbnail</span>
+            </button>
+          )}
+          <p className="text-xs text-muted-foreground">Max 5MB. Recommended: 1280×720px (16:9)</p>
+          {isEdit && (
+            <div className="pt-1">
+              <button type="button" onClick={() => setShowThumbRequest(!showThumbRequest)} className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                <ImageIcon className="h-3 w-3" /> Request admin to add/update thumbnail
+              </button>
+              {showThumbRequest && (
+                <div className="mt-2 space-y-2 rounded-lg border border-border bg-card p-3">
+                  <Textarea
+                    value={thumbnailRequestNote}
+                    onChange={(e) => setThumbnailRequestNote(e.target.value)}
+                    placeholder="Describe what kind of thumbnail you'd like..."
+                    className="bg-secondary border-border text-sm"
+                    rows={2}
+                  />
+                  <button type="button" onClick={handleRequestThumbnail} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:brightness-110">
+                    Send Request
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -216,8 +327,8 @@ const CoachCourseForm = () => {
           </div>
         </div>
 
-        <button type="submit" disabled={saving} className="glow-lime rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
-          {saving ? "Saving..." : isEdit ? "Update Course" : "Create Course"}
+        <button type="submit" disabled={saving || uploadingThumb} className="glow-lime rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
+          {uploadingThumb ? "Uploading thumbnail..." : saving ? "Saving..." : isEdit ? "Update Course" : "Create Course"}
         </button>
       </form>
 

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BookOpen, Search, CheckCircle, XCircle, MessageSquare, Eye } from "lucide-react";
+import { BookOpen, Search, CheckCircle, XCircle, MessageSquare, Eye, Upload, ImageIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
@@ -16,6 +16,9 @@ const AdminCourses = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [changingId, setChangingId] = useState<string | null>(null);
   const [changeMessage, setChangeMessage] = useState("");
+  const [thumbUploadId, setThumbUploadId] = useState<string | null>(null);
+  const [thumbUploading, setThumbUploading] = useState(false);
+  const thumbInputRef = useRef<HTMLInputElement>(null);
 
   const fetchAll = async () => {
     const [courseData, enrollData, profileData] = await Promise.all([
@@ -58,6 +61,28 @@ const AdminCourses = () => {
     toast({ title: "Changes requested" });
     setChangingId(null);
     setChangeMessage("");
+    fetchAll();
+  };
+
+  const handleAdminThumbUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !thumbUploadId) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      toast({ title: "Invalid file. Use an image under 5MB.", variant: "destructive" });
+      return;
+    }
+    setThumbUploading(true);
+    const course = courses.find(c => c.id === thumbUploadId);
+    const ext = file.name.split(".").pop();
+    const path = `course-thumbnails/${course?.coach_id || "admin"}/${thumbUploadId}.${ext}`;
+    const { error } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
+    if (error) { toast({ title: "Upload failed", description: error.message, variant: "destructive" }); setThumbUploading(false); return; }
+    const { data: urlData } = supabase.storage.from("logos").getPublicUrl(path);
+    await supabase.from("courses").update({ thumbnail_url: urlData.publicUrl, rejection_reason: null }).eq("id", thumbUploadId);
+    toast({ title: "Thumbnail updated" });
+    setThumbUploadId(null);
+    setThumbUploading(false);
+    if (thumbInputRef.current) thumbInputRef.current.value = "";
     fetchAll();
   };
 
@@ -112,6 +137,19 @@ const AdminCourses = () => {
         </div>
       )}
 
+      {/* Thumbnail requests banner */}
+      {courses.filter((c) => c.rejection_reason?.startsWith("THUMBNAIL_REQUEST:")).length > 0 && (
+        <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 flex items-center gap-2">
+          <ImageIcon className="h-4 w-4 text-blue-400" />
+          <span className="text-sm text-blue-400 font-medium">
+            {courses.filter((c) => c.rejection_reason?.startsWith("THUMBNAIL_REQUEST:")).length} thumbnail request(s) from coaches
+          </span>
+        </div>
+      )}
+
+      {/* Hidden file input for admin thumbnail upload */}
+      <input ref={thumbInputRef} type="file" accept="image/*" onChange={handleAdminThumbUpload} className="hidden" />
+
       {filtered.length === 0 ? (
         <div className="text-center py-16">
           <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -119,9 +157,10 @@ const AdminCourses = () => {
         </div>
       ) : (
         <div className="rounded-xl border border-border overflow-auto">
-          <Table>
+           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Thumbnail</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Coach</TableHead>
                 <TableHead>Category</TableHead>
@@ -136,6 +175,30 @@ const AdminCourses = () => {
             <TableBody>
               {filtered.map((c) => (
                 <TableRow key={c.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {c.thumbnail_url ? (
+                        <img src={c.thumbnail_url} alt="" className="h-10 w-16 rounded object-cover border border-border" />
+                      ) : (
+                        <div className="h-10 w-16 rounded border border-dashed border-border bg-secondary flex items-center justify-center">
+                          <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <button
+                        onClick={() => { setThumbUploadId(c.id); thumbInputRef.current?.click(); }}
+                        title="Upload thumbnail"
+                        className="rounded p-1 text-primary hover:bg-primary/10"
+                        disabled={thumbUploading}
+                      >
+                        <Upload className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {c.rejection_reason?.startsWith("THUMBNAIL_REQUEST:") && (
+                      <p className="text-[10px] text-blue-400 mt-1 max-w-[150px] truncate" title={c.rejection_reason.replace("THUMBNAIL_REQUEST: ", "")}>
+                        📩 {c.rejection_reason.replace("THUMBNAIL_REQUEST: ", "")}
+                      </p>
+                    )}
+                  </TableCell>
                   <TableCell className="text-foreground font-medium max-w-[200px] truncate">{c.title}</TableCell>
                   <TableCell className="text-muted-foreground">{getCoachName(c.coach_id)}</TableCell>
                   <TableCell className="text-muted-foreground">{c.category}</TableCell>
