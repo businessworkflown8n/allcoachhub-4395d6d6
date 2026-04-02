@@ -175,6 +175,30 @@ const AdminCourses = () => {
             <TableBody>
               {filtered.map((c) => (
                 <TableRow key={c.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {c.thumbnail_url ? (
+                        <img src={c.thumbnail_url} alt="" className="h-10 w-16 rounded object-cover border border-border" />
+                      ) : (
+                        <div className="h-10 w-16 rounded border border-dashed border-border bg-secondary flex items-center justify-center">
+                          <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <button
+                        onClick={() => { setThumbUploadId(c.id); thumbInputRef.current?.click(); }}
+                        title="Upload thumbnail"
+                        className="rounded p-1 text-primary hover:bg-primary/10"
+                        disabled={thumbUploading}
+                      >
+                        <Upload className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {c.rejection_reason?.startsWith("THUMBNAIL_REQUEST:") && (
+                      <p className="text-[10px] text-blue-400 mt-1 max-w-[150px] truncate" title={c.rejection_reason.replace("THUMBNAIL_REQUEST: ", "")}>
+                        📩 {c.rejection_reason.replace("THUMBNAIL_REQUEST: ", "")}
+                      </p>
+                    )}
+                  </TableCell>
                   <TableCell className="text-foreground font-medium max-w-[200px] truncate">{c.title}</TableCell>
                   <TableCell className="text-muted-foreground">{getCoachName(c.coach_id)}</TableCell>
                   <TableCell className="text-muted-foreground">{c.category}</TableCell>
