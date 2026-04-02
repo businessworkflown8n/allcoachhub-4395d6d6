@@ -64,6 +64,28 @@ const AdminCourses = () => {
     fetchAll();
   };
 
+  const handleAdminThumbUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !thumbUploadId) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      toast({ title: "Invalid file. Use an image under 5MB.", variant: "destructive" });
+      return;
+    }
+    setThumbUploading(true);
+    const course = courses.find(c => c.id === thumbUploadId);
+    const ext = file.name.split(".").pop();
+    const path = `course-thumbnails/${course?.coach_id || "admin"}/${thumbUploadId}.${ext}`;
+    const { error } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
+    if (error) { toast({ title: "Upload failed", description: error.message, variant: "destructive" }); setThumbUploading(false); return; }
+    const { data: urlData } = supabase.storage.from("logos").getPublicUrl(path);
+    await supabase.from("courses").update({ thumbnail_url: urlData.publicUrl, rejection_reason: null }).eq("id", thumbUploadId);
+    toast({ title: "Thumbnail updated" });
+    setThumbUploadId(null);
+    setThumbUploading(false);
+    if (thumbInputRef.current) thumbInputRef.current.value = "";
+    fetchAll();
+  };
+
   const filtered = courses.filter((c) => {
     const matchesSearch = !search || [c.title, c.category, getCoachName(c.coach_id)].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
     const matchesStatus = statusFilter === "all" || c.approval_status === statusFilter;
