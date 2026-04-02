@@ -68,6 +68,7 @@ const CoachCourseForm = () => {
             original_price_inr: data.original_price_inr ? String(data.original_price_inr) : "",
             discount_percent: data.discount_percent ? String(data.discount_percent) : "",
           });
+          if (data.thumbnail_url) setThumbnailPreview(data.thumbnail_url);
         }
       });
     }
