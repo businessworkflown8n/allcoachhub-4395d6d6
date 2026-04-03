@@ -19,50 +19,49 @@ const AIClientMatching = () => {
   useEffect(() => {
     if (!user) return;
     const fetchMatches = async () => {
-      // Get coach profile for matching criteria
-      const [profileRes, enrollmentsRes] = await Promise.all([
-        supabase.from("profiles").select("expertise, bio").eq("user_id", user.id).maybeSingle(),
-        supabase.from("enrollments").select("full_name, experience_level, learning_objective, industry").eq("coach_id", user.id).limit(50),
+      const [profileRes] = await Promise.all([
+        supabase.from("profiles").select("experience, bio, category").eq("user_id", user.id).maybeSingle(),
       ]);
 
-      const coachExpertise = (profileRes.data?.expertise || "").toLowerCase();
+      const coachCategory = (profileRes.data?.category || "").toLowerCase();
+      const coachBio = (profileRes.data?.bio || "").toLowerCase();
 
-      // Get recent learner profiles who aren't already enrolled with this coach
+      // Get learner profiles
       const { data: learners } = await supabase
         .from("profiles")
-        .select("full_name, expertise, bio, city, country")
+        .select("full_name, bio, category, city, country, experience_level")
         .neq("user_id", user.id)
         .limit(100);
 
-      // Simple scoring algorithm
       const scored = (learners || []).map((l) => {
         let score = 0;
-        const learnerInterest = ((l.expertise || "") + " " + (l.bio || "")).toLowerCase();
+        const learnerInterest = ((l.category || "") + " " + (l.bio || "")).toLowerCase();
 
-        // Skills match (40%)
-        if (coachExpertise) {
-          const coachSkills = coachExpertise.split(/[,\s]+/).filter(Boolean);
-          const matchCount = coachSkills.filter((s) => learnerInterest.includes(s)).length;
-          score += Math.min((matchCount / Math.max(coachSkills.length, 1)) * 40, 40);
+        // Category match (40%)
+        if (coachCategory && learnerInterest.includes(coachCategory)) score += 40;
+        else if (coachBio) {
+          const words = coachBio.split(/[,\s]+/).filter((w) => w.length > 3);
+          const matchCount = words.filter((w) => learnerInterest.includes(w)).length;
+          score += Math.min((matchCount / Math.max(words.length, 1)) * 40, 40);
         }
 
-        // Has profile info (20%) - proxy for seriousness
+        // Profile completeness (20%)
         if (l.full_name) score += 5;
         if (l.bio) score += 10;
-        if (l.expertise) score += 5;
+        if (l.category) score += 5;
 
-        // Location diversity bonus (20%)
+        // Location (20%)
         if (l.country) score += 10;
         if (l.city) score += 10;
 
-        // Base engagement score (20%)
+        // Base (20%)
         score += 10 + Math.random() * 10;
 
         return {
           name: l.full_name || "Learner",
           matchScore: Math.min(Math.round(score), 98),
-          interests: l.expertise || "AI & Technology",
-          level: l.bio ? "Intermediate" : "Beginner",
+          interests: l.category || "AI & Technology",
+          level: l.experience_level || "Beginner",
         };
       });
 
@@ -85,7 +84,6 @@ const AIClientMatching = () => {
         <h3 className="font-semibold text-foreground">AI Client Matching</h3>
       </div>
 
-      {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-lg bg-secondary/50 p-3 text-center">
           <Users className="h-4 w-4 text-primary mx-auto mb-1" />
@@ -104,7 +102,6 @@ const AIClientMatching = () => {
         </div>
       </div>
 
-      {/* Matches list */}
       {matches.length > 0 ? (
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Top Matched Learners</p>
@@ -119,7 +116,7 @@ const AIClientMatching = () => {
                   <p className="text-xs text-muted-foreground">{m.interests} · {m.level}</p>
                 </div>
               </div>
-              <span className={`text-sm font-bold ${m.matchScore >= 70 ? "text-green-400" : m.matchScore >= 50 ? "text-yellow-400" : "text-muted-foreground"}`}>
+              <span className={`text-sm font-bold ${m.matchScore >= 70 ? "text-primary" : "text-muted-foreground"}`}>
                 {m.matchScore}%
               </span>
             </div>

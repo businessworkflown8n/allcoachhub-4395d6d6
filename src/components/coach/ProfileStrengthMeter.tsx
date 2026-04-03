@@ -21,7 +21,7 @@ const ProfileStrengthMeter = () => {
     if (!user) return;
     const check = async () => {
       const [profileRes, coursesRes, webinarsRes, websiteRes] = await Promise.all([
-        supabase.from("profiles").select("full_name, bio, expertise, avatar_url, certifications, experience_years").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select("full_name, bio, experience, avatar_url, certifications, category").eq("user_id", user.id).maybeSingle(),
         supabase.from("courses").select("id", { count: "exact", head: true }).eq("coach_id", user.id),
         supabase.from("webinars").select("id", { count: "exact", head: true }).eq("coach_id", user.id),
         supabase.from("coach_websites").select("id").eq("coach_id", user.id).maybeSingle(),
@@ -31,9 +31,9 @@ const ProfileStrengthMeter = () => {
       const checks: CheckItem[] = [
         { label: "Add your full name", done: !!p?.full_name, link: "/coach/profile", tip: "A name builds trust with learners" },
         { label: "Write a bio", done: !!p?.bio, link: "/coach/profile", tip: "Profiles with bios get 3x more views" },
-        { label: "Add expertise & skills", done: !!p?.expertise, link: "/coach/profile", tip: "Helps us match you with the right learners" },
+        { label: "Add experience & skills", done: !!p?.experience, link: "/coach/profile", tip: "Helps us match you with the right learners" },
         { label: "Upload a profile photo", done: !!p?.avatar_url, link: "/coach/profile", tip: "Photos increase conversion by 40%" },
-        { label: "Add certifications", done: !!(p?.certifications && (p.certifications as string[]).length > 0), link: "/coach/profile", tip: "Verified credentials earn trust" },
+        { label: "Add certifications", done: !!(p?.certifications && p.certifications.length > 0), link: "/coach/profile", tip: "Verified credentials earn trust" },
         { label: "Create your first course", done: (coursesRes.count || 0) > 0, link: "/coach/courses/new", tip: "Courses are the #1 way to earn" },
         { label: "Host a webinar", done: (webinarsRes.count || 0) > 0, link: "/coach/webinars", tip: "Webinars attract new learners" },
         { label: "Setup your brand page", done: !!websiteRes.data, link: "/coach/website", tip: "Get a shareable link to promote" },
@@ -55,7 +55,7 @@ const ProfileStrengthMeter = () => {
     <div className="rounded-xl border border-border bg-card p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-foreground">Profile Strength</h3>
-        <span className={`text-sm font-bold ${percent >= 80 ? "text-green-400" : percent >= 50 ? "text-yellow-400" : "text-red-400"}`}>
+        <span className={`text-sm font-bold ${percent >= 80 ? "text-primary" : percent >= 50 ? "text-yellow-400" : "text-destructive"}`}>
           {percent}%
         </span>
       </div>
@@ -81,12 +81,11 @@ const ProfileStrengthMeter = () => {
         </Link>
       )}
 
-      {/* Checklist */}
       <div className="space-y-2 pt-2 border-t border-border">
         {items.map((item) => (
           <div key={item.label} className="flex items-center gap-2.5 text-sm">
             {item.done ? (
-              <CheckCircle2 className="h-4 w-4 text-green-400 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
             ) : (
               <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
             )}
