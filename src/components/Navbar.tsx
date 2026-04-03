@@ -222,7 +222,7 @@ const Navbar = ({ customLogo, customName, customHomeLink }: NavbarProps = {}) =>
       {mobileOpen && (
         <div className="border-t border-border bg-background px-4 pb-4 md:hidden">
           <div className="flex flex-col gap-1 pt-3">
-            <button onClick={() => { setMobileOpen(false); handleSectionClick("#coaches"); }} className="rounded-md px-3 py-2 text-sm text-muted-foreground text-left hover:bg-accent">{t("nav.browseCoaches")}</button>
+            <Link to="/browse-coaches" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent">{t("nav.browseCoaches")}</Link>
             
             <div>
               <button
