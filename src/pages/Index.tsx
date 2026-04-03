@@ -103,6 +103,12 @@ const Index = () => {
           <section id="testimonials"><TestimonialsSection /></section>
         </Suspense>
         <Suspense fallback={<SectionFallback />}>
+          <section id="why-coaches"><WhyCoachesJoinSection /></section>
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
+          <section id="earnings-calculator"><EarningsCalculator /></section>
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
           <section id="blogs"><HomeBlogSection /></section>
         </Suspense>
         <Suspense fallback={<SectionFallback />}>
