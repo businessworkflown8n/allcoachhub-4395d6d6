@@ -85,7 +85,7 @@ const Navbar = ({ customLogo, customName, customHomeLink }: NavbarProps = {}) =>
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          <button onClick={() => handleSectionClick("#coaches")} className="text-sm text-muted-foreground transition-colors hover:text-primary">{t("nav.browseCoaches")}</button>
+          <Link to="/browse-coaches" className="text-sm text-muted-foreground transition-colors hover:text-primary">{t("nav.browseCoaches")}</Link>
           
           <div
             ref={dropdownRef}
