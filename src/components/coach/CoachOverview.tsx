@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { BookOpen, Users, Video, UserCheck, DollarSign, IndianRupee, ChevronDown, ChevronUp } from "lucide-react";
 import GrowthTools from "./GrowthTools";
+import ProfileStrengthMeter from "./ProfileStrengthMeter";
+import AIClientMatching from "./AIClientMatching";
 
 const USD_TO_INR_FALLBACK = 83.5;
 
