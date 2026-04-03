@@ -35,3 +35,9 @@ verify_jwt = false
 
 [functions.welcome-coach-email]
 verify_jwt = false
+
+[functions.notify-learner-registration]
+verify_jwt = false
+
+[functions.welcome-learner-email]
+verify_jwt = false

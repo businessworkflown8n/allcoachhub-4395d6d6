@@ -59,6 +59,34 @@ const SignupForm = () => {
       return;
     }
 
+    // Gather UTM params from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmSource = urlParams.get("utm_source") || "";
+    const utmMedium = urlParams.get("utm_medium") || "";
+    const utmCampaign = urlParams.get("utm_campaign") || "";
+
+    if (role === "coach") {
+      // Admin notification for coach
+      supabase.functions.invoke("notify-coach-registration", {
+        body: { fullName, email, mobile, companyName, city, country },
+      }).catch((err) => console.error("Coach registration notification failed:", err));
+
+      // Welcome email for coach
+      supabase.functions.invoke("welcome-coach-email", {
+        body: { fullName, email },
+      }).catch((err) => console.error("Welcome coach email failed:", err));
+    } else {
+      // Admin notification for learner
+      supabase.functions.invoke("notify-learner-registration", {
+        body: { fullName, email, mobile, city, country, source: window.location.href, utmSource, utmMedium, utmCampaign },
+      }).catch((err) => console.error("Learner registration notification failed:", err));
+
+      // Welcome email for learner
+      supabase.functions.invoke("welcome-learner-email", {
+        body: { fullName, email },
+      }).catch((err) => console.error("Welcome learner email failed:", err));
+    }
+
     setSuccess(true);
   };
 

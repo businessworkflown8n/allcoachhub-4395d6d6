@@ -52,6 +52,23 @@ const LearnerSignupForm = () => {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
       return;
     }
+
+    // Gather UTM params from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmSource = urlParams.get("utm_source") || "";
+    const utmMedium = urlParams.get("utm_medium") || "";
+    const utmCampaign = urlParams.get("utm_campaign") || "";
+
+    // Send admin notification email (fire-and-forget)
+    supabase.functions.invoke("notify-learner-registration", {
+      body: { fullName, email, mobile, city, country, referralCode, source: window.location.href, utmSource, utmMedium, utmCampaign },
+    }).catch((err) => console.error("Learner registration notification failed:", err));
+
+    // Send welcome email to the learner (fire-and-forget)
+    supabase.functions.invoke("welcome-learner-email", {
+      body: { fullName, email },
+    }).catch((err) => console.error("Welcome learner email failed:", err));
+
     setSuccess(true);
   };
 
