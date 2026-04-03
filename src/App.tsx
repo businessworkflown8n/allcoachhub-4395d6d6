@@ -46,6 +46,7 @@ const CoachCategoryPage = lazy(() => import("./pages/CoachCategoryPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CoachWebsite = lazy(() => import("./pages/CoachWebsite"));
 const CoachWebsiteThankYou = lazy(() => import("./pages/CoachWebsiteThankYou"));
+const BrowseCoaches = lazy(() => import("./pages/BrowseCoaches"));
 
 // Lazy-loaded global widgets (non-critical)
 const AICursor = lazy(() => import("./components/AICursor"));
@@ -169,6 +170,7 @@ const App = () => (
                 <Suspense fallback={<PageFallback />}><CoachDashboard /></Suspense>
               </ProtectedRoute>
             } />
+            <Route path="/browse-coaches" element={<Suspense fallback={<PageFallback />}><BrowseCoaches /></Suspense>} />
             <Route path="/coach-profile/:slug" element={<Suspense fallback={<PageFallback />}><CoachLanding /></Suspense>} />
             <Route path="/coach-website/:slug" element={<Suspense fallback={<PageFallback />}><CoachWebsite /></Suspense>} />
             <Route path="/coach-website/:slug/thank-you" element={<Suspense fallback={<PageFallback />}><CoachWebsiteThankYou /></Suspense>} />
