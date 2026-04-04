@@ -50,13 +50,6 @@
     @apply border-border;
   }
 
-  /* Custom cursor only on non-touch devices - applied via JS, not blocking */
-  @media (pointer: fine) {
-    .ai-cursor-active,
-    .ai-cursor-active * {
-      cursor: none !important;
-    }
-  }
 
   body {
     @apply bg-background text-foreground antialiased;
