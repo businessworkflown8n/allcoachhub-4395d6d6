@@ -199,9 +199,6 @@ const App = () => (
           <Suspense fallback={null}>
             <WebsitePopup />
           </Suspense>
-          <Suspense fallback={null}>
-            <AICursor />
-          </Suspense>
         </BrowserRouter>
       </AuthProvider>
       </TranslationProvider>
