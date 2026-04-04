@@ -49,7 +49,7 @@ const CoachWebsiteThankYou = lazy(() => import("./pages/CoachWebsiteThankYou"));
 const BrowseCoaches = lazy(() => import("./pages/BrowseCoaches"));
 
 // Lazy-loaded global widgets (non-critical)
-const AICursor = lazy(() => import("./components/AICursor"));
+
 const ChatbotWidget = lazy(() => import("./components/ChatbotWidget"));
 const WebsitePopup = lazy(() => import("./components/WebsitePopup"));
 const FloatingPromptButton = lazy(() => import("./components/prompt/FloatingPromptButton"));
