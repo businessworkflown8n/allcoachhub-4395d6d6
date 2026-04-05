@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.welcome-learner-email]
 verify_jwt = false
+
+[functions.notify-category-approval]
+verify_jwt = false
