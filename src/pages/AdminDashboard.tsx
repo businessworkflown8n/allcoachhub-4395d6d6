@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search, KeyRound, LayoutGrid } from "lucide-react";
+import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search, KeyRound, LayoutGrid, MessageCircle } from "lucide-react";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminCoaches from "@/components/admin/AdminCoaches";
 import AdminLearners from "@/components/admin/AdminLearners";
@@ -34,6 +34,7 @@ import AdminCoachCategories from "@/components/admin/AdminCoachCategories";
 import AdminCategoryRequests from "@/components/admin/AdminCategoryRequests";
 import AdminCoachWebsites from "@/components/admin/AdminCoachWebsites";
 import AdminCoachLPLeads from "@/components/admin/AdminCoachLPLeads";
+import AdminWhatsAppAccess from "@/components/admin/AdminWhatsAppAccess";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
@@ -66,6 +67,7 @@ const navItems = [
   { label: "Coach Websites", path: "/admin/coach-websites", icon: <Globe className="h-4 w-4" /> },
   { label: "Coach Leads from LP", path: "/admin/coach-lp-leads", icon: <Users className="h-4 w-4" /> },
   { label: "SEO Dashboard", path: "/admin/seo", icon: <Search className="h-4 w-4" /> },
+  { label: "WhatsApp Access", path: "/admin/whatsapp-access", icon: <MessageCircle className="h-4 w-4" /> },
   { label: "Settings", path: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
   { label: "Locale & Currency", path: "/admin/locale", icon: <Globe className="h-4 w-4" /> },
 ];
@@ -111,6 +113,7 @@ const AdminDashboard = () => {
         <Route path="coach-lp-leads" element={<AdminCoachLPLeads />} />
         <Route path="referrals" element={<AdminReferrals />} />
         <Route path="seo" element={<AdminSEODashboard />} />
+        <Route path="whatsapp-access" element={<AdminWhatsAppAccess />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="locale" element={<AdminLocaleSettings />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />

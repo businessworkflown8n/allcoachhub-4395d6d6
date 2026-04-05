@@ -3179,6 +3179,188 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_access: {
+        Row: {
+          coach_id: string
+          created_at: string
+          daily_message_limit: number | null
+          granted_by: string | null
+          id: string
+          is_active: boolean
+          monthly_campaign_credits: number | null
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          daily_message_limit?: number | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          monthly_campaign_credits?: number | null
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          daily_message_limit?: number | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          monthly_campaign_credits?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_campaigns: {
+        Row: {
+          audience_tags: string[] | null
+          audience_type: string
+          coach_id: string
+          created_at: string
+          id: string
+          name: string
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          template_id: string | null
+          total_clicked: number | null
+          total_delivered: number | null
+          total_failed: number | null
+          total_read: number | null
+          total_recipients: number | null
+          total_replied: number | null
+          total_sent: number | null
+          updated_at: string
+        }
+        Insert: {
+          audience_tags?: string[] | null
+          audience_type?: string
+          coach_id: string
+          created_at?: string
+          id?: string
+          name: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          template_id?: string | null
+          total_clicked?: number | null
+          total_delivered?: number | null
+          total_failed?: number | null
+          total_read?: number | null
+          total_recipients?: number | null
+          total_replied?: number | null
+          total_sent?: number | null
+          updated_at?: string
+        }
+        Update: {
+          audience_tags?: string[] | null
+          audience_type?: string
+          coach_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          template_id?: string | null
+          total_clicked?: number | null
+          total_delivered?: number | null
+          total_failed?: number | null
+          total_read?: number | null
+          total_recipients?: number | null
+          total_replied?: number | null
+          total_sent?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_contacts: {
+        Row: {
+          coach_id: string
+          created_at: string
+          email: string | null
+          id: string
+          is_opted_in: boolean
+          name: string | null
+          phone: string
+          source: string | null
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_opted_in?: boolean
+          name?: string | null
+          phone: string
+          source?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_opted_in?: boolean
+          name?: string | null
+          phone?: string
+          source?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_templates: {
+        Row: {
+          category: string
+          coach_id: string | null
+          content: string
+          created_at: string
+          id: string
+          is_global: boolean
+          name: string
+          status: string
+          updated_at: string
+          variables: string[] | null
+        }
+        Insert: {
+          category?: string
+          coach_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_global?: boolean
+          name: string
+          status?: string
+          updated_at?: string
+          variables?: string[] | null
+        }
+        Update: {
+          category?: string
+          coach_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_global?: boolean
+          name?: string
+          status?: string
+          updated_at?: string
+          variables?: string[] | null
+        }
+        Relationships: []
+      }
       wishlists: {
         Row: {
           course_id: string
