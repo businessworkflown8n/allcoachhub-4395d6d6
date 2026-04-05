@@ -113,6 +113,7 @@ const AdminDashboard = () => {
         <Route path="coach-lp-leads" element={<AdminCoachLPLeads />} />
         <Route path="referrals" element={<AdminReferrals />} />
         <Route path="seo" element={<AdminSEODashboard />} />
+        <Route path="whatsapp-access" element={<AdminWhatsAppAccess />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="locale" element={<AdminLocaleSettings />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
