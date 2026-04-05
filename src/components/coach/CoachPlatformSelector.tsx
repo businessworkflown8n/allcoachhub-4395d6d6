@@ -281,7 +281,7 @@ const CoachPlatformSelector = ({ open, onOpenChange }: Props) => {
         </DialogContent>
       </Dialog>
 
-      <AdminIntegrationWizard
+      <PlatformConnectionWizard
         open={wizardOpen}
         onOpenChange={setWizardOpen}
         platformId={wizardPlatform.id}
