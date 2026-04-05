@@ -1341,6 +1341,7 @@ export type Database = {
         Row: {
           approval_status: string
           category: string
+          category_request_id: string | null
           coach_id: string
           created_at: string
           curriculum: Json | null
@@ -1357,6 +1358,7 @@ export type Database = {
           price_inr: number
           price_usd: number
           rejection_reason: string | null
+          requires_category_approval: boolean
           slug: string | null
           thumbnail_url: string | null
           title: string
@@ -1365,6 +1367,7 @@ export type Database = {
         Insert: {
           approval_status?: string
           category: string
+          category_request_id?: string | null
           coach_id: string
           created_at?: string
           curriculum?: Json | null
@@ -1381,6 +1384,7 @@ export type Database = {
           price_inr?: number
           price_usd?: number
           rejection_reason?: string | null
+          requires_category_approval?: boolean
           slug?: string | null
           thumbnail_url?: string | null
           title: string
@@ -1389,6 +1393,7 @@ export type Database = {
         Update: {
           approval_status?: string
           category?: string
+          category_request_id?: string | null
           coach_id?: string
           created_at?: string
           curriculum?: Json | null
@@ -1405,12 +1410,21 @@ export type Database = {
           price_inr?: number
           price_usd?: number
           rejection_reason?: string | null
+          requires_category_approval?: boolean
           slug?: string | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "courses_category_request_id_fkey"
+            columns: ["category_request_id"]
+            isOneToOne: false
+            referencedRelation: "coach_category_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       daily_zip_level_scores: {
         Row: {
