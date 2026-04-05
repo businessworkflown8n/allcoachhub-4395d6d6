@@ -47,6 +47,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const CoachWebsite = lazy(() => import("./pages/CoachWebsite"));
 const CoachWebsiteThankYou = lazy(() => import("./pages/CoachWebsiteThankYou"));
 const BrowseCoaches = lazy(() => import("./pages/BrowseCoaches"));
+const OAuthCallback = lazy(() => import("./pages/OAuthCallback"));
 
 // Lazy-loaded global widgets (non-critical)
 
