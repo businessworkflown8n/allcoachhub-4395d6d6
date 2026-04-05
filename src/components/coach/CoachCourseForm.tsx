@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Upload, X, ImageIcon } from "lucide-react";
+import { ArrowLeft, Plus, Upload, X, ImageIcon, AlertTriangle } from "lucide-react";
 import { useCoachCategoryPermissions } from "@/hooks/useCoachCategoryPermissions";
 import { useCoachCategories } from "@/hooks/useCoachCategories";
 import CategoryRequestModal from "@/components/coach/CategoryRequestModal";
@@ -76,6 +76,13 @@ const CoachCourseForm = () => {
 
   const updateField = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
 
+  // Check if selected category is approved
+  const isSelectedCategoryApproved = approvedCategories.some((c) => c.category_name === form.category);
+  const selectedCategoryObj = allCategories.find((c) => c.name === form.category);
+  const hasPendingRequest = selectedCategoryObj
+    ? requests.some((r) => r.requested_category_id === selectedCategoryObj.id && r.status === "pending")
+    : false;
+
   // Categories not yet approved and not pending
   const pendingCategoryIds = new Set(requests.filter((r) => r.status === "pending").map((r) => r.requested_category_id));
   const approvedCategoryIds = new Set(approvedCategories.map((c) => c.category_id));
@@ -138,12 +145,61 @@ const CoachCourseForm = () => {
     }
 
     const isApproved = approvedCategories.some((c) => c.category_name === form.category);
-    if (!isApproved) {
-      toast({ title: "You can only create courses in your approved categories", variant: "destructive" });
-      return;
-    }
 
     setSaving(true);
+
+    // If category is NOT approved, save as draft with pending category approval
+    let categoryRequestId: string | null = null;
+    if (!isApproved && !isEdit) {
+      // Find the category ID
+      const catObj = allCategories.find((c) => c.name === form.category);
+      if (!catObj) {
+        toast({ title: "Invalid category selected", variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+
+      // Check if there's already a pending request for this category
+      const existingPending = requests.find(
+        (r) => r.requested_category_id === catObj.id && r.status === "pending"
+      );
+
+      if (existingPending) {
+        categoryRequestId = existingPending.id;
+      } else {
+        // Auto-create a category request
+        const { data: reqData, error: reqError } = await supabase
+          .from("coach_category_requests")
+          .insert({
+            coach_id: user.id,
+            requested_category_id: catObj.id,
+            reason: `Auto-requested while creating course: "${form.title}"`,
+            status: "pending",
+          })
+          .select("id")
+          .single();
+
+        if (reqError) {
+          if (reqError.message.includes("duplicate") || reqError.code === "23505") {
+            // Already exists, fetch it
+            const { data: existing } = await supabase
+              .from("coach_category_requests")
+              .select("id")
+              .eq("coach_id", user.id)
+              .eq("requested_category_id", catObj.id)
+              .eq("status", "pending")
+              .single();
+            categoryRequestId = existing?.id || null;
+          } else {
+            toast({ title: "Error creating category request", description: reqError.message, variant: "destructive" });
+            setSaving(false);
+            return;
+          }
+        } else {
+          categoryRequestId = reqData?.id || null;
+        }
+      }
+    }
 
     const payload: any = {
       coach_id: user.id,
@@ -159,6 +215,14 @@ const CoachCourseForm = () => {
       original_price_inr: form.original_price_inr ? Number(form.original_price_inr) : null,
       discount_percent: form.discount_percent ? Number(form.discount_percent) : 0,
     };
+
+    // If unapproved category, force draft and tag
+    if (!isApproved && !isEdit) {
+      payload.is_published = false;
+      payload.requires_category_approval = true;
+      payload.category_request_id = categoryRequestId;
+      payload.approval_status = "pending";
+    }
 
     let error;
     let courseId = id;
@@ -187,7 +251,16 @@ const CoachCourseForm = () => {
     }
 
     setSaving(false);
-    toast({ title: isEdit ? "Course updated" : "Course created" });
+
+    if (!isApproved && !isEdit) {
+      toast({
+        title: "Course saved as draft",
+        description: "This category requires admin approval. Your course will be saved as a draft until approved.",
+      });
+    } else {
+      toast({ title: isEdit ? "Course updated" : "Course created" });
+    }
+
     navigate("/coach/courses");
   };
 
@@ -264,15 +337,37 @@ const CoachCourseForm = () => {
                 <SelectValue placeholder="Select Category" />
               </SelectTrigger>
               <SelectContent>
+                {/* Show approved categories first */}
                 {approvedCategories.map((cat) => (
                   <SelectItem key={cat.category_id} value={cat.category_name}>
                     {cat.category_icon ? `${cat.category_icon} ` : ""}{cat.category_name}
                     {cat.is_primary ? " (Primary)" : ""}
                   </SelectItem>
                 ))}
+                {/* Show all other active categories as selectable but marked */}
+                {allCategories
+                  .filter((c) => !approvedCategoryIds.has(c.id))
+                  .map((cat) => (
+                    <SelectItem key={cat.id} value={cat.name}>
+                      {cat.icon ? `${cat.icon} ` : ""}{cat.name} — Requires Approval
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">You can create courses only in your approved categories.</p>
+
+            {/* Warning when unapproved category selected */}
+            {form.category && !isSelectedCategoryApproved && (
+              <div className="flex items-start gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
+                <AlertTriangle className="h-4 w-4 text-yellow-400 mt-0.5 shrink-0" />
+                <div className="text-xs text-yellow-300">
+                  <p className="font-semibold">This category requires admin approval.</p>
+                  <p className="mt-0.5 text-yellow-400/80">
+                    Your course will be saved as a draft and a category approval request will be automatically submitted. You can publish the course once the category is approved.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <button
               type="button"
               onClick={() => setRequestModalOpen(true)}
@@ -328,7 +423,7 @@ const CoachCourseForm = () => {
         </div>
 
         <button type="submit" disabled={saving || uploadingThumb} className="glow-lime rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50">
-          {uploadingThumb ? "Uploading thumbnail..." : saving ? "Saving..." : isEdit ? "Update Course" : "Create Course"}
+          {uploadingThumb ? "Uploading thumbnail..." : saving ? "Saving..." : !isSelectedCategoryApproved && form.category && !isEdit ? "Save as Draft (Pending Approval)" : isEdit ? "Update Course" : "Create Course"}
         </button>
       </form>
 
