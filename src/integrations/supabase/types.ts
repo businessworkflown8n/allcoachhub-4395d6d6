@@ -16,36 +16,60 @@ export type Database = {
     Tables: {
       ad_platform_connections: {
         Row: {
+          account_id: string | null
+          account_name: string | null
           coach_id: string
           created_at: string
           credentials_encrypted: Json | null
+          currency: string | null
           error_log: string | null
           id: string
           last_sync_at: string | null
+          needs_reconnect: boolean | null
           platform: string
           status: string
+          sync_data_scope: string[] | null
+          sync_frequency: string | null
+          timezone: string | null
+          token_expires_at: string | null
           updated_at: string
         }
         Insert: {
+          account_id?: string | null
+          account_name?: string | null
           coach_id: string
           created_at?: string
           credentials_encrypted?: Json | null
+          currency?: string | null
           error_log?: string | null
           id?: string
           last_sync_at?: string | null
+          needs_reconnect?: boolean | null
           platform: string
           status?: string
+          sync_data_scope?: string[] | null
+          sync_frequency?: string | null
+          timezone?: string | null
+          token_expires_at?: string | null
           updated_at?: string
         }
         Update: {
+          account_id?: string | null
+          account_name?: string | null
           coach_id?: string
           created_at?: string
           credentials_encrypted?: Json | null
+          currency?: string | null
           error_log?: string | null
           id?: string
           last_sync_at?: string | null
+          needs_reconnect?: boolean | null
           platform?: string
           status?: string
+          sync_data_scope?: string[] | null
+          sync_frequency?: string | null
+          timezone?: string | null
+          token_expires_at?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -636,6 +660,36 @@ export type Database = {
           utm_source?: string | null
           viewed_at?: string
           visitor_ip?: string | null
+        }
+        Relationships: []
+      }
+      coach_platform_access: {
+        Row: {
+          coach_id: string
+          created_at: string
+          granted_by: string | null
+          id: string
+          is_enabled: boolean
+          platform_id: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          is_enabled?: boolean
+          platform_id: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          is_enabled?: boolean
+          platform_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2285,6 +2339,42 @@ export type Database = {
           processed_at?: string | null
           requested_at?: string
           status?: string
+        }
+        Relationships: []
+      }
+      platform_integrations_config: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_enabled: boolean
+          oauth_config: Json | null
+          platform_id: string
+          platform_name: string
+          setup_guide: Json | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          oauth_config?: Json | null
+          platform_id: string
+          platform_name: string
+          setup_guide?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          oauth_config?: Json | null
+          platform_id?: string
+          platform_name?: string
+          setup_guide?: Json | null
+          updated_at?: string
         }
         Relationships: []
       }
