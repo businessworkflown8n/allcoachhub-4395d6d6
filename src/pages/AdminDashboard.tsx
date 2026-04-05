@@ -67,6 +67,7 @@ const navItems = [
   { label: "Coach Websites", path: "/admin/coach-websites", icon: <Globe className="h-4 w-4" /> },
   { label: "Coach Leads from LP", path: "/admin/coach-lp-leads", icon: <Users className="h-4 w-4" /> },
   { label: "SEO Dashboard", path: "/admin/seo", icon: <Search className="h-4 w-4" /> },
+  { label: "WhatsApp Access", path: "/admin/whatsapp-access", icon: <MessageCircle className="h-4 w-4" /> },
   { label: "Settings", path: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
   { label: "Locale & Currency", path: "/admin/locale", icon: <Globe className="h-4 w-4" /> },
 ];
