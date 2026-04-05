@@ -62,6 +62,7 @@ const CoachDashboard = () => {
         <Route path="materials" element={<DashboardMaterials />} />
         <Route path="social" element={<SocialMediaHub />} />
         <Route path="campaigns" element={hasEmailAccess ? <CoachCampaigns /> : <Navigate to="overview" replace />} />
+        <Route path="whatsapp" element={hasWhatsAppAccess ? <CoachWhatsApp /> : <Navigate to="overview" replace />} />
         <Route path="earnings" element={<CoachEarnings />} />
         <Route path="profile" element={<CoachProfile />} />
         <Route path="prompt-generator" element={<div className="space-y-4"><h2 className="text-xl font-bold text-foreground">Prompt Generator</h2><div className="rounded-xl border border-border bg-card p-6"><PromptGeneratorForm showSave userRole="coach" /></div></div>} />
