@@ -29,6 +29,7 @@ const CoachDashboard = () => {
   });
 
   const { hasAccess: hasEmailAccess } = useEmailMarketingAccess();
+  const { hasAccess: hasWhatsAppAccess } = useWhatsAppAccess();
 
   const navItems = [
     { label: "Overview", path: "/coach/overview", icon: <LayoutDashboard className="h-4 w-4" /> },
