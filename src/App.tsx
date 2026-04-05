@@ -191,6 +191,7 @@ const App = () => (
                 <Suspense fallback={<PageFallback />}><AdminDashboard /></Suspense>
               </ProtectedRoute>
             } />
+            <Route path="/oauth-callback" element={<Suspense fallback={<PageFallback />}><OAuthCallback /></Suspense>} />
             <Route path="*" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
           </Routes>
           <FloatingButtons />
