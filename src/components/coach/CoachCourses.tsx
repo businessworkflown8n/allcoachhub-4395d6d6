@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
-import { BookOpen, Plus, Edit, Trash2, Eye, EyeOff, Users, Download, X } from "lucide-react";
+import { BookOpen, Plus, Edit, Trash2, Eye, EyeOff, Users, Download, X, Clock, CheckCircle, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,16 @@ const CoachCourses = () => {
   };
 
   const togglePublish = async (id: string, current: boolean) => {
+    // Check if course requires category approval before publishing
+    const course = courses.find((c) => c.id === id);
+    if (!current && course?.requires_category_approval) {
+      toast({
+        title: "Cannot publish yet",
+        description: "This course is pending category approval. You can publish it once the category is approved.",
+        variant: "destructive",
+      });
+      return;
+    }
     await supabase.from("courses").update({ is_published: !current }).eq("id", id);
     setCourses(courses.map((c) => c.id === id ? { ...c, is_published: !current } : c));
     toast({ title: current ? "Course unpublished" : "Course published" });
@@ -87,6 +97,27 @@ const CoachCourses = () => {
     a.download = `${studentsCourseTitle}-students.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const getStatusBadge = (course: any) => {
+    if (course.requires_category_approval) {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-400">
+          <Clock className="h-3 w-3" /> Pending Category Approval
+        </span>
+      );
+    }
+    if (course.approval_status === "approved" && !course.is_published) {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs bg-green-500/20 text-green-400">
+          <CheckCircle className="h-3 w-3" /> Ready to Publish
+        </span>
+      );
+    }
+    if (course.is_published) {
+      return <span className="rounded-full px-2 py-0.5 text-xs bg-green-500/20 text-green-400">Published</span>;
+    }
+    return <span className="rounded-full px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-400">Draft</span>;
   };
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
@@ -153,14 +184,23 @@ const CoachCourses = () => {
               <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-primary">{c.category}</span>
-                <span className={`rounded-full px-2 py-0.5 text-xs ${c.is_published ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
-                  {c.is_published ? "Published" : "Draft"}
-                </span>
+                {getStatusBadge(c)}
               </div>
               <h3 className="text-sm font-bold text-foreground">{c.title}</h3>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>{c.level}</span> · <span>${Number(c.price_usd)}</span> · <span>₹{Number(c.price_inr)}</span>
               </div>
+
+              {/* Pending category approval message */}
+              {c.requires_category_approval && (
+                <div className="flex items-start gap-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-2">
+                  <AlertTriangle className="h-3.5 w-3.5 text-yellow-400 mt-0.5 shrink-0" />
+                  <p className="text-xs text-yellow-400">
+                    Awaiting category approval from admin. You'll be notified once approved.
+                  </p>
+                </div>
+              )}
+
               {/* Enrollment count */}
               <button
                 onClick={() => viewStudents(c.id, c.title)}
@@ -173,7 +213,11 @@ const CoachCourses = () => {
                 <Link to={`/coach/courses/${c.id}/edit`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                   <Edit className="h-3 w-3" /> Edit
                 </Link>
-                <button onClick={() => togglePublish(c.id, c.is_published)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                <button
+                  onClick={() => togglePublish(c.id, c.is_published)}
+                  className={`flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground ${c.requires_category_approval ? "opacity-50 cursor-not-allowed" : ""}`}
+                  disabled={c.requires_category_approval && !c.is_published}
+                >
                   {c.is_published ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                   {c.is_published ? "Unpublish" : "Publish"}
                 </button>

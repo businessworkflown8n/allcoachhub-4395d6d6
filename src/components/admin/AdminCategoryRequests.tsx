@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, XCircle, Clock, Filter } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Filter, BookOpen } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 
@@ -22,6 +22,7 @@ interface CategoryRequest {
   admin_response_note: string | null;
   created_at: string;
   reviewed_at: string | null;
+  linked_courses: { id: string; title: string; category: string }[];
 }
 
 const AdminCategoryRequests = () => {
@@ -55,8 +56,9 @@ const AdminCategoryRequests = () => {
     // Get coach profiles
     const coachIds = [...new Set(reqs.map((r: any) => r.coach_id))];
     const categoryIds = [...new Set(reqs.map((r: any) => r.requested_category_id))];
+    const reqIds = reqs.map((r: any) => r.id);
 
-    const [profilesRes, categoriesRes, permissionsRes] = await Promise.all([
+    const [profilesRes, categoriesRes, permissionsRes, coursesRes] = await Promise.all([
       supabase.from("profiles").select("user_id, full_name, email").in("user_id", coachIds),
       supabase.from("coach_categories").select("id, name, icon").in("id", categoryIds),
       supabase
@@ -64,6 +66,11 @@ const AdminCategoryRequests = () => {
         .select("coach_id, category_id, is_primary")
         .in("coach_id", coachIds)
         .eq("is_primary", true),
+      // Fetch courses linked to these category requests
+      supabase
+        .from("courses")
+        .select("id, title, category, category_request_id")
+        .in("category_request_id", reqIds),
     ]);
 
     const profileMap: Record<string, any> = {};
@@ -71,6 +78,13 @@ const AdminCategoryRequests = () => {
 
     const catMap: Record<string, any> = {};
     (categoriesRes.data || []).forEach((c: any) => { catMap[c.id] = c; });
+
+    // Build course map by category_request_id
+    const coursesByReqId: Record<string, { id: string; title: string; category: string }[]> = {};
+    (coursesRes.data || []).forEach((c: any) => {
+      if (!coursesByReqId[c.category_request_id]) coursesByReqId[c.category_request_id] = [];
+      coursesByReqId[c.category_request_id].push({ id: c.id, title: c.title, category: c.category });
+    });
 
     // Get primary category names
     const primaryCatIds = [...new Set((permissionsRes.data || []).map((p: any) => p.category_id))];
@@ -98,6 +112,7 @@ const AdminCategoryRequests = () => {
       admin_response_note: r.admin_response_note,
       created_at: r.created_at,
       reviewed_at: r.reviewed_at,
+      linked_courses: coursesByReqId[r.id] || [],
     }));
 
     setRequests(mapped);
@@ -143,6 +158,33 @@ const AdminCategoryRequests = () => {
           approved_by: user?.id,
           approved_at: new Date().toISOString(),
         }, { onConflict: "coach_id,category_id" });
+
+        // Update linked courses: clear the pending flag so coach can publish
+        if (req.linked_courses.length > 0) {
+          const courseIds = req.linked_courses.map((c) => c.id);
+          await supabase
+            .from("courses")
+            .update({ requires_category_approval: false })
+            .in("id", courseIds);
+        }
+      }
+
+      // Send approval email to coach
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        await fetch(`${supabaseUrl}/functions/v1/notify-category-approval`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            coach_id: req.coach_id,
+            coach_name: req.coach_name,
+            coach_email: req.coach_email,
+            category_name: req.requested_category,
+            course_titles: req.linked_courses.map((c) => c.title),
+          }),
+        });
+      } catch (err) {
+        console.error("Email notification error:", err);
       }
     }
 
@@ -231,6 +273,23 @@ const AdminCategoryRequests = () => {
                   <p className="font-medium text-foreground">{format(new Date(req.created_at), "MMM d, yyyy")}</p>
                 </div>
               </div>
+
+              {/* Linked Courses */}
+              {req.linked_courses.length > 0 && (
+                <div className="rounded-lg bg-secondary/50 border border-border p-3">
+                  <p className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
+                    <BookOpen className="h-3 w-3" /> Associated Course(s):
+                  </p>
+                  <div className="space-y-1">
+                    {req.linked_courses.map((course) => (
+                      <div key={course.id} className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-foreground">{course.title}</span>
+                        <span className="text-muted-foreground">{course.category}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {req.reason && (
                 <div className="text-xs">
