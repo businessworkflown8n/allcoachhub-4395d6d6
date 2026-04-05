@@ -13,7 +13,7 @@ import {
   Search, Globe, Users, ShoppingCart, MoreHorizontal,
   CheckCircle2, RefreshCw, XCircle, Plug, Trash2
 } from "lucide-react";
-import AdminIntegrationWizard from "@/components/admin/AdminIntegrationWizard";
+import PlatformConnectionWizard from "@/components/coach/PlatformConnectionWizard";
 
 type Connection = {
   id: string;
