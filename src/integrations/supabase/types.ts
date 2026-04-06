@@ -3507,6 +3507,137 @@ export type Database = {
           },
         ]
       }
+      workshop_access: {
+        Row: {
+          analytics_access: boolean
+          coach_id: string
+          created_at: string
+          email_sending: boolean
+          id: string
+          is_active: boolean
+          meeting_creation: boolean
+          recording_access: boolean
+          updated_at: string
+        }
+        Insert: {
+          analytics_access?: boolean
+          coach_id: string
+          created_at?: string
+          email_sending?: boolean
+          id?: string
+          is_active?: boolean
+          meeting_creation?: boolean
+          recording_access?: boolean
+          updated_at?: string
+        }
+        Update: {
+          analytics_access?: boolean
+          coach_id?: string
+          created_at?: string
+          email_sending?: boolean
+          id?: string
+          is_active?: boolean
+          meeting_creation?: boolean
+          recording_access?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      workshop_registrations: {
+        Row: {
+          created_at: string
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          status: string
+          user_id: string
+          watch_duration_seconds: number | null
+          workshop_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          status?: string
+          user_id: string
+          watch_duration_seconds?: number | null
+          workshop_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          status?: string
+          user_id?: string
+          watch_duration_seconds?: number | null
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_registrations_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshops: {
+        Row: {
+          coach_id: string
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          is_recurring: boolean
+          max_attendees: number | null
+          meeting_provider: string | null
+          meeting_url: string | null
+          recording_url: string | null
+          recurrence_pattern: string | null
+          scheduled_at: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_recurring?: boolean
+          max_attendees?: number | null
+          meeting_provider?: string | null
+          meeting_url?: string | null
+          recording_url?: string | null
+          recurrence_pattern?: string | null
+          scheduled_at: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_recurring?: boolean
+          max_attendees?: number | null
+          meeting_provider?: string | null
+          meeting_url?: string | null
+          recording_url?: string | null
+          recurrence_pattern?: string | null
+          scheduled_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       coach_profiles_public: {

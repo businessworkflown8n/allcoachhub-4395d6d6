@@ -14,6 +14,7 @@ import SocialMediaHub from "@/components/shared/SocialMediaHub";
 import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import LearnerChatHistory from "@/components/learner/LearnerChatHistory";
 import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
+import LearnerWorkshops from "@/components/learner/LearnerWorkshops";
 
 const LearnerDashboard = () => {
   useSEO({
@@ -26,6 +27,7 @@ const LearnerDashboard = () => {
   const navItems = [
     { label: "My Courses", path: "/learner/courses", icon: <BookOpen className="h-4 w-4" /> },
     { label: "Webinars", path: "/learner/webinars", icon: <Video className="h-4 w-4" /> },
+    { label: "Workshops", path: "/learner/workshops", icon: <Video className="h-4 w-4" /> },
     { label: "Certificates", path: "/learner/certificates", icon: <Award className="h-4 w-4" /> },
     { label: "Materials", path: "/learner/materials", icon: <FileText className="h-4 w-4" /> },
     { label: "Chat History", path: "/learner/chat-history", icon: <MessageSquare className="h-4 w-4" /> },
@@ -43,6 +45,7 @@ const LearnerDashboard = () => {
       <Routes>
         <Route path="courses" element={<LearnerCourses />} />
         <Route path="webinars" element={<LearnerWebinars />} />
+        <Route path="workshops" element={<LearnerWorkshops />} />
         <Route path="certificates" element={<LearnerCertificates />} />
         <Route path="materials" element={<DashboardMaterials />} />
         <Route path="chat-history" element={<LearnerChatHistory />} />
