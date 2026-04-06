@@ -19,6 +19,8 @@ import CoachWebsiteManager from "@/components/coach/CoachWebsiteManager";
 import CoachWhatsApp from "@/components/coach/CoachWhatsApp";
 import { useEmailMarketingAccess } from "@/hooks/useEmailMarketingAccess";
 import { useWhatsAppAccess } from "@/hooks/useWhatsAppAccess";
+import { useWorkshopAccess } from "@/hooks/useWorkshopAccess";
+import CoachWorkshops from "@/components/coach/CoachWorkshops";
 
 const CoachDashboard = () => {
   useSEO({
