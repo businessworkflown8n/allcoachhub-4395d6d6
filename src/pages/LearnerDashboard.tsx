@@ -14,6 +14,7 @@ import SocialMediaHub from "@/components/shared/SocialMediaHub";
 import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import LearnerChatHistory from "@/components/learner/LearnerChatHistory";
 import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
+import LearnerWorkshops from "@/components/learner/LearnerWorkshops";
 
 const LearnerDashboard = () => {
   useSEO({
