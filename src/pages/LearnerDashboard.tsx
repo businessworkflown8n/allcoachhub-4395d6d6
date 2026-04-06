@@ -27,6 +27,7 @@ const LearnerDashboard = () => {
   const navItems = [
     { label: "My Courses", path: "/learner/courses", icon: <BookOpen className="h-4 w-4" /> },
     { label: "Webinars", path: "/learner/webinars", icon: <Video className="h-4 w-4" /> },
+    { label: "Workshops", path: "/learner/workshops", icon: <Video className="h-4 w-4" /> },
     { label: "Certificates", path: "/learner/certificates", icon: <Award className="h-4 w-4" /> },
     { label: "Materials", path: "/learner/materials", icon: <FileText className="h-4 w-4" /> },
     { label: "Chat History", path: "/learner/chat-history", icon: <MessageSquare className="h-4 w-4" /> },
