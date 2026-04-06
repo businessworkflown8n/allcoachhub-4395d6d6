@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,8 +10,10 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, Upload, X, ImageIcon, AlertTriangle } from "lucide-react";
 import { useCoachCategoryPermissions } from "@/hooks/useCoachCategoryPermissions";
 import { useCoachCategories } from "@/hooks/useCoachCategories";
+import { useThumbnailAccess } from "@/hooks/useThumbnailAccess";
 import CategoryRequestModal from "@/components/coach/CategoryRequestModal";
 
+const AIThumbnailGenerator = lazy(() => import("@/components/coach/AIThumbnailGenerator"));
 const CoachCourseForm = () => {
   const { id } = useParams();
   const { user } = useAuth();
