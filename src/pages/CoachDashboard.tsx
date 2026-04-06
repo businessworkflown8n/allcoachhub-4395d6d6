@@ -46,6 +46,7 @@ const CoachDashboard = () => {
     { label: "Social Media", path: "/coach/social", icon: <Share2 className="h-4 w-4" /> },
     ...(hasEmailAccess ? [{ label: "Campaigns", path: "/coach/campaigns", icon: <Megaphone className="h-4 w-4" /> }] : []),
     ...(hasWhatsAppAccess ? [{ label: "WhatsApp Campaigns", path: "/coach/whatsapp", icon: <MessageCircle className="h-4 w-4" /> }] : []),
+    ...(hasWorkshopAccess ? [{ label: "Workshops", path: "/coach/workshops", icon: <Video className="h-4 w-4" /> }] : []),
     { label: "Earnings", path: "/coach/earnings", icon: <DollarSign className="h-4 w-4" /> },
     { label: "Prompt Generator", path: "/coach/prompt-generator", icon: <Sparkles className="h-4 w-4" /> },
     { label: "My Website", path: "/coach/website", icon: <Globe className="h-4 w-4" /> },
