@@ -341,7 +341,12 @@ const CoachCourseForm = () => {
           )}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        {/* AI Thumbnail Generator - only visible if coach has access */}
+        {hasThumbnailAccess && (
+          <Suspense fallback={<div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto" />}>
+            <AIThumbnailGenerator courseTitle={form.title} onSelect={handleAIThumbnailSelect} />
+          </Suspense>
+        )}
           <div className="space-y-2">
             <Label className="text-foreground">Category *</Label>
             <Select value={form.category} onValueChange={(v) => updateField("category", v)}>
