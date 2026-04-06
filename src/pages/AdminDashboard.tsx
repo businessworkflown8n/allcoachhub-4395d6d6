@@ -121,6 +121,8 @@ const AdminDashboard = () => {
         <Route path="seo" element={<AdminSEODashboard />} />
         <Route path="whatsapp-access" element={<AdminWhatsAppAccess />} />
         <Route path="thumbnail-access" element={<AdminThumbnailAccess />} />
+        <Route path="workshop-access" element={<AdminWorkshopAccess />} />
+        <Route path="workshop-tracking" element={<AdminWorkshopTracking />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="locale" element={<AdminLocaleSettings />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />

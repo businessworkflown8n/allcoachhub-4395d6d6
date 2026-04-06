@@ -45,6 +45,7 @@ const LearnerDashboard = () => {
       <Routes>
         <Route path="courses" element={<LearnerCourses />} />
         <Route path="webinars" element={<LearnerWebinars />} />
+        <Route path="workshops" element={<LearnerWorkshops />} />
         <Route path="certificates" element={<LearnerCertificates />} />
         <Route path="materials" element={<DashboardMaterials />} />
         <Route path="chat-history" element={<LearnerChatHistory />} />
