@@ -3014,6 +3014,33 @@ export type Database = {
         }
         Relationships: []
       }
+      thumbnail_access: {
+        Row: {
+          coach_id: string
+          created_at: string
+          granted_by: string
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          granted_by: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          granted_by?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           awarded_at: string

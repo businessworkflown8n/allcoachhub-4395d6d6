@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,8 +10,10 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, Upload, X, ImageIcon, AlertTriangle } from "lucide-react";
 import { useCoachCategoryPermissions } from "@/hooks/useCoachCategoryPermissions";
 import { useCoachCategories } from "@/hooks/useCoachCategories";
+import { useThumbnailAccess } from "@/hooks/useThumbnailAccess";
 import CategoryRequestModal from "@/components/coach/CategoryRequestModal";
 
+const AIThumbnailGenerator = lazy(() => import("@/components/coach/AIThumbnailGenerator"));
 const CoachCourseForm = () => {
   const { id } = useParams();
   const { user } = useAuth();
@@ -28,6 +30,7 @@ const CoachCourseForm = () => {
 
   const { approvedCategories, requests, loading: permLoading, refetch: refetchPerms } = useCoachCategoryPermissions(user?.id);
   const { categories: allCategories } = useCoachCategories(true);
+  const { hasAccess: hasThumbnailAccess } = useThumbnailAccess();
 
   const [form, setForm] = useState({
     title: "",
@@ -109,6 +112,15 @@ const CoachCourseForm = () => {
     setThumbnailFile(null);
     setThumbnailPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleAIThumbnailSelect = async (dataUrl: string) => {
+    // Convert base64 data URL to File
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], `ai-thumbnail-${Date.now()}.png`, { type: "image/png" });
+    setThumbnailFile(file);
+    setThumbnailPreview(dataUrl);
   };
 
   const uploadThumbnail = async (courseId: string): Promise<string | null> => {
@@ -328,6 +340,13 @@ const CoachCourseForm = () => {
             </div>
           )}
         </div>
+
+        {/* AI Thumbnail Generator - only visible if coach has access */}
+        {hasThumbnailAccess && (
+          <Suspense fallback={<div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto" />}>
+            <AIThumbnailGenerator courseTitle={form.title} onSelect={handleAIThumbnailSelect} />
+          </Suspense>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
