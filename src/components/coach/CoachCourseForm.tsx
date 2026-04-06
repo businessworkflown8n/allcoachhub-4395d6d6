@@ -114,6 +114,15 @@ const CoachCourseForm = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleAIThumbnailSelect = async (dataUrl: string) => {
+    // Convert base64 data URL to File
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], `ai-thumbnail-${Date.now()}.png`, { type: "image/png" });
+    setThumbnailFile(file);
+    setThumbnailPreview(dataUrl);
+  };
+
   const uploadThumbnail = async (courseId: string): Promise<string | null> => {
     if (!thumbnailFile || !user) return null;
     const ext = thumbnailFile.name.split(".").pop();
