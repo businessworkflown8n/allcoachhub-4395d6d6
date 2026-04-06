@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText, MessageSquare, Sparkles } from "lucide-react";
+import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText, MessageSquare, Sparkles, Bell } from "lucide-react";
 import LearnerProfile from "@/components/learner/LearnerProfile";
 import LearnerCourses from "@/components/learner/LearnerCourses";
 import LearnerWishlist from "@/components/learner/LearnerWishlist";
@@ -15,6 +15,7 @@ import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import LearnerChatHistory from "@/components/learner/LearnerChatHistory";
 import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
 import LearnerWorkshops from "@/components/learner/LearnerWorkshops";
+import LearnerNotifications from "@/components/learner/LearnerNotifications";
 
 const LearnerDashboard = () => {
   useSEO({
@@ -26,6 +27,7 @@ const LearnerDashboard = () => {
 
   const navItems = [
     { label: "My Courses", path: "/learner/courses", icon: <BookOpen className="h-4 w-4" /> },
+    { label: "Notifications", path: "/learner/notifications", icon: <Bell className="h-4 w-4" /> },
     { label: "Webinars", path: "/learner/webinars", icon: <Video className="h-4 w-4" /> },
     { label: "Workshops", path: "/learner/workshops", icon: <Video className="h-4 w-4" /> },
     { label: "Certificates", path: "/learner/certificates", icon: <Award className="h-4 w-4" /> },
@@ -44,6 +46,7 @@ const LearnerDashboard = () => {
     <DashboardLayout navItems={navItems} title="Learner Dashboard">
       <Routes>
         <Route path="courses" element={<LearnerCourses />} />
+        <Route path="notifications" element={<LearnerNotifications />} />
         <Route path="webinars" element={<LearnerWebinars />} />
         <Route path="workshops" element={<LearnerWorkshops />} />
         <Route path="certificates" element={<LearnerCertificates />} />

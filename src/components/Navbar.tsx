@@ -3,10 +3,12 @@ import logoOptimized from "@/assets/logo-optimized.png";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import SearchDialog from "@/components/SearchDialog";
 import LocationSelector from "@/components/LocationSelector";
 import { useTranslation } from "@/i18n/TranslationProvider";
+
+const NotificationBell = lazy(() => import("@/components/NotificationBell"));
 
 interface NavbarProps {
   customLogo?: string | null;
@@ -188,6 +190,11 @@ const Navbar = ({ customLogo, customName, customHomeLink }: NavbarProps = {}) =>
         <div className="flex items-center gap-3">
           <LocationSelector />
           <SearchDialog />
+          {user && role === "learner" && (
+            <Suspense fallback={null}>
+              <NotificationBell />
+            </Suspense>
+          )}
           {user ? (
             <>
               <Link to={dashboardPath} className="hidden text-sm text-muted-foreground transition-colors hover:text-primary md:block">
