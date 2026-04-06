@@ -46,6 +46,7 @@ const LearnerDashboard = () => {
     <DashboardLayout navItems={navItems} title="Learner Dashboard">
       <Routes>
         <Route path="courses" element={<LearnerCourses />} />
+        <Route path="notifications" element={<LearnerNotifications />} />
         <Route path="webinars" element={<LearnerWebinars />} />
         <Route path="workshops" element={<LearnerWorkshops />} />
         <Route path="certificates" element={<LearnerCertificates />} />

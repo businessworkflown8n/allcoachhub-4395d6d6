@@ -190,6 +190,11 @@ const Navbar = ({ customLogo, customName, customHomeLink }: NavbarProps = {}) =>
         <div className="flex items-center gap-3">
           <LocationSelector />
           <SearchDialog />
+          {user && role === "learner" && (
+            <Suspense fallback={null}>
+              <NotificationBell />
+            </Suspense>
+          )}
           {user ? (
             <>
               <Link to={dashboardPath} className="hidden text-sm text-muted-foreground transition-colors hover:text-primary md:block">
