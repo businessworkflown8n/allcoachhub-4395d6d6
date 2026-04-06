@@ -347,6 +347,8 @@ const CoachCourseForm = () => {
             <AIThumbnailGenerator courseTitle={form.title} onSelect={handleAIThumbnailSelect} />
           </Suspense>
         )}
+
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label className="text-foreground">Category *</Label>
             <Select value={form.category} onValueChange={(v) => updateField("category", v)}>
