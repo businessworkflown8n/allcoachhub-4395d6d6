@@ -2051,6 +2051,36 @@ export type Database = {
         }
         Relationships: []
       }
+      learner_notifications: {
+        Row: {
+          coach_id: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          learner_id: string
+          message: string
+          title: string
+        }
+        Insert: {
+          coach_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          learner_id: string
+          message: string
+          title: string
+        }
+        Update: {
+          coach_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          learner_id?: string
+          message?: string
+          title?: string
+        }
+        Relationships: []
+      }
       material_downloads: {
         Row: {
           created_at: string
