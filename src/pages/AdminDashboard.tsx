@@ -72,6 +72,8 @@ const navItems = [
   { label: "SEO Dashboard", path: "/admin/seo", icon: <Search className="h-4 w-4" /> },
   { label: "WhatsApp Access", path: "/admin/whatsapp-access", icon: <MessageCircle className="h-4 w-4" /> },
   { label: "Thumbnail Access", path: "/admin/thumbnail-access", icon: <ImageIcon className="h-4 w-4" /> },
+  { label: "Workshop Access", path: "/admin/workshop-access", icon: <Video className="h-4 w-4" /> },
+  { label: "Workshop Tracking", path: "/admin/workshop-tracking", icon: <BarChart3 className="h-4 w-4" /> },
   { label: "Settings", path: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
   { label: "Locale & Currency", path: "/admin/locale", icon: <Globe className="h-4 w-4" /> },
 ];
