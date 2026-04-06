@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText, MessageSquare, Sparkles } from "lucide-react";
+import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText, MessageSquare, Sparkles, Bell } from "lucide-react";
 import LearnerProfile from "@/components/learner/LearnerProfile";
 import LearnerCourses from "@/components/learner/LearnerCourses";
 import LearnerWishlist from "@/components/learner/LearnerWishlist";
@@ -15,6 +15,7 @@ import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import LearnerChatHistory from "@/components/learner/LearnerChatHistory";
 import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
 import LearnerWorkshops from "@/components/learner/LearnerWorkshops";
+import LearnerNotifications from "@/components/learner/LearnerNotifications";
 
 const LearnerDashboard = () => {
   useSEO({
