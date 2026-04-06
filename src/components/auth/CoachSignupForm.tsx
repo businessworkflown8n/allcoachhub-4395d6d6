@@ -93,6 +93,11 @@ const CoachSignupForm = () => {
       body: { fullName, email },
     }).catch((err) => console.error("Welcome coach email failed:", err));
 
+    // Notify all learners about new coach (fire-and-forget)
+    supabase.functions.invoke("notify-new-coach-to-learners", {
+      body: { coachName: fullName, expertise, bio, coachUserId: signedUpUser?.id },
+    }).catch((err) => console.error("Learner notification failed:", err));
+
     setLoading(false);
     setSuccess(true);
   };
