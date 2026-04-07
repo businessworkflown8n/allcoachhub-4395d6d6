@@ -5,8 +5,6 @@ import { LogOut, Menu, X } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useState } from "react";
 import MarqueeBar from "@/components/MarqueeBar";
-import logo from "@/assets/logo.png";
-import { useState } from "react";
 
 interface NavItem {
   label: string;
