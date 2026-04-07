@@ -7,6 +7,7 @@ import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import SearchDialog from "@/components/SearchDialog";
 import LocationSelector from "@/components/LocationSelector";
 import { useTranslation } from "@/i18n/TranslationProvider";
+import MarqueeBar from "@/components/MarqueeBar";
 
 const NotificationBell = lazy(() => import("@/components/NotificationBell"));
 
@@ -79,6 +80,8 @@ const Navbar = ({ customLogo, customName, customHomeLink }: NavbarProps = {}) =>
   };
 
   return (
+    <>
+    <MarqueeBar segment="website" />
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to={customHomeLink || "/"} className="flex items-center gap-2">
@@ -305,6 +308,7 @@ const Navbar = ({ customLogo, customName, customHomeLink }: NavbarProps = {}) =>
         </div>
       )}
     </nav>
+    </>
   );
 };
 
