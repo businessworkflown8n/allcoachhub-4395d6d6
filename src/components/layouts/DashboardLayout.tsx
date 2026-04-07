@@ -32,45 +32,49 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
     <div className="flex min-h-screen bg-background">
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col border-r border-border bg-card transition-transform lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-4">
-          <Link to="/" className="flex items-center gap-2">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col border-r border-border/50 bg-card transition-transform duration-300 ease-out lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{ boxShadow: '4px 0 24px rgba(0,0,0,0.3)' }}
+      >
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-border/30 px-5">
+          <Link to="/" className="flex items-center gap-2.5">
             <img src={logo} alt="AI Coach Portal" className="h-8 w-8 rounded-lg" />
-            <span className="text-sm font-bold text-foreground">{title}</span>
+            <span className="text-sm font-bold text-foreground tracking-tight">{title}</span>
           </Link>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground">
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-3">
-          <div className="flex flex-col gap-1">
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          <div className="flex flex-col gap-0.5">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200 ${
                   location.pathname === item.path
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    ? "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_hsl(72_100%_50%/0.15)]"
+                    : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
                 }`}
               >
-                {item.icon}
+                <span className={location.pathname === item.path ? "icon-glow" : "opacity-70 group-hover:opacity-100 transition-opacity"}>
+                  {item.icon}
+                </span>
                 {item.label}
               </Link>
             ))}
           </div>
         </nav>
 
-        <div className="shrink-0 border-t border-border p-3">
+        <div className="shrink-0 border-t border-border/30 p-3">
           <button
             onClick={handleSignOut}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive"
           >
             <LogOut className="h-4 w-4" />
             Sign Out
@@ -79,15 +83,17 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
       </aside>
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col">
-        <header className="flex h-16 items-center gap-4 border-b border-border px-4 lg:px-6">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground">
+      <div className="flex flex-1 flex-col min-w-0">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border/30 bg-background/80 backdrop-blur-xl px-6">
+          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground transition-colors">
             <Menu className="h-5 w-5" />
           </button>
-          <h1 className="text-lg font-semibold text-foreground">{navItems.find(i => i.path === location.pathname)?.label || title}</h1>
+          <h1 className="text-lg font-semibold text-foreground tracking-tight">{navItems.find(i => i.path === location.pathname)?.label || title}</h1>
         </header>
-        <main className="flex-1 overflow-auto p-4 lg:p-6">
-          {children}
+        <main className="flex-1 overflow-auto p-6 lg:p-8">
+          <div className="mx-auto max-w-[1400px] space-y-8">
+            {children}
+          </div>
         </main>
       </div>
     </div>
