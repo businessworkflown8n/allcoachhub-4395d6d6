@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search, KeyRound, LayoutGrid, MessageCircle, ImageIcon } from "lucide-react";
+import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search, KeyRound, LayoutGrid, MessageCircle, ImageIcon, ScrollText } from "lucide-react";
+import AdminMarqueeManager from "@/components/admin/AdminMarqueeManager";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminCoaches from "@/components/admin/AdminCoaches";
 import AdminLearners from "@/components/admin/AdminLearners";
@@ -74,6 +75,7 @@ const navItems = [
   { label: "Thumbnail Access", path: "/admin/thumbnail-access", icon: <ImageIcon className="h-4 w-4" /> },
   { label: "Workshop Access", path: "/admin/workshop-access", icon: <Video className="h-4 w-4" /> },
   { label: "Workshop Tracking", path: "/admin/workshop-tracking", icon: <BarChart3 className="h-4 w-4" /> },
+  { label: "Marquee Manager", path: "/admin/marquee", icon: <ScrollText className="h-4 w-4" /> },
   { label: "Settings", path: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
   { label: "Locale & Currency", path: "/admin/locale", icon: <Globe className="h-4 w-4" /> },
 ];
@@ -123,6 +125,7 @@ const AdminDashboard = () => {
         <Route path="thumbnail-access" element={<AdminThumbnailAccess />} />
         <Route path="workshop-access" element={<AdminWorkshopAccess />} />
         <Route path="workshop-tracking" element={<AdminWorkshopTracking />} />
+        <Route path="marquee" element={<AdminMarqueeManager />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="locale" element={<AdminLocaleSettings />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
