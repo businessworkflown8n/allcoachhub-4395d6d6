@@ -2081,6 +2081,51 @@ export type Database = {
         }
         Relationships: []
       }
+      marquee_messages: {
+        Row: {
+          bg_color: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          message: string
+          scheduled_at: string | null
+          scroll_speed: number
+          segment: string
+          sort_order: number
+          text_color: string
+          updated_at: string
+        }
+        Insert: {
+          bg_color?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          message: string
+          scheduled_at?: string | null
+          scroll_speed?: number
+          segment?: string
+          sort_order?: number
+          text_color?: string
+          updated_at?: string
+        }
+        Update: {
+          bg_color?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          message?: string
+          scheduled_at?: string | null
+          scroll_speed?: number
+          segment?: string
+          sort_order?: number
+          text_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       material_downloads: {
         Row: {
           created_at: string
