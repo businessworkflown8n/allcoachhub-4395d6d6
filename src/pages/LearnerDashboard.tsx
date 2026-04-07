@@ -43,7 +43,7 @@ const LearnerDashboard = () => {
   ];
 
   return (
-    <DashboardLayout navItems={navItems} title="Learner Dashboard">
+    <DashboardLayout navItems={navItems} title="Learner Dashboard" marqueeSegment="learner">
       <Routes>
         <Route path="courses" element={<LearnerCourses />} />
         <Route path="notifications" element={<LearnerNotifications />} />

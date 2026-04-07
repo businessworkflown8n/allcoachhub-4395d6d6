@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { LogOut, Menu, X } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useState } from "react";
+import MarqueeBar from "@/components/MarqueeBar";
 
 interface NavItem {
   label: string;
@@ -15,9 +16,10 @@ interface DashboardLayoutProps {
   children: ReactNode;
   navItems: NavItem[];
   title: string;
+  marqueeSegment?: "learner" | "coach";
 }
 
-const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) => {
+const DashboardLayout = ({ children, navItems, title, marqueeSegment }: DashboardLayoutProps) => {
   const { signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -84,6 +86,7 @@ const DashboardLayout = ({ children, navItems, title }: DashboardLayoutProps) =>
 
       {/* Main content */}
       <div className="flex flex-1 flex-col min-w-0">
+        {marqueeSegment && <MarqueeBar segment={marqueeSegment} />}
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border/30 bg-background/80 backdrop-blur-xl px-6">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground transition-colors">
             <Menu className="h-5 w-5" />

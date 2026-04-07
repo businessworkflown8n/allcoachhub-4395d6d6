@@ -54,7 +54,7 @@ const CoachDashboard = () => {
   ];
 
   return (
-    <DashboardLayout navItems={navItems} title="Coach Dashboard">
+    <DashboardLayout navItems={navItems} title="Coach Dashboard" marqueeSegment="coach">
       <Routes>
         <Route path="courses" element={<CoachCourses />} />
         <Route path="courses/new" element={<CoachCourseForm />} />
