@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Globe, Save, Send, Eye, Loader2, Upload, Palette, Plus, X, Trash2 } from "lucide-react";
+import CoachWebsiteLeads from "./CoachWebsiteLeads";
 
 interface ContentSections {
   stats: { value: string; label: string }[];
@@ -324,6 +325,8 @@ const CoachWebsiteManager = () => {
           </CardContent>
         </Card>
       )}
+
+      {exists && <CoachWebsiteLeads />}
 
       {data.admin_note && (data.status === "rejected" || data.status === "draft") && (
         <Card className="border-destructive/50"><CardContent className="pt-4 pb-4">
