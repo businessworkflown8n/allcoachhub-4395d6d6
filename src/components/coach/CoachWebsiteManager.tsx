@@ -326,6 +326,8 @@ const CoachWebsiteManager = () => {
         </Card>
       )}
 
+      {exists && <CoachWebsiteLeads />}
+
       {data.admin_note && (data.status === "rejected" || data.status === "draft") && (
         <Card className="border-destructive/50"><CardContent className="pt-4 pb-4">
           <p className="text-sm font-medium text-destructive">Admin Feedback:</p>
