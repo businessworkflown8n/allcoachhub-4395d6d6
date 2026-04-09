@@ -3768,16 +3768,25 @@ export type Database = {
       seo_page_metadata: {
         Row: {
           canonical_url: string | null
+          coach_id: string | null
+          content_length: number | null
           crawl_errors: string | null
           created_at: string
           h1_tag: string | null
+          heading_structure: Json | null
           id: string
           image_alt_text: string | null
+          image_count: number | null
+          images_with_alt: number | null
           index_status: string
+          indexed_date: string | null
+          indexing_submitted_at: string | null
+          internal_links_count: number | null
           is_auto_generated: boolean
           last_crawled_at: string | null
           meta_description: string | null
           meta_title: string | null
+          page_title: string | null
           page_type: string
           page_url: string
           primary_keyword: string | null
@@ -3785,20 +3794,31 @@ export type Database = {
           schema_markup: Json | null
           secondary_keywords: string[] | null
           seo_score: number | null
+          seo_suggestions: Json | null
+          sitemap_included: boolean
           updated_at: string
         }
         Insert: {
           canonical_url?: string | null
+          coach_id?: string | null
+          content_length?: number | null
           crawl_errors?: string | null
           created_at?: string
           h1_tag?: string | null
+          heading_structure?: Json | null
           id?: string
           image_alt_text?: string | null
+          image_count?: number | null
+          images_with_alt?: number | null
           index_status?: string
+          indexed_date?: string | null
+          indexing_submitted_at?: string | null
+          internal_links_count?: number | null
           is_auto_generated?: boolean
           last_crawled_at?: string | null
           meta_description?: string | null
           meta_title?: string | null
+          page_title?: string | null
           page_type?: string
           page_url: string
           primary_keyword?: string | null
@@ -3806,20 +3826,31 @@ export type Database = {
           schema_markup?: Json | null
           secondary_keywords?: string[] | null
           seo_score?: number | null
+          seo_suggestions?: Json | null
+          sitemap_included?: boolean
           updated_at?: string
         }
         Update: {
           canonical_url?: string | null
+          coach_id?: string | null
+          content_length?: number | null
           crawl_errors?: string | null
           created_at?: string
           h1_tag?: string | null
+          heading_structure?: Json | null
           id?: string
           image_alt_text?: string | null
+          image_count?: number | null
+          images_with_alt?: number | null
           index_status?: string
+          indexed_date?: string | null
+          indexing_submitted_at?: string | null
+          internal_links_count?: number | null
           is_auto_generated?: boolean
           last_crawled_at?: string | null
           meta_description?: string | null
           meta_title?: string | null
+          page_title?: string | null
           page_type?: string
           page_url?: string
           primary_keyword?: string | null
@@ -3827,6 +3858,8 @@ export type Database = {
           schema_markup?: Json | null
           secondary_keywords?: string[] | null
           seo_score?: number | null
+          seo_suggestions?: Json | null
+          sitemap_included?: boolean
           updated_at?: string
         }
         Relationships: []
