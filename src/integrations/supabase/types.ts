@@ -904,6 +904,57 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_feature_flags: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          coach_id: string
+          contact_access: boolean
+          courses_access: boolean
+          created_at: string
+          feed_access: boolean
+          id: string
+          messaging_access: boolean
+          notes: string | null
+          paid_content_access: boolean
+          status: string
+          updated_at: string
+          workshops_access: boolean
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          coach_id: string
+          contact_access?: boolean
+          courses_access?: boolean
+          created_at?: string
+          feed_access?: boolean
+          id?: string
+          messaging_access?: boolean
+          notes?: string | null
+          paid_content_access?: boolean
+          status?: string
+          updated_at?: string
+          workshops_access?: boolean
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          coach_id?: string
+          contact_access?: boolean
+          courses_access?: boolean
+          created_at?: string
+          feed_access?: boolean
+          id?: string
+          messaging_access?: boolean
+          notes?: string | null
+          paid_content_access?: boolean
+          status?: string
+          updated_at?: string
+          workshops_access?: boolean
+        }
+        Relationships: []
+      }
       coach_page_views: {
         Row: {
           coach_user_id: string
