@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { analyzeSEO } from "@/lib/seoScorer";
+import SEOScoreIndicator from "./SEOScoreIndicator";
 
 interface SEOPageRow {
   id: string;
@@ -27,6 +29,9 @@ interface SEOPageRow {
   last_crawled_at: string | null;
   crawl_errors: string | null;
   is_auto_generated: boolean;
+  content_length?: number;
+  image_count?: number;
+  images_with_alt?: number;
 }
 
 interface Props {
@@ -48,6 +53,24 @@ const SEOEditorPanel = ({ page, onClose }: Props) => {
   });
   const [saving, setSaving] = useState(false);
 
+  // Real-time SEO analysis
+  const analysis = useMemo(() => {
+    let schemaJson = null;
+    try { schemaJson = form.schema_markup.trim() ? JSON.parse(form.schema_markup) : null; } catch { /* ignore */ }
+    return analyzeSEO({
+      metaTitle: form.meta_title,
+      metaDescription: form.meta_description,
+      h1Tag: form.h1_tag,
+      primaryKeyword: form.primary_keyword,
+      canonicalUrl: form.canonical_url,
+      schemaMarkup: schemaJson,
+      pageUrl: page.page_url,
+      contentLength: page.content_length || 0,
+      imageCount: page.image_count || 0,
+      imagesWithAlt: page.images_with_alt || 0,
+    });
+  }, [form, page.page_url, page.content_length, page.image_count, page.images_with_alt]);
+
   const handleSave = async () => {
     setSaving(true);
     let schemaJson = null;
@@ -61,25 +84,7 @@ const SEOEditorPanel = ({ page, onClose }: Props) => {
       }
     }
 
-    const secondaryArr = form.secondary_keywords
-      .split(",")
-      .map(k => k.trim())
-      .filter(Boolean);
-
-    // Calculate score
-    let score = 0;
-    if (form.meta_title.length > 10 && form.meta_title.length <= 60) score += 20;
-    else if (form.meta_title) score += 10;
-    if (form.meta_description.length > 50 && form.meta_description.length <= 160) score += 20;
-    else if (form.meta_description) score += 10;
-    if (form.h1_tag) score += 15;
-    if (form.primary_keyword) {
-      score += 10;
-      if (form.meta_title.toLowerCase().includes(form.primary_keyword.toLowerCase())) score += 5;
-      if (form.h1_tag.toLowerCase().includes(form.primary_keyword.toLowerCase())) score += 5;
-    }
-    if (form.canonical_url) score += 10;
-    if (schemaJson) score += 15;
+    const secondaryArr = form.secondary_keywords.split(",").map(k => k.trim()).filter(Boolean);
 
     const { error } = await supabase
       .from("seo_page_metadata")
@@ -93,7 +98,8 @@ const SEOEditorPanel = ({ page, onClose }: Props) => {
         canonical_url: form.canonical_url || null,
         schema_markup: schemaJson,
         index_status: form.index_status,
-        seo_score: Math.min(score, 100),
+        seo_score: analysis.score,
+        seo_suggestions: analysis.suggestions,
         updated_at: new Date().toISOString(),
       })
       .eq("id", page.id);
@@ -122,99 +128,131 @@ const SEOEditorPanel = ({ page, onClose }: Props) => {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Meta Tags */}
-        <Card>
-          <CardHeader><CardTitle className="text-base">Meta Tags</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Meta Title <span className={titleLen > 60 ? "text-red-500" : "text-muted-foreground"}>({titleLen}/60)</span></Label>
-              <Input value={form.meta_title} onChange={e => setForm(f => ({ ...f, meta_title: e.target.value }))} maxLength={70} />
-            </div>
-            <div>
-              <Label>Meta Description <span className={descLen > 160 ? "text-red-500" : "text-muted-foreground"}>({descLen}/160)</span></Label>
-              <Textarea value={form.meta_description} onChange={e => setForm(f => ({ ...f, meta_description: e.target.value }))} maxLength={170} rows={3} />
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left: Form fields */}
+        <div className="lg:col-span-2 space-y-4">
+          <Card>
+            <CardHeader><CardTitle className="text-base">Meta Tags</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Meta Title <span className={titleLen > 60 ? "text-destructive" : "text-muted-foreground"}>({titleLen}/60)</span></Label>
+                <Input value={form.meta_title} onChange={e => setForm(f => ({ ...f, meta_title: e.target.value }))} maxLength={70} />
+                <div className="mt-1 h-1 rounded-full bg-muted overflow-hidden">
+                  <div className={`h-full transition-all ${titleLen >= 30 && titleLen <= 60 ? "bg-green-500" : titleLen > 0 ? "bg-yellow-500" : "bg-muted"}`} style={{ width: `${Math.min((titleLen / 60) * 100, 100)}%` }} />
+                </div>
+              </div>
+              <div>
+                <Label>Meta Description <span className={descLen > 160 ? "text-destructive" : "text-muted-foreground"}>({descLen}/160)</span></Label>
+                <Textarea value={form.meta_description} onChange={e => setForm(f => ({ ...f, meta_description: e.target.value }))} maxLength={170} rows={3} />
+                <div className="mt-1 h-1 rounded-full bg-muted overflow-hidden">
+                  <div className={`h-full transition-all ${descLen >= 120 && descLen <= 160 ? "bg-green-500" : descLen > 50 ? "bg-yellow-500" : "bg-muted"}`} style={{ width: `${Math.min((descLen / 160) * 100, 100)}%` }} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Headings & Keywords */}
-        <Card>
-          <CardHeader><CardTitle className="text-base">Headings & Keywords</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>H1 Tag (single)</Label>
-              <Input value={form.h1_tag} onChange={e => setForm(f => ({ ...f, h1_tag: e.target.value }))} />
-            </div>
-            <div>
-              <Label>Primary Keyword</Label>
-              <Input value={form.primary_keyword} onChange={e => setForm(f => ({ ...f, primary_keyword: e.target.value }))} placeholder="e.g. ai marketing course" />
-            </div>
-            <div>
-              <Label>Secondary Keywords (comma separated)</Label>
-              <Input value={form.secondary_keywords} onChange={e => setForm(f => ({ ...f, secondary_keywords: e.target.value }))} placeholder="e.g. ai course online, digital marketing ai" />
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-base">Headings & Keywords</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>H1 Tag</Label>
+                <Input value={form.h1_tag} onChange={e => setForm(f => ({ ...f, h1_tag: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Focus Keyword</Label>
+                <Input value={form.primary_keyword} onChange={e => setForm(f => ({ ...f, primary_keyword: e.target.value }))} placeholder="e.g. ai marketing course" />
+              </div>
+              <div>
+                <Label>Secondary Keywords (comma separated)</Label>
+                <Input value={form.secondary_keywords} onChange={e => setForm(f => ({ ...f, secondary_keywords: e.target.value }))} />
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Robots & Canonical */}
-        <Card>
-          <CardHeader><CardTitle className="text-base">Robots & Canonical</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Robots Directive</Label>
-              <Select value={form.robots_directive} onValueChange={v => setForm(f => ({ ...f, robots_directive: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="index, follow">index, follow</SelectItem>
-                  <SelectItem value="noindex, follow">noindex, follow</SelectItem>
-                  <SelectItem value="noindex, nofollow">noindex, nofollow</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Canonical URL</Label>
-              <Input value={form.canonical_url} onChange={e => setForm(f => ({ ...f, canonical_url: e.target.value }))} />
-            </div>
-            <div>
-              <Label>Index Status</Label>
-              <Select value={form.index_status} onValueChange={v => setForm(f => ({ ...f, index_status: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="indexed">Indexed</SelectItem>
-                  <SelectItem value="not_indexed">Not Indexed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-base">Robots & Canonical</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Robots Directive</Label>
+                <Select value={form.robots_directive} onValueChange={v => setForm(f => ({ ...f, robots_directive: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="index, follow">index, follow</SelectItem>
+                    <SelectItem value="noindex, follow">noindex, follow</SelectItem>
+                    <SelectItem value="noindex, nofollow">noindex, nofollow</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Canonical URL</Label>
+                <Input value={form.canonical_url} onChange={e => setForm(f => ({ ...f, canonical_url: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Index Status</Label>
+                <Select value={form.index_status} onValueChange={v => setForm(f => ({ ...f, index_status: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="indexed">Indexed</SelectItem>
+                    <SelectItem value="not_indexed">Not Indexed</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="submitted">Submitted</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Schema Markup */}
-        <Card>
-          <CardHeader><CardTitle className="text-base">Schema Markup (JSON-LD)</CardTitle></CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.schema_markup}
-              onChange={e => setForm(f => ({ ...f, schema_markup: e.target.value }))}
-              rows={10}
-              className="font-mono text-xs"
-              placeholder='{"@context":"https://schema.org","@type":"Course",...}'
-            />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-base">Schema Markup (JSON-LD)</CardTitle></CardHeader>
+            <CardContent>
+              <Textarea
+                value={form.schema_markup}
+                onChange={e => setForm(f => ({ ...f, schema_markup: e.target.value }))}
+                rows={8}
+                className="font-mono text-xs"
+                placeholder='{"@context":"https://schema.org","@type":"Course",...}'
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right: Score & Preview */}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle className="text-base">SEO Analysis</CardTitle></CardHeader>
+            <CardContent>
+              <SEOScoreIndicator score={analysis.score} checks={analysis.checks} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">SERP Preview</CardTitle></CardHeader>
+            <CardContent>
+              <div className="rounded-lg border border-border bg-background p-4 space-y-1">
+                <p className="text-sm text-blue-500 truncate font-medium">{form.meta_title || "Page Title"}</p>
+                <p className="text-xs text-green-600 truncate">https://www.aicoachportal.com{page.page_url}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{form.meta_description || "No description set."}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {analysis.suggestions.length > 0 && (
+            <Card>
+              <CardHeader><CardTitle className="text-base">Suggestions</CardTitle></CardHeader>
+              <CardContent>
+                <ul className="space-y-1.5">
+                  {analysis.suggestions.map((s, i) => (
+                    <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                      <span className="text-yellow-500 mt-0.5">•</span> {s}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
-
-      {/* SERP Preview */}
-      <Card>
-        <CardHeader><CardTitle className="text-base">SERP Preview</CardTitle></CardHeader>
-        <CardContent>
-          <div className="max-w-xl rounded-lg border border-border bg-background p-4">
-            <p className="text-sm text-blue-600 truncate">{form.meta_title || "Page Title"}</p>
-            <p className="text-xs text-green-700 truncate">https://www.aicoachportal.com{page.page_url}</p>
-            <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{form.meta_description || "No description set."}</p>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="flex justify-end gap-3">
         <Button variant="outline" onClick={onClose}>Cancel</Button>
