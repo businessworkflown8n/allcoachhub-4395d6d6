@@ -2470,6 +2470,53 @@ export type Database = {
         }
         Relationships: []
       }
+      indexing_logs: {
+        Row: {
+          action: string
+          api_response: Json | null
+          created_at: string
+          error_message: string | null
+          id: string
+          retry_count: number
+          seo_page_id: string | null
+          status: string
+          submitted_at: string
+          url: string
+        }
+        Insert: {
+          action?: string
+          api_response?: Json | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          retry_count?: number
+          seo_page_id?: string | null
+          status?: string
+          submitted_at?: string
+          url: string
+        }
+        Update: {
+          action?: string
+          api_response?: Json | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          retry_count?: number
+          seo_page_id?: string | null
+          status?: string
+          submitted_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "indexing_logs_seo_page_id_fkey"
+            columns: ["seo_page_id"]
+            isOneToOne: false
+            referencedRelation: "seo_page_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issued_certificates: {
         Row: {
           certificate_number: string
