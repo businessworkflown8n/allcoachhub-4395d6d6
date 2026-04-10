@@ -146,7 +146,7 @@ const CoachesSection = () => {
             {sorted.map((coach) => (
               <Link
                 key={coach.user_id}
-                to={coach.slug ? `/coach-profile/${coach.slug}` : "/browse-coaches"}
+                to={`/coach-profile/${coach.slug || coach.user_id}`}
                 className="block rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/20 hover:shadow-md"
               >
                 <div className="mb-4 flex items-start gap-4">
