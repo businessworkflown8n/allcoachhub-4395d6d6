@@ -61,11 +61,12 @@ const CoachLanding = () => {
   useEffect(() => {
     if (!slug) return;
     const load = async () => {
-      // Find coach profile by slug
+      // Find coach profile by slug or user_id
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
       const { data: profile } = await supabase
         .from("profiles")
         .select("*")
-        .eq("slug", slug)
+        .eq(isUUID ? "user_id" : "slug", slug)
         .single();
 
       if (!profile) {
