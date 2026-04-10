@@ -296,7 +296,7 @@ const BrowseCoaches = () => {
         <div className="mt-3 flex gap-2">
           <Button asChild variant="outline" size="sm" className="flex-1 text-xs">
             <Link
-              to={coach.slug ? `/coach-profile/${coach.slug}` : "#"}
+              to={`/coach-profile/${coach.slug || coach.user_id}`}
               onClick={() => trackEvent("browse_coaches_view_profile", { coachId: coach.user_id })}
             >
               View Profile
@@ -304,7 +304,7 @@ const BrowseCoaches = () => {
           </Button>
           <Button asChild size="sm" className="flex-1 text-xs">
             <Link
-              to={coach.slug ? `/coach-profile/${coach.slug}` : "#"}
+              to={`/coach-profile/${coach.slug || coach.user_id}`}
               onClick={() => trackEvent("browse_coaches_book_session", { coachId: coach.user_id })}
             >
               Book Session

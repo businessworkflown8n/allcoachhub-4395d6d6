@@ -61,11 +61,12 @@ const CoachLanding = () => {
   useEffect(() => {
     if (!slug) return;
     const load = async () => {
-      // Find coach profile by slug
+      // Find coach profile by slug or user_id
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
       const { data: profile } = await supabase
         .from("profiles")
         .select("*")
-        .eq("slug", slug)
+        .eq(isUUID ? "user_id" : "slug", slug)
         .single();
 
       if (!profile) {
@@ -74,19 +75,6 @@ const CoachLanding = () => {
         return;
       }
 
-      // Verify this is a coach
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", profile.user_id)
-        .eq("role", "coach")
-        .single();
-
-      if (!roleData) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
 
       setCoach(profile);
 
