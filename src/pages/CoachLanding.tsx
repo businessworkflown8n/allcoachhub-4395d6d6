@@ -75,19 +75,6 @@ const CoachLanding = () => {
         return;
       }
 
-      // Verify this is a coach
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", profile.user_id)
-        .eq("role", "coach")
-        .single();
-
-      if (!roleData) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
 
       setCoach(profile);
 
