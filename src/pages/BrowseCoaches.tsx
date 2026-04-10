@@ -104,20 +104,11 @@ const BrowseCoaches = () => {
     const fetchCoaches = async () => {
       setLoading(true);
 
-      // Fetch coach profiles (only those with coach role)
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "coach");
-
-      if (!roleData?.length) { setCoaches([]); setLoading(false); return; }
-
-      const coachUserIds = roleData.map(r => r.user_id);
-
+      // Fetch coach profiles directly — the RLS policy "Anyone can view non-suspended coach profiles"
+      // handles filtering to coaches only, so this works for unauthenticated visitors too.
       const { data: profiles } = await supabase
         .from("profiles")
         .select("id, user_id, full_name, avatar_url, bio, category, category_id, experience, experience_level, job_title, country, city, tags, slug, certifications, is_suspended")
-        .in("user_id", coachUserIds)
         .eq("is_suspended", false);
 
       if (!profiles?.length) { setCoaches([]); setLoading(false); return; }
