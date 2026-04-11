@@ -49,6 +49,7 @@ const CoachWebsiteThankYou = lazy(() => import("./pages/CoachWebsiteThankYou"));
 const BrowseCoaches = lazy(() => import("./pages/BrowseCoaches"));
 const OAuthCallback = lazy(() => import("./pages/OAuthCallback"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+const LandingPageThankYou = lazy(() => import("./pages/LandingPageThankYou"));
 
 // Lazy-loaded global widgets (non-critical)
 
@@ -194,6 +195,7 @@ const App = () => (
             } />
             <Route path="/oauth-callback" element={<Suspense fallback={<PageFallback />}><OAuthCallback /></Suspense>} />
             <Route path="/lp/:slug" element={<Suspense fallback={<PageFallback />}><LandingPage /></Suspense>} />
+            <Route path="/lp/:slug/thank-you" element={<Suspense fallback={<PageFallback />}><LandingPageThankYou /></Suspense>} />
             <Route path="*" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
           </Routes>
           <FloatingButtons />
