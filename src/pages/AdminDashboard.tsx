@@ -40,6 +40,7 @@ import AdminThumbnailAccess from "@/components/admin/AdminThumbnailAccess";
 import AdminWorkshopAccess from "@/components/admin/AdminWorkshopAccess";
 import AdminWorkshopTracking from "@/components/admin/AdminWorkshopTracking";
 import AdminCoachFeatureControl from "@/components/admin/AdminCoachFeatureControl";
+import AdminLandingPages from "@/components/admin/AdminLandingPages";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
@@ -77,6 +78,7 @@ const navItems = [
   { label: "Workshop Access", path: "/admin/workshop-access", icon: <Video className="h-4 w-4" /> },
   { label: "Workshop Tracking", path: "/admin/workshop-tracking", icon: <BarChart3 className="h-4 w-4" /> },
   { label: "Feature Control", path: "/admin/feature-control", icon: <ShieldCheck className="h-4 w-4" /> },
+  { label: "Landing Pages", path: "/admin/landing-pages", icon: <Globe className="h-4 w-4" /> },
   { label: "Marquee Manager", path: "/admin/marquee", icon: <ScrollText className="h-4 w-4" /> },
   { label: "Settings", path: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
   { label: "Locale & Currency", path: "/admin/locale", icon: <Globe className="h-4 w-4" /> },
@@ -128,6 +130,7 @@ const AdminDashboard = () => {
         <Route path="workshop-access" element={<AdminWorkshopAccess />} />
         <Route path="workshop-tracking" element={<AdminWorkshopTracking />} />
         <Route path="feature-control" element={<AdminCoachFeatureControl />} />
+        <Route path="landing-pages" element={<AdminLandingPages />} />
         <Route path="marquee" element={<AdminMarqueeManager />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="locale" element={<AdminLocaleSettings />} />

@@ -2565,46 +2565,123 @@ export type Database = {
           },
         ]
       }
+      landing_page_leads: {
+        Row: {
+          city: string | null
+          created_at: string
+          email: string
+          id: string
+          landing_page_id: string
+          mobile: string
+          name: string
+          notes: string | null
+          status: string
+          updated_at: string
+          years_of_expertise: number | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          landing_page_id: string
+          mobile: string
+          name: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          years_of_expertise?: number | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          landing_page_id?: string
+          mobile?: string
+          name?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          years_of_expertise?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_leads_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       landing_pages: {
         Row: {
-          coach_id: string
+          benefits: Json | null
+          category: string | null
+          coach_id: string | null
           content: Json
           conversions: number
           created_at: string
+          headline: string | null
+          hero_image_url: string | null
+          how_it_works: Json | null
           id: string
           is_published: boolean
           meta_description: string | null
           meta_title: string | null
           slug: string
+          status: string | null
+          subheadline: string | null
+          theme_color: string | null
           title: string
+          trust_points: Json | null
           updated_at: string
           views: number
         }
         Insert: {
-          coach_id: string
+          benefits?: Json | null
+          category?: string | null
+          coach_id?: string | null
           content?: Json
           conversions?: number
           created_at?: string
+          headline?: string | null
+          hero_image_url?: string | null
+          how_it_works?: Json | null
           id?: string
           is_published?: boolean
           meta_description?: string | null
           meta_title?: string | null
           slug: string
+          status?: string | null
+          subheadline?: string | null
+          theme_color?: string | null
           title: string
+          trust_points?: Json | null
           updated_at?: string
           views?: number
         }
         Update: {
-          coach_id?: string
+          benefits?: Json | null
+          category?: string | null
+          coach_id?: string | null
           content?: Json
           conversions?: number
           created_at?: string
+          headline?: string | null
+          hero_image_url?: string | null
+          how_it_works?: Json | null
           id?: string
           is_published?: boolean
           meta_description?: string | null
           meta_title?: string | null
           slug?: string
+          status?: string | null
+          subheadline?: string | null
+          theme_color?: string | null
           title?: string
+          trust_points?: Json | null
           updated_at?: string
           views?: number
         }
