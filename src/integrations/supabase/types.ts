@@ -2702,6 +2702,7 @@ export type Database = {
           conversions: number
           created_at: string
           cta_link: string | null
+          cta_text: string | null
           cta_type: string | null
           email_address: string | null
           floating_cta_animation: string | null
@@ -2738,6 +2739,7 @@ export type Database = {
           conversions?: number
           created_at?: string
           cta_link?: string | null
+          cta_text?: string | null
           cta_type?: string | null
           email_address?: string | null
           floating_cta_animation?: string | null
@@ -2774,6 +2776,7 @@ export type Database = {
           conversions?: number
           created_at?: string
           cta_link?: string | null
+          cta_text?: string | null
           cta_type?: string | null
           email_address?: string | null
           floating_cta_animation?: string | null
