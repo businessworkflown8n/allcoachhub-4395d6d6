@@ -2565,6 +2565,79 @@ export type Database = {
           },
         ]
       }
+      landing_page_cta_clicks: {
+        Row: {
+          clicked_at: string | null
+          cta_type: string
+          id: string
+          landing_page_id: string
+        }
+        Insert: {
+          clicked_at?: string | null
+          cta_type?: string
+          id?: string
+          landing_page_id: string
+        }
+        Update: {
+          clicked_at?: string | null
+          cta_type?: string
+          id?: string
+          landing_page_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_cta_clicks_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      landing_page_features: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          landing_page_id: string
+          sort_order: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          landing_page_id: string
+          sort_order?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          landing_page_id?: string
+          sort_order?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_features_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       landing_page_leads: {
         Row: {
           city: string | null
@@ -2575,6 +2648,7 @@ export type Database = {
           mobile: string
           name: string
           notes: string | null
+          source: string | null
           status: string
           updated_at: string
           years_of_expertise: number | null
@@ -2588,6 +2662,7 @@ export type Database = {
           mobile: string
           name: string
           notes?: string | null
+          source?: string | null
           status?: string
           updated_at?: string
           years_of_expertise?: number | null
@@ -2601,6 +2676,7 @@ export type Database = {
           mobile?: string
           name?: string
           notes?: string | null
+          source?: string | null
           status?: string
           updated_at?: string
           years_of_expertise?: number | null
@@ -2617,12 +2693,21 @@ export type Database = {
       }
       landing_pages: {
         Row: {
+          badge_text: string | null
           benefits: Json | null
+          canonical_url: string | null
           category: string | null
           coach_id: string | null
           content: Json
           conversions: number
           created_at: string
+          cta_link: string | null
+          cta_type: string | null
+          email_address: string | null
+          floating_cta_animation: string | null
+          floating_cta_enabled: boolean | null
+          floating_cta_position: string | null
+          floating_cta_type: string | null
           headline: string | null
           hero_image_url: string | null
           how_it_works: Json | null
@@ -2630,6 +2715,8 @@ export type Database = {
           is_published: boolean
           meta_description: string | null
           meta_title: string | null
+          phone_number: string | null
+          schema_markup: Json | null
           slug: string
           status: string | null
           subheadline: string | null
@@ -2638,14 +2725,25 @@ export type Database = {
           trust_points: Json | null
           updated_at: string
           views: number
+          whatsapp_message: string | null
+          whatsapp_number: string | null
         }
         Insert: {
+          badge_text?: string | null
           benefits?: Json | null
+          canonical_url?: string | null
           category?: string | null
           coach_id?: string | null
           content?: Json
           conversions?: number
           created_at?: string
+          cta_link?: string | null
+          cta_type?: string | null
+          email_address?: string | null
+          floating_cta_animation?: string | null
+          floating_cta_enabled?: boolean | null
+          floating_cta_position?: string | null
+          floating_cta_type?: string | null
           headline?: string | null
           hero_image_url?: string | null
           how_it_works?: Json | null
@@ -2653,6 +2751,8 @@ export type Database = {
           is_published?: boolean
           meta_description?: string | null
           meta_title?: string | null
+          phone_number?: string | null
+          schema_markup?: Json | null
           slug: string
           status?: string | null
           subheadline?: string | null
@@ -2661,14 +2761,25 @@ export type Database = {
           trust_points?: Json | null
           updated_at?: string
           views?: number
+          whatsapp_message?: string | null
+          whatsapp_number?: string | null
         }
         Update: {
+          badge_text?: string | null
           benefits?: Json | null
+          canonical_url?: string | null
           category?: string | null
           coach_id?: string | null
           content?: Json
           conversions?: number
           created_at?: string
+          cta_link?: string | null
+          cta_type?: string | null
+          email_address?: string | null
+          floating_cta_animation?: string | null
+          floating_cta_enabled?: boolean | null
+          floating_cta_position?: string | null
+          floating_cta_type?: string | null
           headline?: string | null
           hero_image_url?: string | null
           how_it_works?: Json | null
@@ -2676,6 +2787,8 @@ export type Database = {
           is_published?: boolean
           meta_description?: string | null
           meta_title?: string | null
+          phone_number?: string | null
+          schema_markup?: Json | null
           slug?: string
           status?: string | null
           subheadline?: string | null
@@ -2684,6 +2797,8 @@ export type Database = {
           trust_points?: Json | null
           updated_at?: string
           views?: number
+          whatsapp_message?: string | null
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
