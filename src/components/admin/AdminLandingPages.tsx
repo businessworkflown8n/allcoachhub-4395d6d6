@@ -121,14 +121,25 @@ const AdminLandingPages = () => {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    const [pRes, lRes, cRes] = await Promise.all([
+    const [pRes, lRes, cRes, fcRes, fjRes, feRes, felRes] = await Promise.all([
       supabase.from("landing_pages").select("*").not("category", "is", null).order("created_at", { ascending: false }),
       supabase.from("landing_page_leads").select("*").order("created_at", { ascending: false }),
       supabase.from("landing_page_cta_clicks").select("*"),
+      supabase.from("funnel_config").select("*"),
+      supabase.from("funnel_jobs").select("*").order("created_at", { ascending: false }).limit(200),
+      supabase.from("funnel_events").select("*").order("created_at", { ascending: false }).limit(200),
+      supabase.from("funnel_email_logs").select("*").order("sent_at", { ascending: false }).limit(200),
     ]);
     setPages((pRes.data as any[]) || []);
     setLeads((lRes.data as any[]) || []);
     setCtaClicks((cRes.data as any[]) || []);
+    // Map funnel configs by landing_page_id
+    const cfgMap: Record<string, FunnelConfig> = {};
+    ((fcRes.data as any[]) || []).forEach((c: any) => { cfgMap[c.landing_page_id] = c; });
+    setFunnelConfigs(cfgMap);
+    setFunnelJobs((fjRes.data as any[]) || []);
+    setFunnelEvents((feRes.data as any[]) || []);
+    setFunnelEmailLogs((felRes.data as any[]) || []);
     setLoading(false);
   }, []);
 
