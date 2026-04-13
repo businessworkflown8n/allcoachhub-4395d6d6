@@ -15,7 +15,7 @@ import { format } from "date-fns";
 import {
   Plus, Pencil, Trash2, Eye, Download, Search, Loader2, Globe, Users,
   FileText, Filter, GripVertical, Phone, MessageCircle, BarChart3,
-  MousePointerClick, ArrowUpDown, Mail
+  MousePointerClick, ArrowUpDown, Mail, Zap, Play, Pause, Clock, CheckCircle, XCircle, SkipForward
 } from "lucide-react";
 import { getDefaults } from "@/lib/landingPageDefaults";
 
@@ -39,6 +39,45 @@ interface Feature {
   sort_order: number;
 }
 
+interface FunnelConfig {
+  id?: string;
+  landing_page_id?: string;
+  is_enabled: boolean;
+  welcome_email_subject: string;
+  welcome_email_body: string;
+  day1_email_subject: string;
+  day1_email_body: string;
+  day1_delay_hours: number;
+  day1_enabled: boolean;
+  day2_email_subject: string;
+  day2_email_body: string;
+  day2_delay_hours: number;
+  day2_enabled: boolean;
+  day3_email_subject: string;
+  day3_email_body: string;
+  day3_delay_hours: number;
+  day3_enabled: boolean;
+  welcome_whatsapp_message: string;
+  whatsapp_enabled: boolean;
+}
+
+const DEFAULT_FUNNEL: FunnelConfig = {
+  is_enabled: true,
+  welcome_email_subject: "Welcome to AI Coach Portal!",
+  welcome_email_body: "Hi {{name}}, thank you for your interest in becoming a coach. We're excited to have you!\n\nVisit {{link}} to learn more.",
+  day1_email_subject: "Your Coaching Journey Starts Here",
+  day1_email_body: "Hi {{name}}, here's how you can get started as a coach on AI Coach Portal...\n\nRegister now: {{link}}",
+  day1_delay_hours: 24, day1_enabled: true,
+  day2_email_subject: "Coaches Like You Are Earning ₹80K/Month",
+  day2_email_body: "Hi {{name}}, our coaches earn an average of ₹80,000 per month. Don't miss out!\n\nJoin: {{link}}",
+  day2_delay_hours: 48, day2_enabled: true,
+  day3_email_subject: "Last Chance: Limited Slots Available",
+  day3_email_body: "Hi {{name}}, slots are filling up fast. Register now to secure your spot.\n\n{{link}}",
+  day3_delay_hours: 72, day3_enabled: true,
+  welcome_whatsapp_message: "Hi {{name}}! Thank you for your interest in AI Coach Portal.",
+  whatsapp_enabled: false,
+};
+
 const AdminLandingPages = () => {
   const [pages, setPages] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
@@ -52,6 +91,15 @@ const AdminLandingPages = () => {
   const [showFeatureEditor, setShowFeatureEditor] = useState(false);
   const [editingFeature, setEditingFeature] = useState<Feature | null>(null);
   const [editingFeatureIdx, setEditingFeatureIdx] = useState<number>(-1);
+
+  // Funnel state
+  const [funnelConfigs, setFunnelConfigs] = useState<Record<string, FunnelConfig>>({});
+  const [funnelJobs, setFunnelJobs] = useState<any[]>([]);
+  const [funnelEvents, setFunnelEvents] = useState<any[]>([]);
+  const [editingFunnel, setEditingFunnel] = useState<FunnelConfig | null>(null);
+  const [editingFunnelPageId, setEditingFunnelPageId] = useState<string>("");
+  const [showFunnelEditor, setShowFunnelEditor] = useState(false);
+  const [funnelEmailLogs, setFunnelEmailLogs] = useState<any[]>([]);
 
   const [form, setForm] = useState({
     category: "", headline: "", subheadline: "",
