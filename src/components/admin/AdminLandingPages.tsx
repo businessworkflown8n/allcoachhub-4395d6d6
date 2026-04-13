@@ -359,6 +359,7 @@ const AdminLandingPages = () => {
         <TabsList>
           <TabsTrigger value="pages" className="flex items-center gap-1"><FileText className="h-3.5 w-3.5" /> Pages ({pages.length})</TabsTrigger>
           <TabsTrigger value="leads" className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> Leads ({leads.length})</TabsTrigger>
+          <TabsTrigger value="funnel" className="flex items-center gap-1"><Zap className="h-3.5 w-3.5" /> Funnel</TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-1"><BarChart3 className="h-3.5 w-3.5" /> Analytics</TabsTrigger>
         </TabsList>
 
