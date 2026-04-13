@@ -483,6 +483,113 @@ const AdminLandingPages = () => {
           )}
         </TabsContent>
 
+        {/* FUNNEL AUTOMATION TAB */}
+        <TabsContent value="funnel" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2"><Zap className="h-5 w-5 text-primary" /> Funnel Automation</h3>
+              <p className="text-sm text-muted-foreground mt-1">Configure automated email sequences for each landing page</p>
+            </div>
+          </div>
+
+          {/* Per-page funnel config cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {pages.map((p: any) => {
+              const cfg = funnelConfigs[p.id];
+              const pageJobs = funnelJobs.filter((j: any) => j.landing_page_id === p.id);
+              const pageLogs = funnelEmailLogs.filter((l: any) => {
+                const job = funnelJobs.find((j: any) => j.lead_id === l.lead_id);
+                return job?.landing_page_id === p.id;
+              });
+              const sent = pageJobs.filter((j: any) => j.status === "sent").length;
+              const pending = pageJobs.filter((j: any) => j.status === "pending").length;
+              const skipped = pageJobs.filter((j: any) => j.status === "skipped").length;
+              const failed = pageJobs.filter((j: any) => j.status === "failed").length;
+              return (
+                <Card key={p.id} className="border-border/40">
+                  <CardContent className="p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Badge variant="secondary">{p.category}</Badge>
+                        <h4 className="font-semibold text-foreground text-sm mt-1 truncate">{p.headline}</h4>
+                      </div>
+                      {cfg ? (
+                        <Badge variant={cfg.is_enabled ? "default" : "outline"} className="flex items-center gap-1">
+                          {cfg.is_enabled ? <><Play className="h-3 w-3" /> Active</> : <><Pause className="h-3 w-3" /> Paused</>}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">Not Configured</Badge>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      <div className="p-2 rounded bg-muted/30">
+                        <p className="text-sm font-bold text-foreground">{sent}</p>
+                        <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5"><CheckCircle className="h-2.5 w-2.5" /> Sent</p>
+                      </div>
+                      <div className="p-2 rounded bg-muted/30">
+                        <p className="text-sm font-bold text-foreground">{pending}</p>
+                        <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5"><Clock className="h-2.5 w-2.5" /> Pending</p>
+                      </div>
+                      <div className="p-2 rounded bg-muted/30">
+                        <p className="text-sm font-bold text-foreground">{skipped}</p>
+                        <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5"><SkipForward className="h-2.5 w-2.5" /> Skipped</p>
+                      </div>
+                      <div className="p-2 rounded bg-muted/30">
+                        <p className="text-sm font-bold text-foreground">{failed}</p>
+                        <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5"><XCircle className="h-2.5 w-2.5" /> Failed</p>
+                      </div>
+                    </div>
+                    <Button size="sm" className="w-full" variant={cfg ? "outline" : "default"} onClick={() => {
+                      setEditingFunnelPageId(p.id);
+                      setEditingFunnel(cfg ? { ...cfg } : { ...DEFAULT_FUNNEL, landing_page_id: p.id });
+                      setShowFunnelEditor(true);
+                    }}>
+                      {cfg ? "Edit Funnel Config" : "Setup Funnel"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Recent funnel events */}
+          {funnelEvents.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-2">Recent Funnel Events</h4>
+              <div className="rounded-lg border border-border overflow-auto max-h-[300px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Event</TableHead>
+                      <TableHead>Lead</TableHead>
+                      <TableHead>Page</TableHead>
+                      <TableHead>Time</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {funnelEvents.slice(0, 50).map((e: any) => {
+                      const lead = leads.find((l: any) => l.id === e.lead_id);
+                      const page = pages.find((p: any) => p.id === e.landing_page_id);
+                      return (
+                        <TableRow key={e.id}>
+                          <TableCell>
+                            <Badge variant={e.event_type.includes("sent") ? "default" : e.event_type === "funnel_stopped" ? "destructive" : "secondary"} className="text-xs">
+                              {e.event_type.replace(/_/g, " ")}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-foreground">{lead?.name || "—"}</TableCell>
+                          <TableCell><Badge variant="outline" className="text-xs">{page?.category || "—"}</Badge></TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{format(new Date(e.created_at), "MMM d, HH:mm")}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
         {/* ANALYTICS TAB */}
         <TabsContent value="analytics" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
