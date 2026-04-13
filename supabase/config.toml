@@ -47,3 +47,9 @@ verify_jwt = false
 
 [functions.submit-indexing]
 verify_jwt = false
+
+[functions.funnel-trigger]
+verify_jwt = false
+
+[functions.funnel-processor]
+verify_jwt = false

@@ -15,7 +15,7 @@ import { format } from "date-fns";
 import {
   Plus, Pencil, Trash2, Eye, Download, Search, Loader2, Globe, Users,
   FileText, Filter, GripVertical, Phone, MessageCircle, BarChart3,
-  MousePointerClick, ArrowUpDown, Mail
+  MousePointerClick, ArrowUpDown, Mail, Zap, Play, Pause, Clock, CheckCircle, XCircle, SkipForward
 } from "lucide-react";
 import { getDefaults } from "@/lib/landingPageDefaults";
 
@@ -39,6 +39,45 @@ interface Feature {
   sort_order: number;
 }
 
+interface FunnelConfig {
+  id?: string;
+  landing_page_id?: string;
+  is_enabled: boolean;
+  welcome_email_subject: string;
+  welcome_email_body: string;
+  day1_email_subject: string;
+  day1_email_body: string;
+  day1_delay_hours: number;
+  day1_enabled: boolean;
+  day2_email_subject: string;
+  day2_email_body: string;
+  day2_delay_hours: number;
+  day2_enabled: boolean;
+  day3_email_subject: string;
+  day3_email_body: string;
+  day3_delay_hours: number;
+  day3_enabled: boolean;
+  welcome_whatsapp_message: string;
+  whatsapp_enabled: boolean;
+}
+
+const DEFAULT_FUNNEL: FunnelConfig = {
+  is_enabled: true,
+  welcome_email_subject: "Welcome to AI Coach Portal!",
+  welcome_email_body: "Hi {{name}}, thank you for your interest in becoming a coach. We're excited to have you!\n\nVisit {{link}} to learn more.",
+  day1_email_subject: "Your Coaching Journey Starts Here",
+  day1_email_body: "Hi {{name}}, here's how you can get started as a coach on AI Coach Portal...\n\nRegister now: {{link}}",
+  day1_delay_hours: 24, day1_enabled: true,
+  day2_email_subject: "Coaches Like You Are Earning ₹80K/Month",
+  day2_email_body: "Hi {{name}}, our coaches earn an average of ₹80,000 per month. Don't miss out!\n\nJoin: {{link}}",
+  day2_delay_hours: 48, day2_enabled: true,
+  day3_email_subject: "Last Chance: Limited Slots Available",
+  day3_email_body: "Hi {{name}}, slots are filling up fast. Register now to secure your spot.\n\n{{link}}",
+  day3_delay_hours: 72, day3_enabled: true,
+  welcome_whatsapp_message: "Hi {{name}}! Thank you for your interest in AI Coach Portal.",
+  whatsapp_enabled: false,
+};
+
 const AdminLandingPages = () => {
   const [pages, setPages] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
@@ -52,6 +91,15 @@ const AdminLandingPages = () => {
   const [showFeatureEditor, setShowFeatureEditor] = useState(false);
   const [editingFeature, setEditingFeature] = useState<Feature | null>(null);
   const [editingFeatureIdx, setEditingFeatureIdx] = useState<number>(-1);
+
+  // Funnel state
+  const [funnelConfigs, setFunnelConfigs] = useState<Record<string, FunnelConfig>>({});
+  const [funnelJobs, setFunnelJobs] = useState<any[]>([]);
+  const [funnelEvents, setFunnelEvents] = useState<any[]>([]);
+  const [editingFunnel, setEditingFunnel] = useState<FunnelConfig | null>(null);
+  const [editingFunnelPageId, setEditingFunnelPageId] = useState<string>("");
+  const [showFunnelEditor, setShowFunnelEditor] = useState(false);
+  const [funnelEmailLogs, setFunnelEmailLogs] = useState<any[]>([]);
 
   const [form, setForm] = useState({
     category: "", headline: "", subheadline: "",
@@ -73,14 +121,25 @@ const AdminLandingPages = () => {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    const [pRes, lRes, cRes] = await Promise.all([
+    const [pRes, lRes, cRes, fcRes, fjRes, feRes, felRes] = await Promise.all([
       supabase.from("landing_pages").select("*").not("category", "is", null).order("created_at", { ascending: false }),
       supabase.from("landing_page_leads").select("*").order("created_at", { ascending: false }),
       supabase.from("landing_page_cta_clicks").select("*"),
+      supabase.from("funnel_config").select("*"),
+      supabase.from("funnel_jobs").select("*").order("created_at", { ascending: false }).limit(200),
+      supabase.from("funnel_events").select("*").order("created_at", { ascending: false }).limit(200),
+      supabase.from("funnel_email_logs").select("*").order("sent_at", { ascending: false }).limit(200),
     ]);
     setPages((pRes.data as any[]) || []);
     setLeads((lRes.data as any[]) || []);
     setCtaClicks((cRes.data as any[]) || []);
+    // Map funnel configs by landing_page_id
+    const cfgMap: Record<string, FunnelConfig> = {};
+    ((fcRes.data as any[]) || []).forEach((c: any) => { cfgMap[c.landing_page_id] = c; });
+    setFunnelConfigs(cfgMap);
+    setFunnelJobs((fjRes.data as any[]) || []);
+    setFunnelEvents((feRes.data as any[]) || []);
+    setFunnelEmailLogs((felRes.data as any[]) || []);
     setLoading(false);
   }, []);
 
@@ -300,6 +359,7 @@ const AdminLandingPages = () => {
         <TabsList>
           <TabsTrigger value="pages" className="flex items-center gap-1"><FileText className="h-3.5 w-3.5" /> Pages ({pages.length})</TabsTrigger>
           <TabsTrigger value="leads" className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> Leads ({leads.length})</TabsTrigger>
+          <TabsTrigger value="funnel" className="flex items-center gap-1"><Zap className="h-3.5 w-3.5" /> Funnel</TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-1"><BarChart3 className="h-3.5 w-3.5" /> Analytics</TabsTrigger>
         </TabsList>
 
@@ -419,6 +479,113 @@ const AdminLandingPages = () => {
                   })}
                 </TableBody>
               </Table>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* FUNNEL AUTOMATION TAB */}
+        <TabsContent value="funnel" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2"><Zap className="h-5 w-5 text-primary" /> Funnel Automation</h3>
+              <p className="text-sm text-muted-foreground mt-1">Configure automated email sequences for each landing page</p>
+            </div>
+          </div>
+
+          {/* Per-page funnel config cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {pages.map((p: any) => {
+              const cfg = funnelConfigs[p.id];
+              const pageJobs = funnelJobs.filter((j: any) => j.landing_page_id === p.id);
+              const pageLogs = funnelEmailLogs.filter((l: any) => {
+                const job = funnelJobs.find((j: any) => j.lead_id === l.lead_id);
+                return job?.landing_page_id === p.id;
+              });
+              const sent = pageJobs.filter((j: any) => j.status === "sent").length;
+              const pending = pageJobs.filter((j: any) => j.status === "pending").length;
+              const skipped = pageJobs.filter((j: any) => j.status === "skipped").length;
+              const failed = pageJobs.filter((j: any) => j.status === "failed").length;
+              return (
+                <Card key={p.id} className="border-border/40">
+                  <CardContent className="p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Badge variant="secondary">{p.category}</Badge>
+                        <h4 className="font-semibold text-foreground text-sm mt-1 truncate">{p.headline}</h4>
+                      </div>
+                      {cfg ? (
+                        <Badge variant={cfg.is_enabled ? "default" : "outline"} className="flex items-center gap-1">
+                          {cfg.is_enabled ? <><Play className="h-3 w-3" /> Active</> : <><Pause className="h-3 w-3" /> Paused</>}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">Not Configured</Badge>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      <div className="p-2 rounded bg-muted/30">
+                        <p className="text-sm font-bold text-foreground">{sent}</p>
+                        <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5"><CheckCircle className="h-2.5 w-2.5" /> Sent</p>
+                      </div>
+                      <div className="p-2 rounded bg-muted/30">
+                        <p className="text-sm font-bold text-foreground">{pending}</p>
+                        <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5"><Clock className="h-2.5 w-2.5" /> Pending</p>
+                      </div>
+                      <div className="p-2 rounded bg-muted/30">
+                        <p className="text-sm font-bold text-foreground">{skipped}</p>
+                        <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5"><SkipForward className="h-2.5 w-2.5" /> Skipped</p>
+                      </div>
+                      <div className="p-2 rounded bg-muted/30">
+                        <p className="text-sm font-bold text-foreground">{failed}</p>
+                        <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5"><XCircle className="h-2.5 w-2.5" /> Failed</p>
+                      </div>
+                    </div>
+                    <Button size="sm" className="w-full" variant={cfg ? "outline" : "default"} onClick={() => {
+                      setEditingFunnelPageId(p.id);
+                      setEditingFunnel(cfg ? { ...cfg } : { ...DEFAULT_FUNNEL, landing_page_id: p.id });
+                      setShowFunnelEditor(true);
+                    }}>
+                      {cfg ? "Edit Funnel Config" : "Setup Funnel"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Recent funnel events */}
+          {funnelEvents.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-2">Recent Funnel Events</h4>
+              <div className="rounded-lg border border-border overflow-auto max-h-[300px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Event</TableHead>
+                      <TableHead>Lead</TableHead>
+                      <TableHead>Page</TableHead>
+                      <TableHead>Time</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {funnelEvents.slice(0, 50).map((e: any) => {
+                      const lead = leads.find((l: any) => l.id === e.lead_id);
+                      const page = pages.find((p: any) => p.id === e.landing_page_id);
+                      return (
+                        <TableRow key={e.id}>
+                          <TableCell>
+                            <Badge variant={e.event_type.includes("sent") ? "default" : e.event_type === "funnel_stopped" ? "destructive" : "secondary"} className="text-xs">
+                              {e.event_type.replace(/_/g, " ")}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-foreground">{lead?.name || "—"}</TableCell>
+                          <TableCell><Badge variant="outline" className="text-xs">{page?.category || "—"}</Badge></TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{format(new Date(e.created_at), "MMM d, HH:mm")}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
         </TabsContent>
@@ -682,6 +849,168 @@ const AdminLandingPages = () => {
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setShowFeatureEditor(false)}>Cancel</Button>
                 <Button onClick={saveFeature}>Save Feature</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* FUNNEL CONFIG EDITOR DIALOG */}
+      <Dialog open={showFunnelEditor} onOpenChange={setShowFunnelEditor}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Zap className="h-5 w-5 text-primary" /> Funnel Automation Config</DialogTitle>
+          </DialogHeader>
+          {editingFunnel && (
+            <div className="space-y-5">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <div className="flex items-center gap-3">
+                  <Switch checked={editingFunnel.is_enabled} onCheckedChange={(v) => setEditingFunnel({ ...editingFunnel, is_enabled: v })} />
+                  <span className="text-sm font-medium text-foreground">{editingFunnel.is_enabled ? "Automation Active" : "Automation Paused"}</span>
+                </div>
+                <Badge variant={editingFunnel.is_enabled ? "default" : "outline"}>{editingFunnel.is_enabled ? "LIVE" : "OFF"}</Badge>
+              </div>
+
+              {/* Welcome Email */}
+              <div className="border border-border/40 rounded-lg p-4 space-y-3">
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> Welcome Email (Instant)</h4>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject</label>
+                  <Input value={editingFunnel.welcome_email_subject} onChange={(e) => setEditingFunnel({ ...editingFunnel, welcome_email_subject: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Body (use &#123;&#123;name&#125;&#125;, &#123;&#123;link&#125;&#125;, &#123;&#123;category&#125;&#125;)</label>
+                  <Textarea value={editingFunnel.welcome_email_body} onChange={(e) => setEditingFunnel({ ...editingFunnel, welcome_email_body: e.target.value })} rows={3} />
+                </div>
+              </div>
+
+              {/* Day 1 */}
+              <div className="border border-border/40 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Clock className="h-4 w-4" /> Day 1 Follow-up</h4>
+                  <Switch checked={editingFunnel.day1_enabled} onCheckedChange={(v) => setEditingFunnel({ ...editingFunnel, day1_enabled: v })} />
+                </div>
+                {editingFunnel.day1_enabled && (
+                  <>
+                    <div className="flex gap-3">
+                      <div className="flex-1">
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject</label>
+                        <Input value={editingFunnel.day1_email_subject} onChange={(e) => setEditingFunnel({ ...editingFunnel, day1_email_subject: e.target.value })} />
+                      </div>
+                      <div className="w-24">
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Delay (hrs)</label>
+                        <Input type="number" value={editingFunnel.day1_delay_hours} onChange={(e) => setEditingFunnel({ ...editingFunnel, day1_delay_hours: parseInt(e.target.value) || 24 })} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Body</label>
+                      <Textarea value={editingFunnel.day1_email_body} onChange={(e) => setEditingFunnel({ ...editingFunnel, day1_email_body: e.target.value })} rows={2} />
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Day 2 */}
+              <div className="border border-border/40 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Clock className="h-4 w-4" /> Day 2 Follow-up</h4>
+                  <Switch checked={editingFunnel.day2_enabled} onCheckedChange={(v) => setEditingFunnel({ ...editingFunnel, day2_enabled: v })} />
+                </div>
+                {editingFunnel.day2_enabled && (
+                  <>
+                    <div className="flex gap-3">
+                      <div className="flex-1">
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject</label>
+                        <Input value={editingFunnel.day2_email_subject} onChange={(e) => setEditingFunnel({ ...editingFunnel, day2_email_subject: e.target.value })} />
+                      </div>
+                      <div className="w-24">
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Delay (hrs)</label>
+                        <Input type="number" value={editingFunnel.day2_delay_hours} onChange={(e) => setEditingFunnel({ ...editingFunnel, day2_delay_hours: parseInt(e.target.value) || 48 })} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Body</label>
+                      <Textarea value={editingFunnel.day2_email_body} onChange={(e) => setEditingFunnel({ ...editingFunnel, day2_email_body: e.target.value })} rows={2} />
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Day 3 */}
+              <div className="border border-border/40 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><Clock className="h-4 w-4" /> Day 3 Follow-up</h4>
+                  <Switch checked={editingFunnel.day3_enabled} onCheckedChange={(v) => setEditingFunnel({ ...editingFunnel, day3_enabled: v })} />
+                </div>
+                {editingFunnel.day3_enabled && (
+                  <>
+                    <div className="flex gap-3">
+                      <div className="flex-1">
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject</label>
+                        <Input value={editingFunnel.day3_email_subject} onChange={(e) => setEditingFunnel({ ...editingFunnel, day3_email_subject: e.target.value })} />
+                      </div>
+                      <div className="w-24">
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Delay (hrs)</label>
+                        <Input type="number" value={editingFunnel.day3_delay_hours} onChange={(e) => setEditingFunnel({ ...editingFunnel, day3_delay_hours: parseInt(e.target.value) || 72 })} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1 block">Body</label>
+                      <Textarea value={editingFunnel.day3_email_body} onChange={(e) => setEditingFunnel({ ...editingFunnel, day3_email_body: e.target.value })} rows={2} />
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* WhatsApp */}
+              <div className="border border-border/40 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2"><MessageCircle className="h-4 w-4" /> WhatsApp Welcome</h4>
+                  <Switch checked={editingFunnel.whatsapp_enabled} onCheckedChange={(v) => setEditingFunnel({ ...editingFunnel, whatsapp_enabled: v })} />
+                </div>
+                {editingFunnel.whatsapp_enabled && (
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Message Template</label>
+                    <Textarea value={editingFunnel.welcome_whatsapp_message} onChange={(e) => setEditingFunnel({ ...editingFunnel, welcome_whatsapp_message: e.target.value })} rows={2} />
+                    <p className="text-xs text-muted-foreground mt-1">⚠️ Requires Twilio setup (coming soon)</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-border/30">
+                <Button variant="outline" onClick={() => setShowFunnelEditor(false)}>Cancel</Button>
+                <Button onClick={async () => {
+                  const payload = {
+                    landing_page_id: editingFunnelPageId,
+                    is_enabled: editingFunnel.is_enabled,
+                    welcome_email_subject: editingFunnel.welcome_email_subject,
+                    welcome_email_body: editingFunnel.welcome_email_body,
+                    day1_email_subject: editingFunnel.day1_email_subject,
+                    day1_email_body: editingFunnel.day1_email_body,
+                    day1_delay_hours: editingFunnel.day1_delay_hours,
+                    day1_enabled: editingFunnel.day1_enabled,
+                    day2_email_subject: editingFunnel.day2_email_subject,
+                    day2_email_body: editingFunnel.day2_email_body,
+                    day2_delay_hours: editingFunnel.day2_delay_hours,
+                    day2_enabled: editingFunnel.day2_enabled,
+                    day3_email_subject: editingFunnel.day3_email_subject,
+                    day3_email_body: editingFunnel.day3_email_body,
+                    day3_delay_hours: editingFunnel.day3_delay_hours,
+                    day3_enabled: editingFunnel.day3_enabled,
+                    welcome_whatsapp_message: editingFunnel.welcome_whatsapp_message,
+                    whatsapp_enabled: editingFunnel.whatsapp_enabled,
+                  };
+                  if (editingFunnel.id) {
+                    const { error } = await supabase.from("funnel_config").update(payload).eq("id", editingFunnel.id);
+                    if (error) { toast({ title: "Update failed", description: error.message, variant: "destructive" }); return; }
+                  } else {
+                    const { error } = await supabase.from("funnel_config").insert(payload);
+                    if (error) { toast({ title: "Save failed", description: error.message, variant: "destructive" }); return; }
+                  }
+                  toast({ title: "Funnel config saved!" });
+                  setShowFunnelEditor(false);
+                  fetchAll();
+                }}>Save Funnel Config</Button>
               </div>
             </div>
           )}

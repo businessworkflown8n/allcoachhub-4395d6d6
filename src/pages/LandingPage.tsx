@@ -102,16 +102,22 @@ const LandingPage = () => {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("landing_page_leads").insert({
+    const { data: leadData, error } = await supabase.from("landing_page_leads").insert({
       landing_page_id: page.id, name: form.name, email: form.email,
       mobile: form.mobile, years_of_expertise: form.years_of_expertise ? parseInt(form.years_of_expertise) : null,
       city: form.city || null, source: "landing_page_form",
-    });
+    }).select("id").single();
     setSubmitting(false);
     if (error) {
       toast({ title: "Submission failed", description: error.message, variant: "destructive" });
     } else {
       trackCta("form_submit");
+      // Trigger funnel automation (fire and forget)
+      if (leadData?.id) {
+        supabase.functions.invoke("funnel-trigger", {
+          body: { lead_id: leadData.id, landing_page_id: page.id },
+        }).catch(() => {});
+      }
       navigate(`/lp/${slug}/thank-you?name=${encodeURIComponent(form.name)}&category=${encodeURIComponent(page.category || "")}`);
     }
   };
