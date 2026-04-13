@@ -2440,6 +2440,226 @@ export type Database = {
           },
         ]
       }
+      funnel_config: {
+        Row: {
+          created_at: string | null
+          day1_delay_hours: number | null
+          day1_email_body: string | null
+          day1_email_subject: string | null
+          day1_enabled: boolean | null
+          day2_delay_hours: number | null
+          day2_email_body: string | null
+          day2_email_subject: string | null
+          day2_enabled: boolean | null
+          day3_delay_hours: number | null
+          day3_email_body: string | null
+          day3_email_subject: string | null
+          day3_enabled: boolean | null
+          id: string
+          is_enabled: boolean | null
+          landing_page_id: string | null
+          updated_at: string | null
+          welcome_email_body: string | null
+          welcome_email_subject: string | null
+          welcome_whatsapp_message: string | null
+          whatsapp_enabled: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          day1_delay_hours?: number | null
+          day1_email_body?: string | null
+          day1_email_subject?: string | null
+          day1_enabled?: boolean | null
+          day2_delay_hours?: number | null
+          day2_email_body?: string | null
+          day2_email_subject?: string | null
+          day2_enabled?: boolean | null
+          day3_delay_hours?: number | null
+          day3_email_body?: string | null
+          day3_email_subject?: string | null
+          day3_enabled?: boolean | null
+          id?: string
+          is_enabled?: boolean | null
+          landing_page_id?: string | null
+          updated_at?: string | null
+          welcome_email_body?: string | null
+          welcome_email_subject?: string | null
+          welcome_whatsapp_message?: string | null
+          whatsapp_enabled?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          day1_delay_hours?: number | null
+          day1_email_body?: string | null
+          day1_email_subject?: string | null
+          day1_enabled?: boolean | null
+          day2_delay_hours?: number | null
+          day2_email_body?: string | null
+          day2_email_subject?: string | null
+          day2_enabled?: boolean | null
+          day3_delay_hours?: number | null
+          day3_email_body?: string | null
+          day3_email_subject?: string | null
+          day3_enabled?: boolean | null
+          id?: string
+          is_enabled?: boolean | null
+          landing_page_id?: string | null
+          updated_at?: string | null
+          welcome_email_body?: string | null
+          welcome_email_subject?: string | null
+          welcome_whatsapp_message?: string | null
+          whatsapp_enabled?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_config_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: true
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funnel_email_logs: {
+        Row: {
+          email_type: string
+          error_message: string | null
+          id: string
+          lead_id: string
+          recipient_email: string
+          sent_at: string | null
+          status: string | null
+          subject: string | null
+        }
+        Insert: {
+          email_type: string
+          error_message?: string | null
+          id?: string
+          lead_id: string
+          recipient_email: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+        }
+        Update: {
+          email_type?: string
+          error_message?: string | null
+          id?: string
+          lead_id?: string
+          recipient_email?: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_email_logs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funnel_events: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          landing_page_id: string | null
+          lead_id: string | null
+          metadata: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          landing_page_id?: string | null
+          lead_id?: string | null
+          metadata?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          landing_page_id?: string | null
+          lead_id?: string | null
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_events_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funnel_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funnel_jobs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          job_type: string
+          landing_page_id: string | null
+          lead_id: string
+          max_retries: number | null
+          processed_at: string | null
+          retry_count: number | null
+          scheduled_at: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          job_type: string
+          landing_page_id?: string | null
+          lead_id: string
+          max_retries?: number | null
+          processed_at?: string | null
+          retry_count?: number | null
+          scheduled_at?: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          job_type?: string
+          landing_page_id?: string | null
+          lead_id?: string
+          max_retries?: number | null
+          processed_at?: string | null
+          retry_count?: number | null
+          scheduled_at?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_jobs_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funnel_jobs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generated_prompts: {
         Row: {
           created_at: string
@@ -2645,6 +2865,7 @@ export type Database = {
           email: string
           id: string
           landing_page_id: string
+          lead_status: string | null
           mobile: string
           name: string
           notes: string | null
@@ -2659,6 +2880,7 @@ export type Database = {
           email: string
           id?: string
           landing_page_id: string
+          lead_status?: string | null
           mobile: string
           name: string
           notes?: string | null
@@ -2673,6 +2895,7 @@ export type Database = {
           email?: string
           id?: string
           landing_page_id?: string
+          lead_status?: string | null
           mobile?: string
           name?: string
           notes?: string | null
