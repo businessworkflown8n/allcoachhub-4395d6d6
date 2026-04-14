@@ -34,10 +34,19 @@ const LearnerReviews = () => {
 
   const fetchData = async () => {
     if (!user) return;
-    const enrRes: any = await supabase.from("enrollments").select("*, courses(id, title, coach_id)").eq("user_id", user.id);
-    const revRes: any = await supabase.from("reviews").select("*, courses(title)").eq("learner_id", user.id).order("created_at", { ascending: false });
-    setEnrollments(enrRes.data || []);
-    setReviews(revRes.data || []);
+    const { data: enrData } = await (supabase.from("enrollments").select("id, user_id, course_id").eq("user_id", user.id) as any);
+    // Fetch course details for enrolled courses
+    const courseIds = (enrData || []).map((e: any) => e.course_id).filter(Boolean);
+    let coursesMap: Record<string, any> = {};
+    if (courseIds.length > 0) {
+      const { data: coursesData } = await supabase.from("courses").select("id, title, coach_id").in("id", courseIds);
+      (coursesData || []).forEach((c: any) => { coursesMap[c.id] = c; });
+    }
+    const enrichedEnrollments = (enrData || []).map((e: any) => ({ ...e, courses: coursesMap[e.course_id] || null }));
+    setEnrollments(enrichedEnrollments);
+
+    const { data: revData } = await (supabase.from("reviews").select("*, courses(title)").eq("learner_id", user.id).order("created_at", { ascending: false }) as any);
+    setReviews(revData || []);
     setLoading(false);
   };
 
