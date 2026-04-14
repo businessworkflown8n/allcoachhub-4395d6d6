@@ -34,7 +34,7 @@ const LearnerReviews = () => {
 
   const fetchData = async () => {
     if (!user) return;
-    const { data: enrData } = await (supabase.from("enrollments").select("id, user_id, course_id").eq("user_id", user.id) as any);
+    const { data: enrData } = await supabase.from("enrollments" as any).select("id, user_id, course_id").eq("user_id", user.id);
     // Fetch course details for enrolled courses
     const courseIds = (enrData || []).map((e: any) => e.course_id).filter(Boolean);
     let coursesMap: Record<string, any> = {};
