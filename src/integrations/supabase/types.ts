@@ -4189,6 +4189,45 @@ export type Database = {
         }
         Relationships: []
       }
+      review_replies: {
+        Row: {
+          coach_id: string
+          created_at: string
+          id: string
+          reply_text: string
+          review_id: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          id?: string
+          reply_text: string
+          review_id: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          id?: string
+          reply_text?: string
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_replies_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "public_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_replies_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           coach_id: string
@@ -4199,6 +4238,9 @@ export type Database = {
           is_approved: boolean
           learner_id: string
           rating: number
+          review_text: string | null
+          status: string
+          updated_at: string
         }
         Insert: {
           coach_id: string
@@ -4209,6 +4251,9 @@ export type Database = {
           is_approved?: boolean
           learner_id: string
           rating: number
+          review_text?: string | null
+          status?: string
+          updated_at?: string
         }
         Update: {
           coach_id?: string
@@ -4219,6 +4264,9 @@ export type Database = {
           is_approved?: boolean
           learner_id?: string
           rating?: number
+          review_text?: string | null
+          status?: string
+          updated_at?: string
         }
         Relationships: [
           {
