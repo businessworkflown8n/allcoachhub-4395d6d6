@@ -34,9 +34,9 @@ const LearnerReviews = () => {
 
   const fetchData = async () => {
     if (!user) return;
-    const { data: enr } = await supabase.from("enrollments").select("*, courses(id, title, coach_id)").eq("user_id", user.id) as { data: any[] | null };
-    const { data: rev } = await supabase.from("reviews").select("*, courses(title)").eq("learner_id", user.id).order("created_at", { ascending: false }) as { data: any[] | null };
-    setEnrollments(enr || []);
+    const enrRes = await supabase.from("enrollments").select("*, courses(id, title, coach_id)").eq("user_id", user.id);
+    const revRes = await supabase.from("reviews").select("*, courses(title)").eq("learner_id", user.id).order("created_at", { ascending: false });
+    setEnrollments((enrRes.data as any[]) || []);
     setReviews(rev || []);
     setLoading(false);
   };
