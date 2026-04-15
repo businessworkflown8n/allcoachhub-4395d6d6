@@ -1833,6 +1833,9 @@ export type Database = {
           rejection_reason: string | null
           requires_category_approval: boolean
           slug: string | null
+          thumbnail_approved_at: string | null
+          thumbnail_approved_by: string | null
+          thumbnail_status: string
           thumbnail_url: string | null
           title: string
           updated_at: string
@@ -1859,6 +1862,9 @@ export type Database = {
           rejection_reason?: string | null
           requires_category_approval?: boolean
           slug?: string | null
+          thumbnail_approved_at?: string | null
+          thumbnail_approved_by?: string | null
+          thumbnail_status?: string
           thumbnail_url?: string | null
           title: string
           updated_at?: string
@@ -1885,6 +1891,9 @@ export type Database = {
           rejection_reason?: string | null
           requires_category_approval?: boolean
           slug?: string | null
+          thumbnail_approved_at?: string | null
+          thumbnail_approved_by?: string | null
+          thumbnail_status?: string
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
