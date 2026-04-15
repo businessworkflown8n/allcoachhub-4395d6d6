@@ -257,7 +257,7 @@ const CoachCourseForm = () => {
       setUploadingThumb(true);
       const thumbUrl = await uploadThumbnail(courseId);
       if (thumbUrl) {
-        await supabase.from("courses").update({ thumbnail_url: thumbUrl }).eq("id", courseId);
+        await supabase.from("courses").update({ thumbnail_url: thumbUrl, thumbnail_status: "pending" } as any).eq("id", courseId);
       }
       setUploadingThumb(false);
     }
