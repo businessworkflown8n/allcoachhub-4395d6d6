@@ -174,8 +174,21 @@ const CoachCourses = () => {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((c) => (
             <div key={c.id} className="rounded-xl border border-border bg-card overflow-hidden space-y-0">
-              {c.thumbnail_url ? (
+              {c.thumbnail_url && (c as any).thumbnail_status === "approved" ? (
                 <img src={c.thumbnail_url} alt={c.title} className="w-full h-32 object-cover" />
+              ) : c.thumbnail_url ? (
+                <div className="relative w-full h-32">
+                  <img src={c.thumbnail_url} alt={c.title} className="w-full h-32 object-cover opacity-50" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium backdrop-blur-sm ${
+                      (c as any).thumbnail_status === "rejected"
+                        ? "bg-destructive/80 text-destructive-foreground"
+                        : "bg-yellow-500/80 text-primary-foreground"
+                    }`}>
+                      {(c as any).thumbnail_status === "rejected" ? "❌ Rejected" : "🟡 Under Review"}
+                    </span>
+                  </div>
+                </div>
               ) : (
                 <div className="w-full h-32 bg-secondary flex items-center justify-center">
                   <BookOpen className="h-8 w-8 text-muted-foreground/40" />
