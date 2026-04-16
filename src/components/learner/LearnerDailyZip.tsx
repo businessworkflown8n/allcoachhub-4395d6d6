@@ -83,7 +83,7 @@ const LearnerDailyZip = () => {
             {userRank > 0 && <span className="ml-2 font-medium text-primary">• Rank #{userRank}</span>}
           </p>
         </div>
-        <Button onClick={() => navigate("/daily-zip")} className="gap-2">
+        <Button onClick={() => navigate("/learner/daily-zip")} className="gap-2">
           <Play className="h-4 w-4" />
           {gamesPlayed > 0 ? `Resume Level ${currentLevel}` : "Start Playing"}
         </Button>

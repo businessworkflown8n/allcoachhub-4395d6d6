@@ -12,7 +12,7 @@ const sections = [
       { label: "Home", to: "/" },
       { label: "All Courses", to: "/courses" },
       { label: "Webinars", to: "/webinars" },
-      { label: "Daily Zip – AI Puzzle Game", to: "/daily-zip" },
+      
       { label: "Install App", to: "/install" },
     ],
   },
