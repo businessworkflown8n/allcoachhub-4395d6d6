@@ -955,6 +955,39 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_notification_permissions: {
+        Row: {
+          can_submit: boolean
+          coach_id: string
+          created_at: string
+          id: string
+          is_blocked: boolean
+          notes: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          can_submit?: boolean
+          coach_id: string
+          created_at?: string
+          id?: string
+          is_blocked?: boolean
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          can_submit?: boolean
+          coach_id?: string
+          created_at?: string
+          id?: string
+          is_blocked?: boolean
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       coach_page_views: {
         Row: {
           coach_user_id: string
@@ -3039,33 +3072,53 @@ export type Database = {
       }
       learner_notifications: {
         Row: {
+          clicked_at: string | null
           coach_id: string | null
           created_at: string
+          cta_link: string | null
           id: string
           is_read: boolean
           learner_id: string
           message: string
+          opened_at: string | null
+          request_id: string | null
           title: string
         }
         Insert: {
+          clicked_at?: string | null
           coach_id?: string | null
           created_at?: string
+          cta_link?: string | null
           id?: string
           is_read?: boolean
           learner_id: string
           message: string
+          opened_at?: string | null
+          request_id?: string | null
           title: string
         }
         Update: {
+          clicked_at?: string | null
           coach_id?: string | null
           created_at?: string
+          cta_link?: string | null
           id?: string
           is_read?: boolean
           learner_id?: string
           message?: string
+          opened_at?: string | null
+          request_id?: string | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "learner_notifications_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "notification_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       marquee_messages: {
         Row: {
@@ -3462,6 +3515,90 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string | null
+        }
+        Relationships: []
+      }
+      notification_requests: {
+        Row: {
+          audience_type: string
+          course_id: string | null
+          created_at: string
+          cta_link: string | null
+          id: string
+          message: string
+          recipients_count: number
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_note: string | null
+          scheduled_for: string | null
+          sent_at: string | null
+          status: string
+          submitted_by: string
+          submitter_role: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audience_type?: string
+          course_id?: string | null
+          created_at?: string
+          cta_link?: string | null
+          id?: string
+          message: string
+          recipients_count?: number
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string
+          submitted_by: string
+          submitter_role?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audience_type?: string
+          course_id?: string | null
+          created_at?: string
+          cta_link?: string | null
+          id?: string
+          message?: string
+          recipients_count?: number
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_note?: string | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string
+          submitted_by?: string
+          submitter_role?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notification_settings: {
+        Row: {
+          enabled: boolean
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -5340,6 +5477,10 @@ export type Database = {
       }
     }
     Functions: {
+      approve_notification_request: {
+        Args: { _request_id: string; _reviewer_note?: string }
+        Returns: Json
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -5371,6 +5512,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      reject_notification_request: {
+        Args: { _request_id: string; _reviewer_note?: string }
+        Returns: Json
       }
     }
     Enums: {

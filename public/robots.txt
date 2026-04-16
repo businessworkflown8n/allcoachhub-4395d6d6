@@ -23,7 +23,7 @@ Allow: /ai-jobs-news/*
 Allow: /webinars
 Allow: /materials
 Allow: /materials/*
-Allow: /daily-zip
+Disallow: /daily-zip
 Allow: /prompt-generator
 Allow: /prompt-engineering
 Allow: /ai-agents

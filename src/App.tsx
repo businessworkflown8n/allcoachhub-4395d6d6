@@ -31,7 +31,7 @@ const AIBlogsCategory = lazy(() => import("./pages/AIBlogsCategory"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const Courses = lazy(() => import("./pages/Courses"));
 const Webinars = lazy(() => import("./pages/Webinars"));
-const DailyZip = lazy(() => import("./pages/DailyZip"));
+// DailyZip is now only inside dashboards (/learner/daily-zip and /coach/daily-zip)
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Install = lazy(() => import("./pages/Install"));
 const CoachLanding = lazy(() => import("./pages/CoachLanding"));
@@ -148,7 +148,7 @@ const App = () => (
             <Route path="/ai-jobs-news/ai-research/ai-seo-prompt" element={<Suspense fallback={<PageFallback />}><AISeoPrompt /></Suspense>} />
             <Route path="/ai-jobs-news/:category" element={<Suspense fallback={<PageFallback />}><AIBlogsCategory /></Suspense>} />
             <Route path="/ai-blogs/:slug" element={<Suspense fallback={<PageFallback />}><BlogPost /></Suspense>} />
-            <Route path="/daily-zip" element={<Suspense fallback={<PageFallback />}><DailyZip /></Suspense>} />
+            <Route path="/daily-zip" element={<Navigate to="/auth?mode=login" replace />} />
             <Route path="/unsubscribe" element={<Suspense fallback={<PageFallback />}><Unsubscribe /></Suspense>} />
             <Route path="/install" element={<Suspense fallback={<PageFallback />}><Install /></Suspense>} />
             <Route path="/sitemap" element={<Suspense fallback={<PageFallback />}><Sitemap /></Suspense>} />
