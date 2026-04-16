@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search, KeyRound, LayoutGrid, MessageCircle, ImageIcon, ScrollText, ShieldCheck, Image } from "lucide-react";
+import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search, KeyRound, LayoutGrid, MessageCircle, ImageIcon, ScrollText, ShieldCheck, Image, Bell } from "lucide-react";
 import AdminMarqueeManager from "@/components/admin/AdminMarqueeManager";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminCoaches from "@/components/admin/AdminCoaches";
@@ -42,6 +42,7 @@ import AdminWorkshopTracking from "@/components/admin/AdminWorkshopTracking";
 import AdminCoachFeatureControl from "@/components/admin/AdminCoachFeatureControl";
 import AdminLandingPages from "@/components/admin/AdminLandingPages";
 import AdminCourseThumbnails from "@/components/admin/AdminCourseThumbnails";
+import AdminNotificationCenter from "@/components/admin/AdminNotificationCenter";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
@@ -81,6 +82,7 @@ const navItems = [
   { label: "Feature Control", path: "/admin/feature-control", icon: <ShieldCheck className="h-4 w-4" /> },
   { label: "Landing Pages", path: "/admin/landing-pages", icon: <Globe className="h-4 w-4" /> },
   { label: "Course Thumbnails", path: "/admin/course-thumbnails", icon: <Image className="h-4 w-4" /> },
+  { label: "Notifications", path: "/admin/notifications", icon: <Bell className="h-4 w-4" /> },
   { label: "Marquee Manager", path: "/admin/marquee", icon: <ScrollText className="h-4 w-4" /> },
   { label: "Settings", path: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
   { label: "Locale & Currency", path: "/admin/locale", icon: <Globe className="h-4 w-4" /> },
@@ -134,6 +136,7 @@ const AdminDashboard = () => {
         <Route path="feature-control" element={<AdminCoachFeatureControl />} />
         <Route path="landing-pages" element={<AdminLandingPages />} />
         <Route path="course-thumbnails" element={<AdminCourseThumbnails />} />
+        <Route path="notifications" element={<AdminNotificationCenter />} />
         <Route path="marquee" element={<AdminMarqueeManager />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="locale" element={<AdminLocaleSettings />} />

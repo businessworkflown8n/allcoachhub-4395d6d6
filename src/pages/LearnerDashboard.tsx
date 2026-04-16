@@ -10,6 +10,7 @@ import LearnerCertificates from "@/components/learner/LearnerCertificates";
 import LearnerReferrals from "@/components/learner/LearnerReferrals";
 import LearnerWebinars from "@/components/learner/LearnerWebinars";
 import LearnerDailyZip from "@/components/learner/LearnerDailyZip";
+import DailyZip from "@/pages/DailyZip";
 import SocialMediaHub from "@/components/shared/SocialMediaHub";
 import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import LearnerChatHistory from "@/components/learner/LearnerChatHistory";
@@ -55,7 +56,7 @@ const LearnerDashboard = () => {
         <Route path="certificates" element={<LearnerCertificates />} />
         <Route path="materials" element={<DashboardMaterials />} />
         <Route path="chat-history" element={<LearnerChatHistory />} />
-        <Route path="daily-zip" element={<LearnerDailyZip />} />
+        <Route path="daily-zip" element={<DailyZip />} />
         <Route path="prompt-generator" element={<div className="space-y-4"><h2 className="text-xl font-bold text-foreground">Prompt Generator</h2><div className="rounded-xl border border-border bg-card p-6"><PromptGeneratorForm showSave userRole="learner" /></div></div>} />
         <Route path="social" element={<SocialMediaHub />} />
         <Route path="profile" element={<LearnerProfile />} />
