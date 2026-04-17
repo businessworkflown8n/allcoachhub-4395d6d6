@@ -3,13 +3,15 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Star, Clock, Users, ArrowLeft, Heart, Share2 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Star, Clock, Users, ArrowLeft, Heart, Share2, Lock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const CourseDetail = () => {
   const { slug } = useParams();
   const { user } = useAuth();
+  const { isLearner } = useUserRole();
   const navigate = useNavigate();
   const [course, setCourse] = useState<any>(null);
   const [coach, setCoach] = useState<any>(null);
@@ -26,6 +28,25 @@ const CourseDetail = () => {
     ogImage: course?.thumbnail_url,
     ogType: "article",
   });
+
+  // Track referral click when arriving via ?ref=
+  useEffect(() => {
+    if (!course?.id) return;
+    const params = new URLSearchParams(window.location.search);
+    const refId = params.get("ref");
+    if (!refId || refId === user?.id) return;
+    const key = `ref_clicked_${course.id}_${refId}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    (supabase as any).from("referral_clicks").insert({
+      referrer_id: refId,
+      referrer_role: "learner",
+      course_id: course.id,
+      referral_code: refId,
+      referrer_url: document.referrer || null,
+      user_agent: navigator.userAgent,
+    }).then(() => {});
+  }, [course?.id, user?.id]);
 
   // Push dataLayer event for GTM/Looker Studio
   useEffect(() => {
@@ -234,21 +255,30 @@ const CourseDetail = () => {
                 {wishlisted ? "In Wishlist" : "Add to Wishlist"}
               </button>
 
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-border py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary">
-                    <Share2 className="h-4 w-4" /> Share & Earn 10%
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-56 p-3">
-                  <p className="mb-2 text-xs font-semibold text-foreground">Share this course & earn 10% commission!</p>
-                  <div className="flex flex-col gap-1">
-                    <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/course/${course.slug || courseId}${user ? `?ref=${user.id}` : ""}`); toast({ title: "Link copied!" }); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Link</button>
-                    <button onClick={() => { const msg = encodeURIComponent(`Check out "${course.title}"! ${window.location.origin}/course/${course.slug || courseId}${user ? `?ref=${user.id}` : ""}`); window.open(`https://wa.me/?text=${msg}`, "_blank"); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 WhatsApp</button>
-                    <button onClick={() => { const s = encodeURIComponent(`Check out: ${course.title}`); const b = encodeURIComponent(`${course.title}\n\n${window.location.origin}/course/${course.slug || courseId}${user ? `?ref=${user.id}` : ""}`); window.open(`mailto:?subject=${s}&body=${b}`); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 Email</button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              {user && isLearner ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-border py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary">
+                      <Share2 className="h-4 w-4" /> Share & Earn 10%
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-3">
+                    <p className="mb-2 text-xs font-semibold text-foreground">Share this course & earn 10% commission!</p>
+                    <div className="flex flex-col gap-1">
+                      <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/course/${course.slug || courseId}?ref=${user.id}`); toast({ title: "Link copied!" }); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Link</button>
+                      <button onClick={() => { const msg = encodeURIComponent(`Check out "${course.title}"! ${window.location.origin}/course/${course.slug || courseId}?ref=${user.id}`); window.open(`https://wa.me/?text=${msg}`, "_blank"); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 WhatsApp</button>
+                      <button onClick={() => { const s = encodeURIComponent(`Check out: ${course.title}`); const b = encodeURIComponent(`${course.title}\n\n${window.location.origin}/course/${course.slug || courseId}?ref=${user.id}`); window.open(`mailto:?subject=${s}&body=${b}`); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 Email</button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border py-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <Lock className="h-3.5 w-3.5" /> Login as a learner to unlock Share & Earn 10%
+                </button>
+              )}
             </div>
           </div>
         </div>

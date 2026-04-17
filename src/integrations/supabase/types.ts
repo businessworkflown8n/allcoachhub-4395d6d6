@@ -4221,12 +4221,62 @@ export type Database = {
           },
         ]
       }
+      referral_clicks: {
+        Row: {
+          clicked_at: string
+          course_id: string | null
+          id: string
+          referral_code: string | null
+          referrer_id: string
+          referrer_role: string
+          referrer_url: string | null
+          user_agent: string | null
+          visitor_ip: string | null
+        }
+        Insert: {
+          clicked_at?: string
+          course_id?: string | null
+          id?: string
+          referral_code?: string | null
+          referrer_id: string
+          referrer_role?: string
+          referrer_url?: string | null
+          user_agent?: string | null
+          visitor_ip?: string | null
+        }
+        Update: {
+          clicked_at?: string
+          course_id?: string | null
+          id?: string
+          referral_code?: string | null
+          referrer_id?: string
+          referrer_role?: string
+          referrer_url?: string | null
+          user_agent?: string | null
+          visitor_ip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_clicks_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referrals: {
         Row: {
+          click_count: number
           commission_earned: number | null
+          commission_percent: number
+          converted_at: string | null
+          course_id: string | null
           created_at: string
           id: string
           points_earned: number | null
+          purchase_id: string | null
+          referral_code: string | null
           referred_email: string
           referred_user_id: string | null
           referrer_id: string
@@ -4234,10 +4284,16 @@ export type Database = {
           status: string
         }
         Insert: {
+          click_count?: number
           commission_earned?: number | null
+          commission_percent?: number
+          converted_at?: string | null
+          course_id?: string | null
           created_at?: string
           id?: string
           points_earned?: number | null
+          purchase_id?: string | null
+          referral_code?: string | null
           referred_email: string
           referred_user_id?: string | null
           referrer_id: string
@@ -4245,17 +4301,31 @@ export type Database = {
           status?: string
         }
         Update: {
+          click_count?: number
           commission_earned?: number | null
+          commission_percent?: number
+          converted_at?: string | null
+          course_id?: string | null
           created_at?: string
           id?: string
           points_earned?: number | null
+          purchase_id?: string | null
+          referral_code?: string | null
           referred_email?: string
           referred_user_id?: string | null
           referrer_id?: string
           referrer_role?: string
           status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "referrals_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       report_audit_log: {
         Row: {
