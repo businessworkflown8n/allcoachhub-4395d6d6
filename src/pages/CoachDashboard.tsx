@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles, Globe, MessageCircle, Bell, Gamepad2 } from "lucide-react";
+import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles, Globe, MessageCircle, Bell, Gamepad2, UserPlus } from "lucide-react";
 import CoachProfile from "@/components/coach/CoachProfile";
 import CoachCourses from "@/components/coach/CoachCourses";
 import CoachCourseForm from "@/components/coach/CoachCourseForm";
@@ -23,6 +23,7 @@ import { useWorkshopAccess } from "@/hooks/useWorkshopAccess";
 import { useCoachFeatures } from "@/hooks/useCoachFeatures";
 import CoachWorkshops from "@/components/coach/CoachWorkshops";
 import CoachNotificationRequests from "@/components/coach/CoachNotificationRequests";
+import CoachReferrals from "@/components/coach/CoachReferrals";
 import DailyZip from "@/pages/DailyZip";
 
 const CoachDashboard = () => {
@@ -59,6 +60,7 @@ const CoachDashboard = () => {
     ...(hasWorkshopAccess && features.workshops_access ? [{ label: "Workshops", path: "/coach/workshops", icon: <Video className="h-4 w-4" /> }] : []),
     { label: "Earnings", path: "/coach/earnings", icon: <DollarSign className="h-4 w-4" /> },
     { label: "Notifications", path: "/coach/notifications", icon: <Bell className="h-4 w-4" /> },
+    { label: "Invite Coaches", path: "/coach/invite-coaches", icon: <UserPlus className="h-4 w-4" /> },
     { label: "Daily Zip", path: "/coach/daily-zip", icon: <Gamepad2 className="h-4 w-4" /> },
     { label: "Prompt Generator", path: "/coach/prompt-generator", icon: <Sparkles className="h-4 w-4" /> },
     { label: "My Website", path: "/coach/website", icon: <Globe className="h-4 w-4" /> },
@@ -82,6 +84,7 @@ const CoachDashboard = () => {
         <Route path="workshops" element={hasWorkshopAccess && features.workshops_access ? <CoachWorkshops /> : <Navigate to="overview" replace />} />
         <Route path="earnings" element={<CoachEarnings />} />
         <Route path="notifications" element={<CoachNotificationRequests />} />
+        <Route path="invite-coaches" element={<CoachReferrals />} />
         <Route path="daily-zip" element={<DailyZip />} />
         <Route path="profile" element={<CoachProfile />} />
         <Route path="prompt-generator" element={<div className="space-y-4"><h2 className="text-xl font-bold text-foreground">Prompt Generator</h2><div className="rounded-xl border border-border bg-card p-6"><PromptGeneratorForm showSave userRole="coach" /></div></div>} />
