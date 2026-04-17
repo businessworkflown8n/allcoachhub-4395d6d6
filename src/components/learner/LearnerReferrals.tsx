@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Users, DollarSign, UserPlus, BookOpen, Copy, Mail, MessageCircle, Link2, Check } from "lucide-react";
+import { Users, DollarSign, UserPlus, BookOpen, Copy, Mail, MessageCircle, Link2, Check, MousePointerClick } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 const LearnerReferrals = () => {
   const { user } = useAuth();
   const [referrals, setReferrals] = useState<any[]>([]);
+  const [clickCount, setClickCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -20,10 +21,15 @@ const LearnerReferrals = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("referrals").select("*").eq("referrer_id", user.id).order("created_at", { ascending: false }).then(({ data }) => {
-      setReferrals(data || []);
+    (async () => {
+      const [{ data: refs }, { count }] = await Promise.all([
+        supabase.from("referrals").select("*").eq("referrer_id", user.id).order("created_at", { ascending: false }),
+        (supabase as any).from("referral_clicks").select("*", { count: "exact", head: true }).eq("referrer_id", user.id),
+      ]);
+      setReferrals(refs || []);
+      setClickCount(count || 0);
       setLoading(false);
-    });
+    })();
   }, [user]);
 
   const refreshReferrals = async () => {
