@@ -89,8 +89,9 @@ const LearnerReferrals = () => {
       <h2 className="text-xl font-bold text-foreground">Referral Program</h2>
       <p className="text-sm text-muted-foreground">Earn 10% commission when your referrals enroll in courses</p>
 
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {[
+          { label: "Link Clicks", value: clickCount, icon: MousePointerClick },
           { label: "Total Referred", value: stats.total, icon: Users },
           { label: "Registered", value: stats.registered, icon: UserPlus },
           { label: "Enrolled", value: stats.enrolled, icon: BookOpen },
