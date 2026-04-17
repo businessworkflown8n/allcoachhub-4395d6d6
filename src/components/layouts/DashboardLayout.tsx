@@ -1,9 +1,9 @@
 import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, X, Search } from "lucide-react";
 import logo from "@/assets/logo.png";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import MarqueeBar from "@/components/MarqueeBar";
 
 interface NavItem {
