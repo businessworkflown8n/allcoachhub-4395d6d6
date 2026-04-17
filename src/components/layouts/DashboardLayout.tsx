@@ -24,6 +24,13 @@ const DashboardLayout = ({ children, navItems, title, marqueeSegment }: Dashboar
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const filteredNavItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return navItems;
+    return navItems.filter((item) => item.label.toLowerCase().includes(q));
+  }, [navItems, search]);
 
   const handleSignOut = async () => {
     await signOut();
