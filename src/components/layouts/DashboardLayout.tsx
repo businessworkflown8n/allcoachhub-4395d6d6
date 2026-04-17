@@ -1,9 +1,9 @@
 import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, X, Search } from "lucide-react";
 import logo from "@/assets/logo.png";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import MarqueeBar from "@/components/MarqueeBar";
 
 interface NavItem {
@@ -24,6 +24,13 @@ const DashboardLayout = ({ children, navItems, title, marqueeSegment }: Dashboar
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const filteredNavItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return navItems;
+    return navItems.filter((item) => item.label.toLowerCase().includes(q));
+  }, [navItems, search]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -52,24 +59,48 @@ const DashboardLayout = ({ children, navItems, title, marqueeSegment }: Dashboar
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <div className="flex flex-col gap-0.5">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200 ${
-                  location.pathname === item.path
-                    ? "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_hsl(72_100%_50%/0.15)]"
-                    : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
-                }`}
+          <div className="relative mb-3 px-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search menu..."
+              className="w-full rounded-xl border border-border/40 bg-secondary/50 py-2 pl-9 pr-8 text-[13px] text-foreground placeholder:text-muted-foreground/70 focus:border-primary/40 focus:bg-secondary/80 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Clear search"
               >
-                <span className={location.pathname === item.path ? "icon-glow" : "opacity-70 group-hover:opacity-100 transition-opacity"}>
-                  {item.icon}
-                </span>
-                {item.label}
-              </Link>
-            ))}
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <div className="flex flex-col gap-0.5">
+            {filteredNavItems.length === 0 ? (
+              <p className="px-3 py-4 text-center text-xs text-muted-foreground">No matches found</p>
+            ) : (
+              filteredNavItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200 ${
+                    location.pathname === item.path
+                      ? "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_hsl(72_100%_50%/0.15)]"
+                      : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
+                  }`}
+                >
+                  <span className={location.pathname === item.path ? "icon-glow" : "opacity-70 group-hover:opacity-100 transition-opacity"}>
+                    {item.icon}
+                  </span>
+                  {item.label}
+                </Link>
+              ))
+            )}
           </div>
         </nav>
 
