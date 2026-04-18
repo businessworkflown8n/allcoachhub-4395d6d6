@@ -370,6 +370,33 @@ export type Database = {
         }
         Relationships: []
       }
+      blueprint_chat_messages: {
+        Row: {
+          coach_id: string
+          content: string
+          created_at: string
+          id: string
+          role: string
+          step_context: number | null
+        }
+        Insert: {
+          coach_id: string
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          step_context?: number | null
+        }
+        Update: {
+          coach_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          step_context?: number | null
+        }
+        Relationships: []
+      }
       bundle_items: {
         Row: {
           bundle_id: string
@@ -759,6 +786,96 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_blueprints: {
+        Row: {
+          avatar_inputs: Json | null
+          avatar_output: Json | null
+          blueprint_pdf_url: string | null
+          certificate_url: string | null
+          coach_id: string
+          completed_at: string | null
+          completed_steps: number[]
+          created_at: string
+          current_step: number
+          curriculum_output: Json | null
+          dashboard_state: Json | null
+          funnel_output: Json | null
+          id: string
+          is_completed: boolean
+          niche_inputs: Json | null
+          niche_output: Json | null
+          niche_score: number | null
+          offer_inputs: Json | null
+          offer_output: Json | null
+          offer_score: number | null
+          pricing_inputs: Json | null
+          pricing_output: Json | null
+          pricing_score: number | null
+          problems_output: Json | null
+          roadmap_output: Json | null
+          share_slug: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_inputs?: Json | null
+          avatar_output?: Json | null
+          blueprint_pdf_url?: string | null
+          certificate_url?: string | null
+          coach_id: string
+          completed_at?: string | null
+          completed_steps?: number[]
+          created_at?: string
+          current_step?: number
+          curriculum_output?: Json | null
+          dashboard_state?: Json | null
+          funnel_output?: Json | null
+          id?: string
+          is_completed?: boolean
+          niche_inputs?: Json | null
+          niche_output?: Json | null
+          niche_score?: number | null
+          offer_inputs?: Json | null
+          offer_output?: Json | null
+          offer_score?: number | null
+          pricing_inputs?: Json | null
+          pricing_output?: Json | null
+          pricing_score?: number | null
+          problems_output?: Json | null
+          roadmap_output?: Json | null
+          share_slug?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_inputs?: Json | null
+          avatar_output?: Json | null
+          blueprint_pdf_url?: string | null
+          certificate_url?: string | null
+          coach_id?: string
+          completed_at?: string | null
+          completed_steps?: number[]
+          created_at?: string
+          current_step?: number
+          curriculum_output?: Json | null
+          dashboard_state?: Json | null
+          funnel_output?: Json | null
+          id?: string
+          is_completed?: boolean
+          niche_inputs?: Json | null
+          niche_output?: Json | null
+          niche_score?: number | null
+          offer_inputs?: Json | null
+          offer_output?: Json | null
+          offer_score?: number | null
+          pricing_inputs?: Json | null
+          pricing_output?: Json | null
+          pricing_score?: number | null
+          problems_output?: Json | null
+          roadmap_output?: Json | null
+          share_slug?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coach_categories: {
         Row: {
           created_at: string
@@ -908,6 +1025,7 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          blueprint_access: boolean
           coach_id: string
           contact_access: boolean
           courses_access: boolean
@@ -925,6 +1043,7 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          blueprint_access?: boolean
           coach_id: string
           contact_access?: boolean
           courses_access?: boolean
@@ -942,6 +1061,7 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          blueprint_access?: boolean
           coach_id?: string
           contact_access?: boolean
           courses_access?: boolean

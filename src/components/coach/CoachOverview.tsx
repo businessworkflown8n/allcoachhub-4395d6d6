@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { BookOpen, Users, Video, UserCheck, DollarSign, IndianRupee, ChevronDown, ChevronUp } from "lucide-react";
+import { BookOpen, Users, Video, UserCheck, DollarSign, IndianRupee, ChevronDown, ChevronUp, Rocket, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useCoachFeatures } from "@/hooks/useCoachFeatures";
 import GrowthTools from "./GrowthTools";
 import ProfileStrengthMeter from "./ProfileStrengthMeter";
 import AIClientMatching from "./AIClientMatching";
@@ -10,6 +12,7 @@ const USD_TO_INR_FALLBACK = 83.5;
 
 const CoachOverview = () => {
   const { user } = useAuth();
+  const features: any = useCoachFeatures();
   const [stats, setStats] = useState({ courses: 0, enrollments: 0, webinars: 0, registrations: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -119,6 +122,21 @@ const CoachOverview = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-foreground">Dashboard Overview</h2>
+
+      {features.blueprint_access !== false && (
+        <Link to="/coach/blueprint" className="block rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-card to-emerald-500/5 p-6 hover:border-primary/60 transition-all">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="rounded-xl bg-primary/20 p-3"><Rocket className="h-6 w-6 text-primary" /></div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">Coach Blueprint Super App ✨</h3>
+                <p className="text-sm text-muted-foreground mt-1">From idea → validated, revenue-generating coaching business in 10 AI-powered steps.</p>
+              </div>
+            </div>
+            <ArrowRight className="h-5 w-5 text-primary flex-shrink-0" />
+          </div>
+        </Link>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <div key={c.label} className="rounded-xl border border-border bg-card p-5 space-y-2">

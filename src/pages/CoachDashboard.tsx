@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles, Globe, MessageCircle, Bell, Gamepad2, UserPlus } from "lucide-react";
+import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles, Globe, MessageCircle, Bell, Gamepad2, UserPlus, Rocket } from "lucide-react";
+import CoachBlueprintWorkspace from "@/components/coach/blueprint/CoachBlueprintWorkspace";
 import CoachProfile from "@/components/coach/CoachProfile";
 import CoachCourses from "@/components/coach/CoachCourses";
 import CoachCourseForm from "@/components/coach/CoachCourseForm";
@@ -41,6 +42,7 @@ const CoachDashboard = () => {
 
   const navItems = [
     { label: "Overview", path: "/coach/overview", icon: <LayoutDashboard className="h-4 w-4" /> },
+    ...((features as any).blueprint_access !== false ? [{ label: "Blueprint", path: "/coach/blueprint", icon: <Rocket className="h-4 w-4" /> }] : []),
     ...(features.courses_access ? [
       { label: "My Courses", path: "/coach/courses", icon: <BookOpen className="h-4 w-4" /> },
       { label: "Add Course", path: "/coach/courses/new", icon: <Plus className="h-4 w-4" /> },
@@ -89,6 +91,7 @@ const CoachDashboard = () => {
         <Route path="profile" element={<CoachProfile />} />
         <Route path="prompt-generator" element={<div className="space-y-4"><h2 className="text-xl font-bold text-foreground">Prompt Generator</h2><div className="rounded-xl border border-border bg-card p-6"><PromptGeneratorForm showSave userRole="coach" /></div></div>} />
         <Route path="website" element={<CoachWebsiteManager />} />
+        <Route path="blueprint" element={<CoachBlueprintWorkspace />} />
         <Route path="overview" element={<CoachOverview />} />
         <Route path="*" element={<Navigate to="overview" replace />} />
       </Routes>
