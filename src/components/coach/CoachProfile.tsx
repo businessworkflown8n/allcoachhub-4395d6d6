@@ -33,8 +33,8 @@ const CoachProfile = () => {
       toast({ title: "Invalid file", description: "Please select an image.", variant: "destructive" });
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Profile picture must be under 2MB.", variant: "destructive" });
+    if (file.size > 200 * 1024) {
+      toast({ title: "Image too large", description: "Please upload an image below 200KB.", variant: "destructive" });
       return;
     }
 
@@ -129,7 +129,7 @@ const CoachProfile = () => {
           <p className="text-sm font-medium text-foreground">Profile Picture</p>
           {canUploadAvatar ? (
             <>
-              <p className="text-xs text-muted-foreground">Square JPG/PNG, under 2MB. Shown on your public coach page.</p>
+              <p className="text-xs text-muted-foreground">Square JPG/PNG, under 200KB. Shown on your public coach page.</p>
               <div className="flex gap-2">
                 <button
                   type="button"
