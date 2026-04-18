@@ -20,6 +20,7 @@ interface CoachFlags {
   messaging_access: boolean;
   paid_content_access: boolean;
   contact_access: boolean;
+  profile_picture_access: boolean;
 }
 
 const FEATURES = [
@@ -29,6 +30,7 @@ const FEATURES = [
   { key: "messaging_access", label: "Messaging" },
   { key: "paid_content_access", label: "Paid Content" },
   { key: "contact_access", label: "Contact Access" },
+  { key: "profile_picture_access", label: "Profile Picture" },
 ] as const;
 
 const AdminCoachFeatureControl = () => {
@@ -59,6 +61,7 @@ const AdminCoachFeatureControl = () => {
           messaging_access: f?.messaging_access ?? false,
           paid_content_access: f?.paid_content_access ?? false,
           contact_access: f?.contact_access ?? false,
+          profile_picture_access: f?.profile_picture_access ?? true,
         };
       });
     setCoaches(list);
@@ -88,6 +91,7 @@ const AdminCoachFeatureControl = () => {
       updates.messaging_access = true;
       updates.paid_content_access = true;
       updates.contact_access = true;
+      updates.profile_picture_access = true;
     } else if (status === "rejected") {
       updates.workshops_access = false;
       updates.courses_access = false;
@@ -95,6 +99,7 @@ const AdminCoachFeatureControl = () => {
       updates.messaging_access = false;
       updates.paid_content_access = false;
       updates.contact_access = false;
+      updates.profile_picture_access = false;
     }
 
     const { data: existing } = await supabase.from("coach_feature_flags").select("id").eq("coach_id", coachId).maybeSingle();
