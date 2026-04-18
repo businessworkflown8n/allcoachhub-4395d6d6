@@ -1,16 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useCoachFeatures } from "@/hooks/useCoachFeatures";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { Camera, Upload, Trash2, Loader2 } from "lucide-react";
 
 const CoachProfile = () => {
   const { user } = useAuth();
+  const { profile_picture_access, loading: featuresLoading } = useCoachFeatures();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -19,6 +24,54 @@ const CoachProfile = () => {
       setLoading(false);
     });
   }, [user]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Invalid file", description: "Please select an image.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Profile picture must be under 2MB.", variant: "destructive" });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from("logos").upload(path, file, { upsert: true, cacheControl: "3600" });
+    if (uploadError) {
+      setUploadingAvatar(false);
+      toast({ title: "Upload failed", description: uploadError.message, variant: "destructive" });
+      return;
+    }
+    const { data: pub } = supabase.storage.from("logos").getPublicUrl(path);
+    const url = pub.publicUrl;
+    const { error: dbError } = await supabase.from("profiles").update({ avatar_url: url }).eq("user_id", user.id);
+    setUploadingAvatar(false);
+    if (dbError) {
+      toast({ title: "Save failed", description: dbError.message, variant: "destructive" });
+      return;
+    }
+    setProfile({ ...profile, avatar_url: url });
+    toast({ title: "Profile picture updated" });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeAvatar = async () => {
+    if (!user) return;
+    setUploadingAvatar(true);
+    const { error } = await supabase.from("profiles").update({ avatar_url: null }).eq("user_id", user.id);
+    setUploadingAvatar(false);
+    if (error) {
+      toast({ title: "Failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setProfile({ ...profile, avatar_url: null });
+    toast({ title: "Profile picture removed" });
+  };
 
   const handleSave = async () => {
     if (!user || !profile) return;
@@ -43,9 +96,68 @@ const CoachProfile = () => {
 
   if (loading) return <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mt-8" />;
 
+  const initials = (profile?.full_name || "C").split(" ").map((s: string) => s[0]).slice(0, 2).join("").toUpperCase();
+  const canUploadAvatar = !featuresLoading && profile_picture_access;
+
   return (
     <div className="max-w-2xl space-y-6">
       <h2 className="text-xl font-bold text-foreground">Coach Profile</h2>
+
+      {/* Profile Picture */}
+      <div className="flex items-center gap-5 rounded-xl border border-border bg-card p-5">
+        <div className="relative">
+          {profile?.avatar_url ? (
+            <img src={profile.avatar_url} alt="Profile" className="h-20 w-20 rounded-full object-cover border-2 border-border" />
+          ) : (
+            <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center text-xl font-semibold text-foreground border-2 border-border">
+              {initials}
+            </div>
+          )}
+          {canUploadAvatar && (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute -bottom-1 -right-1 rounded-full bg-primary p-1.5 text-primary-foreground shadow-lg hover:brightness-110 disabled:opacity-50"
+              aria-label="Change profile picture"
+            >
+              {uploadingAvatar ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+            </button>
+          )}
+        </div>
+        <div className="flex-1 space-y-2">
+          <p className="text-sm font-medium text-foreground">Profile Picture</p>
+          {canUploadAvatar ? (
+            <>
+              <p className="text-xs text-muted-foreground">Square JPG/PNG, under 2MB. Shown on your public coach page.</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium hover:bg-accent disabled:opacity-50"
+                >
+                  <Upload className="h-3.5 w-3.5" /> {profile?.avatar_url ? "Change" : "Upload"}
+                </button>
+                {profile?.avatar_url && (
+                  <button
+                    type="button"
+                    onClick={removeAvatar}
+                    disabled={uploadingAvatar}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Remove
+                  </button>
+                )}
+              </div>
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+            </>
+          ) : (
+            <p className="text-xs text-muted-foreground">Profile picture uploads are currently disabled by the admin.</p>
+          )}
+        </div>
+      </div>
+
       {profile?.slug && (
         <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 p-3">
           <span className="text-sm text-muted-foreground">Your landing page:</span>
