@@ -1,0 +1,1 @@
+ALTER TABLE public.coach_feature_flags ADD COLUMN IF NOT EXISTS profile_picture_access boolean NOT NULL DEFAULT true;
