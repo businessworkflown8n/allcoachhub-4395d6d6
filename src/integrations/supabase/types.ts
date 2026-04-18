@@ -917,6 +917,7 @@ export type Database = {
           messaging_access: boolean
           notes: string | null
           paid_content_access: boolean
+          profile_picture_access: boolean
           status: string
           updated_at: string
           workshops_access: boolean
@@ -933,6 +934,7 @@ export type Database = {
           messaging_access?: boolean
           notes?: string | null
           paid_content_access?: boolean
+          profile_picture_access?: boolean
           status?: string
           updated_at?: string
           workshops_access?: boolean
@@ -949,6 +951,7 @@ export type Database = {
           messaging_access?: boolean
           notes?: string | null
           paid_content_access?: boolean
+          profile_picture_access?: boolean
           status?: string
           updated_at?: string
           workshops_access?: boolean
