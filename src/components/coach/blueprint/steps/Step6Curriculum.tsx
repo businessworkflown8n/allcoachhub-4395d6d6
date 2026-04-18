@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles, BookOpen, RefreshCw, ChevronDown, ChevronRight } from "lucide-react";
-import { generateStep } from "./blueprintApi";
+import { generateStep } from "../blueprintApi";
 import { toast } from "@/hooks/use-toast";
 
 export default function Step6Curriculum({ blueprint, update, onComplete }: any) {

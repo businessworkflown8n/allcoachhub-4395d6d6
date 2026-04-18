@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles, AlertTriangle, RefreshCw, Plus, Trash2 } from "lucide-react";
-import { generateStep } from "./blueprintApi";
+import { generateStep } from "../blueprintApi";
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 

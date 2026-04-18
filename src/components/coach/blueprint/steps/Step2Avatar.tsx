@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, User, RefreshCw } from "lucide-react";
-import { generateStep } from "./blueprintApi";
+import { generateStep } from "../blueprintApi";
 import { toast } from "@/hooks/use-toast";
 
 export default function Step2Avatar({ blueprint, update, onComplete }: any) {

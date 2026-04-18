@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Target, TrendingUp, RefreshCw } from "lucide-react";
-import { generateStep } from "./blueprintApi";
+import { generateStep } from "../blueprintApi";
 import { toast } from "@/hooks/use-toast";
 
 export default function Step1Niche({ blueprint, update, onComplete }: any) {

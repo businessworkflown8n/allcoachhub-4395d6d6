@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Megaphone, RefreshCw } from "lucide-react";
-import { generateStep } from "./blueprintApi";
+import { generateStep } from "../blueprintApi";
 import { toast } from "@/hooks/use-toast";
 
 export default function Step7Funnel({ blueprint, update, onComplete }: any) {
