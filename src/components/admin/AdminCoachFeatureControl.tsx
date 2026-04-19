@@ -22,6 +22,7 @@ interface CoachFlags {
   contact_access: boolean;
   profile_picture_access: boolean;
   blueprint_access: boolean;
+  materials_access: boolean;
 }
 
 const FEATURES = [
@@ -33,6 +34,7 @@ const FEATURES = [
   { key: "contact_access", label: "Contact Access" },
   { key: "profile_picture_access", label: "Profile Picture" },
   { key: "blueprint_access", label: "Blueprint App" },
+  { key: "materials_access", label: "Materials" },
 ] as const;
 
 const AdminCoachFeatureControl = () => {
@@ -65,6 +67,7 @@ const AdminCoachFeatureControl = () => {
           contact_access: f?.contact_access ?? false,
           profile_picture_access: f?.profile_picture_access ?? true,
           blueprint_access: f?.blueprint_access ?? true,
+          materials_access: f?.materials_access ?? true,
         };
       });
     setCoaches(list);
@@ -96,6 +99,7 @@ const AdminCoachFeatureControl = () => {
       updates.contact_access = true;
       updates.profile_picture_access = true;
       updates.blueprint_access = true;
+      updates.materials_access = true;
     } else if (status === "rejected") {
       updates.workshops_access = false;
       updates.courses_access = false;
@@ -105,6 +109,7 @@ const AdminCoachFeatureControl = () => {
       updates.contact_access = false;
       updates.profile_picture_access = false;
       updates.blueprint_access = false;
+      updates.materials_access = false;
     }
 
     const { data: existing } = await supabase.from("coach_feature_flags").select("id").eq("coach_id", coachId).maybeSingle();
