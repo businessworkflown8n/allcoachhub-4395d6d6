@@ -43,19 +43,53 @@ export default function CoachBlueprintWorkspace() {
     10: <Step10Certificate blueprint={blueprint} update={update} />,
   }[step];
 
+  const completedCount = (blueprint.completed_steps || []).length;
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Rocket className="h-7 w-7 text-primary" />
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Coach Blueprint Super App</h1>
-          <p className="text-sm text-muted-foreground">From idea → validated, revenue-generating coaching business in 10 AI-powered steps.</p>
+      {/* Gradient Hero */}
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-violet-600 via-pink-500 to-orange-400 p-6 text-white shadow-lg">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
+        <div className="relative flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex items-start gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+              <Rocket className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">Coach Blueprint Super App</h1>
+              <p className="text-sm text-white/85 mt-1 max-w-xl">
+                From idea → validated, revenue-generating coaching business in 10 AI-powered steps. Goal: <strong>your first ₹1,00,000</strong> as fast as possible.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 rounded-xl bg-white/15 backdrop-blur-sm px-4 py-2.5">
+            <div className="text-center">
+              <p className="text-2xl font-bold leading-none">{completedCount}<span className="text-sm text-white/70">/10</span></p>
+              <p className="text-[10px] uppercase tracking-wide text-white/80 mt-0.5">Steps</p>
+            </div>
+            <div className="h-8 w-px bg-white/25" />
+            <div className="text-center">
+              <p className="text-2xl font-bold leading-none">{blueprint.is_completed ? "✓" : Math.round((completedCount / 10) * 100) + "%"}</p>
+              <p className="text-[10px] uppercase tracking-wide text-white/80 mt-0.5">Done</p>
+            </div>
+          </div>
         </div>
       </div>
 
       <BlueprintStepper current={step} completed={blueprint.completed_steps || []} onJump={setStep} />
 
-      <div className="rounded-2xl border border-border bg-card p-6">
+      {/* Friendly tip */}
+      {completedCount === 0 && (
+        <div className="rounded-xl border border-violet-500/20 bg-gradient-to-r from-violet-500/5 to-pink-500/5 p-4 flex items-start gap-3">
+          <span className="text-xl">💡</span>
+          <div className="text-sm">
+            <p className="font-medium text-foreground">New here? Start with Step 1 · Niche.</p>
+            <p className="text-muted-foreground mt-0.5">Every step builds on the previous one. The AI Coach Assistant (bottom-right) has full context — ask anytime.</p>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         {stepEl}
       </div>
 
