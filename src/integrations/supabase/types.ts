@@ -1032,6 +1032,7 @@ export type Database = {
           created_at: string
           feed_access: boolean
           id: string
+          materials_access: boolean
           messaging_access: boolean
           notes: string | null
           paid_content_access: boolean
@@ -1050,6 +1051,7 @@ export type Database = {
           created_at?: string
           feed_access?: boolean
           id?: string
+          materials_access?: boolean
           messaging_access?: boolean
           notes?: string | null
           paid_content_access?: boolean
@@ -1068,6 +1070,7 @@ export type Database = {
           created_at?: string
           feed_access?: boolean
           id?: string
+          materials_access?: boolean
           messaging_access?: boolean
           notes?: string | null
           paid_content_access?: boolean
@@ -3366,7 +3369,10 @@ export type Database = {
       }
       materials: {
         Row: {
+          audience_course_id: string | null
+          audience_scope: string
           category: string
+          coach_id: string | null
           copy_link_clicks: number
           created_at: string
           description: string | null
@@ -3388,6 +3394,7 @@ export type Database = {
           resource_type: string
           share_count: number
           slug: string | null
+          tags: string[] | null
           thumbnail_url: string | null
           tiktok_clicks: number
           tiktok_url: string | null
@@ -3400,7 +3407,10 @@ export type Database = {
           youtube_url: string | null
         }
         Insert: {
+          audience_course_id?: string | null
+          audience_scope?: string
           category?: string
+          coach_id?: string | null
           copy_link_clicks?: number
           created_at?: string
           description?: string | null
@@ -3422,6 +3432,7 @@ export type Database = {
           resource_type?: string
           share_count?: number
           slug?: string | null
+          tags?: string[] | null
           thumbnail_url?: string | null
           tiktok_clicks?: number
           tiktok_url?: string | null
@@ -3434,7 +3445,10 @@ export type Database = {
           youtube_url?: string | null
         }
         Update: {
+          audience_course_id?: string | null
+          audience_scope?: string
           category?: string
+          coach_id?: string | null
           copy_link_clicks?: number
           created_at?: string
           description?: string | null
@@ -3456,6 +3470,7 @@ export type Database = {
           resource_type?: string
           share_count?: number
           slug?: string | null
+          tags?: string[] | null
           thumbnail_url?: string | null
           tiktok_clicks?: number
           tiktok_url?: string | null
@@ -5687,6 +5702,14 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      learner_enrolled_in_course: {
+        Args: { _course: string; _learner: string }
+        Returns: boolean
+      }
+      learner_enrolled_with_coach: {
+        Args: { _coach: string; _learner: string }
         Returns: boolean
       }
       move_to_dlq: {
