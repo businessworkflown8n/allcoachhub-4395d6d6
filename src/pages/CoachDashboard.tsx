@@ -13,6 +13,7 @@ import SocialMediaHub from "@/components/shared/SocialMediaHub";
 import CoachCampaigns from "@/components/coach/CoachCampaigns";
 import CoachOverview from "@/components/coach/CoachOverview";
 import DashboardMaterials from "@/components/shared/DashboardMaterials";
+import CoachMaterials from "@/components/coach/CoachMaterials";
 import CoachCampaignInsights from "@/components/coach/CoachCampaignInsights";
 import CoachReportBuilder from "@/components/coach/CoachReportBuilder";
 import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
@@ -53,7 +54,7 @@ const CoachDashboard = () => {
     { label: "Enrollments", path: "/coach/enrollments", icon: <BarChart3 className="h-4 w-4" /> },
     { label: "Campaign Insights", path: "/coach/insights", icon: <TrendingUp className="h-4 w-4" /> },
     { label: "Report Builder", path: "/coach/reports", icon: <FileBarChart className="h-4 w-4" /> },
-    { label: "Materials", path: "/coach/materials", icon: <FileText className="h-4 w-4" /> },
+    ...(((features as any).materials_access !== false) ? [{ label: "Materials", path: "/coach/materials", icon: <FileText className="h-4 w-4" /> }] : []),
     ...(features.feed_access ? [
       { label: "Social Media", path: "/coach/social", icon: <Share2 className="h-4 w-4" /> },
     ] : []),
@@ -79,7 +80,8 @@ const CoachDashboard = () => {
         <Route path="enrollments" element={<CoachEnrollments />} />
         <Route path="insights" element={<CoachCampaignInsights />} />
         <Route path="reports" element={<CoachReportBuilder />} />
-        <Route path="materials" element={<DashboardMaterials />} />
+        <Route path="materials" element={((features as any).materials_access !== false) ? <CoachMaterials /> : <Navigate to="overview" replace />} />
+        <Route path="materials/library" element={<DashboardMaterials />} />
         <Route path="social" element={features.feed_access ? <SocialMediaHub /> : <Navigate to="overview" replace />} />
         <Route path="campaigns" element={hasEmailAccess && features.messaging_access ? <CoachCampaigns /> : <Navigate to="overview" replace />} />
         <Route path="whatsapp" element={hasWhatsAppAccess && features.messaging_access ? <CoachWhatsApp /> : <Navigate to="overview" replace />} />
