@@ -786,6 +786,151 @@ export type Database = {
         }
         Relationships: []
       }
+      client_check_ins: {
+        Row: {
+          blockers: string | null
+          check_in_date: string
+          client_id: string
+          coach_id: string
+          created_at: string
+          energy_score: number | null
+          habits_completed: Json | null
+          id: string
+          mood_score: number | null
+          reflection: string | null
+          wins: string | null
+        }
+        Insert: {
+          blockers?: string | null
+          check_in_date?: string
+          client_id: string
+          coach_id: string
+          created_at?: string
+          energy_score?: number | null
+          habits_completed?: Json | null
+          id?: string
+          mood_score?: number | null
+          reflection?: string | null
+          wins?: string | null
+        }
+        Update: {
+          blockers?: string | null
+          check_in_date?: string
+          client_id?: string
+          coach_id?: string
+          created_at?: string
+          energy_score?: number | null
+          habits_completed?: Json | null
+          id?: string
+          mood_score?: number | null
+          reflection?: string | null
+          wins?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_check_ins_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "coach_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_goals: {
+        Row: {
+          client_id: string | null
+          coach_id: string
+          created_at: string
+          description: string | null
+          id: string
+          priority: string | null
+          progress_percent: number
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          coach_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          priority?: string | null
+          progress_percent?: number
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          coach_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          priority?: string | null
+          progress_percent?: number
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_goals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "coach_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_automations: {
+        Row: {
+          channel: string
+          coach_id: string
+          created_at: string
+          delay_hours: number | null
+          id: string
+          is_active: boolean
+          last_triggered_at: string | null
+          message_template: string
+          name: string
+          trigger_count: number
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          coach_id: string
+          created_at?: string
+          delay_hours?: number | null
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          message_template: string
+          name: string
+          trigger_count?: number
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          coach_id?: string
+          created_at?: string
+          delay_hours?: number | null
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          message_template?: string
+          name?: string
+          trigger_count?: number
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coach_blueprints: {
         Row: {
           avatar_inputs: Json | null
@@ -1078,13 +1223,63 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_content_assets: {
+        Row: {
+          asset_type: string
+          coach_id: string
+          content: string
+          created_at: string
+          id: string
+          is_published: boolean | null
+          prompt_used: string | null
+          source_session_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          asset_type: string
+          coach_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          prompt_used?: string | null
+          source_session_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          asset_type?: string
+          coach_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          prompt_used?: string | null
+          source_session_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_content_assets_source_session_id_fkey"
+            columns: ["source_session_id"]
+            isOneToOne: false
+            referencedRelation: "coach_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_feature_flags: {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          automations_access: boolean
           blueprint_access: boolean
           coach_id: string
           contact_access: boolean
+          content_studio_access: boolean
+          copilot_access: boolean
           courses_access: boolean
           created_at: string
           crm_access: boolean
@@ -1094,8 +1289,10 @@ export type Database = {
           materials_access: boolean
           messaging_access: boolean
           notes: string | null
+          packages_access: boolean
           paid_content_access: boolean
           profile_picture_access: boolean
+          progress_access: boolean
           sessions_access: boolean
           status: string
           updated_at: string
@@ -1104,9 +1301,12 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          automations_access?: boolean
           blueprint_access?: boolean
           coach_id: string
           contact_access?: boolean
+          content_studio_access?: boolean
+          copilot_access?: boolean
           courses_access?: boolean
           created_at?: string
           crm_access?: boolean
@@ -1116,8 +1316,10 @@ export type Database = {
           materials_access?: boolean
           messaging_access?: boolean
           notes?: string | null
+          packages_access?: boolean
           paid_content_access?: boolean
           profile_picture_access?: boolean
+          progress_access?: boolean
           sessions_access?: boolean
           status?: string
           updated_at?: string
@@ -1126,9 +1328,12 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          automations_access?: boolean
           blueprint_access?: boolean
           coach_id?: string
           contact_access?: boolean
+          content_studio_access?: boolean
+          copilot_access?: boolean
           courses_access?: boolean
           created_at?: string
           crm_access?: boolean
@@ -1138,8 +1343,10 @@ export type Database = {
           materials_access?: boolean
           messaging_access?: boolean
           notes?: string | null
+          packages_access?: boolean
           paid_content_access?: boolean
           profile_picture_access?: boolean
+          progress_access?: boolean
           sessions_access?: boolean
           status?: string
           updated_at?: string
@@ -1239,6 +1446,63 @@ export type Database = {
           notes?: string | null
           updated_at?: string
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      coach_packages: {
+        Row: {
+          billing_interval: string | null
+          coach_id: string
+          created_at: string
+          currency: string | null
+          description: string | null
+          duration_weeks: number | null
+          features: Json | null
+          id: string
+          is_active: boolean
+          is_featured: boolean | null
+          name: string
+          package_type: string
+          price: number
+          sessions_included: number | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          billing_interval?: string | null
+          coach_id: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          duration_weeks?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean | null
+          name: string
+          package_type?: string
+          price?: number
+          sessions_included?: number | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          billing_interval?: string | null
+          coach_id?: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          duration_weeks?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean | null
+          name?: string
+          package_type?: string
+          price?: number
+          sessions_included?: number | null
+          sort_order?: number | null
+          updated_at?: string
         }
         Relationships: []
       }
