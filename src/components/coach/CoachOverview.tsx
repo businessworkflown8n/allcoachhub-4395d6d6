@@ -7,6 +7,7 @@ import { useCoachFeatures } from "@/hooks/useCoachFeatures";
 import GrowthTools from "./GrowthTools";
 import ProfileStrengthMeter from "./ProfileStrengthMeter";
 import AIClientMatching from "./AIClientMatching";
+import CoachLockedFeatures from "./CoachLockedFeatures";
 
 const USD_TO_INR_FALLBACK = 83.5;
 
@@ -212,6 +213,8 @@ const CoachOverview = () => {
         <ProfileStrengthMeter />
         <AIClientMatching />
       </div>
+
+      <CoachLockedFeatures />
 
       <GrowthTools />
     </div>
