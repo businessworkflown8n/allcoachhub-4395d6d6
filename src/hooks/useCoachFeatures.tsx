@@ -15,6 +15,11 @@ export interface CoachFeatures {
   crm_access: boolean;
   leads_access: boolean;
   sessions_access: boolean;
+  progress_access: boolean;
+  packages_access: boolean;
+  automations_access: boolean;
+  copilot_access: boolean;
+  content_studio_access: boolean;
   status: string;
 }
 
@@ -31,6 +36,11 @@ const DEFAULT_FEATURES: CoachFeatures = {
   crm_access: false,
   leads_access: false,
   sessions_access: false,
+  progress_access: false,
+  packages_access: false,
+  automations_access: false,
+  copilot_access: false,
+  content_studio_access: false,
   status: "pending",
 };
 
@@ -43,7 +53,7 @@ export const useCoachFeatures = () => {
     if (!user) { setLoading(false); return; }
     supabase
       .from("coach_feature_flags")
-      .select("workshops_access, courses_access, feed_access, messaging_access, paid_content_access, contact_access, profile_picture_access, blueprint_access, materials_access, crm_access, leads_access, sessions_access, status")
+      .select("workshops_access, courses_access, feed_access, messaging_access, paid_content_access, contact_access, profile_picture_access, blueprint_access, materials_access, crm_access, leads_access, sessions_access, progress_access, packages_access, automations_access, copilot_access, content_studio_access, status")
       .eq("coach_id", user.id)
       .maybeSingle()
       .then(({ data }) => {

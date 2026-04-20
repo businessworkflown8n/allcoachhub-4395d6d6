@@ -1,10 +1,15 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles, Globe, MessageCircle, Bell, Gamepad2, UserPlus, Rocket, Users, Calendar } from "lucide-react";
+import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles, Globe, MessageCircle, Bell, Gamepad2, UserPlus, Rocket, Users, Calendar, Target, Package, Zap, Bot } from "lucide-react";
 import CoachClients from "@/components/coach/CoachClients";
 import CoachLeads from "@/components/coach/CoachLeads";
 import CoachSessions from "@/components/coach/CoachSessions";
+import CoachProgress from "@/components/coach/CoachProgress";
+import CoachPackages from "@/components/coach/CoachPackages";
+import CoachAutomations from "@/components/coach/CoachAutomations";
+import CoachCopilot from "@/components/coach/CoachCopilot";
+import CoachContentStudio from "@/components/coach/CoachContentStudio";
 import CoachBlueprintWorkspace from "@/components/coach/blueprint/CoachBlueprintWorkspace";
 import CoachProfile from "@/components/coach/CoachProfile";
 import CoachCourses from "@/components/coach/CoachCourses";
@@ -58,6 +63,11 @@ const CoachDashboard = () => {
     ...((features as any).crm_access ? [{ label: "Clients", path: "/coach/clients", icon: <Users className="h-4 w-4" /> }] : []),
     ...((features as any).leads_access ? [{ label: "Lead Pipeline", path: "/coach/leads", icon: <TrendingUp className="h-4 w-4" /> }] : []),
     ...((features as any).sessions_access ? [{ label: "Sessions", path: "/coach/sessions", icon: <Calendar className="h-4 w-4" /> }] : []),
+    ...((features as any).progress_access ? [{ label: "Progress", path: "/coach/progress", icon: <Target className="h-4 w-4" /> }] : []),
+    ...((features as any).packages_access ? [{ label: "Packages", path: "/coach/packages", icon: <Package className="h-4 w-4" /> }] : []),
+    ...((features as any).automations_access ? [{ label: "Automations", path: "/coach/automations", icon: <Zap className="h-4 w-4" /> }] : []),
+    ...((features as any).copilot_access ? [{ label: "AI Copilot", path: "/coach/copilot", icon: <Bot className="h-4 w-4" /> }] : []),
+    ...((features as any).content_studio_access ? [{ label: "Content Studio", path: "/coach/content-studio", icon: <FileText className="h-4 w-4" /> }] : []),
     { label: "Campaign Insights", path: "/coach/insights", icon: <TrendingUp className="h-4 w-4" /> },
     { label: "Report Builder", path: "/coach/reports", icon: <FileBarChart className="h-4 w-4" /> },
     ...(((features as any).materials_access !== false) ? [{ label: "Materials", path: "/coach/materials", icon: <FileText className="h-4 w-4" /> }] : []),
@@ -87,6 +97,11 @@ const CoachDashboard = () => {
         <Route path="clients" element={(features as any).crm_access ? <CoachClients /> : <Navigate to="overview" replace />} />
         <Route path="leads" element={(features as any).leads_access ? <CoachLeads /> : <Navigate to="overview" replace />} />
         <Route path="sessions" element={(features as any).sessions_access ? <CoachSessions /> : <Navigate to="overview" replace />} />
+        <Route path="progress" element={(features as any).progress_access ? <CoachProgress /> : <Navigate to="overview" replace />} />
+        <Route path="packages" element={(features as any).packages_access ? <CoachPackages /> : <Navigate to="overview" replace />} />
+        <Route path="automations" element={(features as any).automations_access ? <CoachAutomations /> : <Navigate to="overview" replace />} />
+        <Route path="copilot" element={(features as any).copilot_access ? <CoachCopilot /> : <Navigate to="overview" replace />} />
+        <Route path="content-studio" element={(features as any).content_studio_access ? <CoachContentStudio /> : <Navigate to="overview" replace />} />
         <Route path="insights" element={<CoachCampaignInsights />} />
         <Route path="reports" element={<CoachReportBuilder />} />
         <Route path="materials" element={((features as any).materials_access !== false) ? <CoachMaterials /> : <Navigate to="overview" replace />} />

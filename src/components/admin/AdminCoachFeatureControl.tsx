@@ -26,6 +26,11 @@ interface CoachFlags {
   crm_access: boolean;
   leads_access: boolean;
   sessions_access: boolean;
+  progress_access: boolean;
+  packages_access: boolean;
+  automations_access: boolean;
+  copilot_access: boolean;
+  content_studio_access: boolean;
 }
 
 const FEATURES = [
@@ -41,6 +46,11 @@ const FEATURES = [
   { key: "crm_access", label: "Client CRM" },
   { key: "leads_access", label: "Lead Pipeline" },
   { key: "sessions_access", label: "Sessions" },
+  { key: "progress_access", label: "Progress Tracker" },
+  { key: "packages_access", label: "Packages" },
+  { key: "automations_access", label: "Automations" },
+  { key: "copilot_access", label: "AI Copilot" },
+  { key: "content_studio_access", label: "Content Studio" },
 ] as const;
 
 const AdminCoachFeatureControl = () => {
@@ -77,6 +87,11 @@ const AdminCoachFeatureControl = () => {
           crm_access: f?.crm_access ?? false,
           leads_access: f?.leads_access ?? false,
           sessions_access: f?.sessions_access ?? false,
+          progress_access: f?.progress_access ?? false,
+          packages_access: f?.packages_access ?? false,
+          automations_access: f?.automations_access ?? false,
+          copilot_access: f?.copilot_access ?? false,
+          content_studio_access: f?.content_studio_access ?? false,
         };
       });
     setCoaches(list);
@@ -112,6 +127,11 @@ const AdminCoachFeatureControl = () => {
       updates.crm_access = true;
       updates.leads_access = true;
       updates.sessions_access = true;
+      updates.progress_access = true;
+      updates.packages_access = true;
+      updates.automations_access = true;
+      updates.copilot_access = true;
+      updates.content_studio_access = true;
     } else if (status === "rejected") {
       updates.workshops_access = false;
       updates.courses_access = false;
@@ -125,6 +145,11 @@ const AdminCoachFeatureControl = () => {
       updates.crm_access = false;
       updates.leads_access = false;
       updates.sessions_access = false;
+      updates.progress_access = false;
+      updates.packages_access = false;
+      updates.automations_access = false;
+      updates.copilot_access = false;
+      updates.content_studio_access = false;
     }
 
     const { data: existing } = await supabase.from("coach_feature_flags").select("id").eq("coach_id", coachId).maybeSingle();
