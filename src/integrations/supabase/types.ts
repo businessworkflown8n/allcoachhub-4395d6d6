@@ -1177,6 +1177,63 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_subscriptions: {
+        Row: {
+          assigned_by: string | null
+          bundle_id: string | null
+          coach_id: string
+          created_at: string
+          ends_at: string | null
+          id: string
+          notes: string | null
+          plan_id: string | null
+          starts_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          bundle_id?: string | null
+          coach_id: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          notes?: string | null
+          plan_id?: string | null
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_by?: string | null
+          bundle_id?: string | null
+          coach_id?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          notes?: string | null
+          plan_id?: string | null
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_subscriptions_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "feature_bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_webinar_commissions: {
         Row: {
           coach_id: string
@@ -2604,6 +2661,128 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feature_access_audit_log: {
+        Row: {
+          changed_by: string | null
+          coach_id: string
+          created_at: string
+          feature_key: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          reason: string | null
+          source: string
+        }
+        Insert: {
+          changed_by?: string | null
+          coach_id: string
+          created_at?: string
+          feature_key: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          reason?: string | null
+          source?: string
+        }
+        Update: {
+          changed_by?: string | null
+          coach_id?: string
+          created_at?: string
+          feature_key?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          reason?: string | null
+          source?: string
+        }
+        Relationships: []
+      }
+      feature_access_requests: {
+        Row: {
+          coach_id: string
+          created_at: string
+          feature_key: string
+          id: string
+          message: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_note: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          feature_key: string
+          id?: string
+          message?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_note?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          feature_key?: string
+          id?: string
+          message?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_note?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      feature_bundles: {
+        Row: {
+          created_at: string
+          description: string | null
+          feature_flags: Json
+          id: string
+          is_active: boolean
+          name: string
+          plan_id: string | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          feature_flags?: Json
+          id?: string
+          is_active?: boolean
+          name: string
+          plan_id?: string | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          feature_flags?: Json
+          id?: string
+          is_active?: boolean
+          name?: string
+          plan_id?: string | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_bundles_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -4890,6 +5069,51 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          billing_interval: string
+          created_at: string
+          currency: string
+          description: string | null
+          highlight: boolean
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          billing_interval?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          highlight?: boolean
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          billing_interval?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          highlight?: boolean
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -5696,6 +5920,10 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_coach_effective_features: {
+        Args: { _coach_id: string }
+        Returns: Json
       }
       has_role: {
         Args: {
