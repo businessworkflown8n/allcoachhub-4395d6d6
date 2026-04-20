@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search, KeyRound, LayoutGrid, MessageCircle, ImageIcon, ScrollText, ShieldCheck, Image, Bell } from "lucide-react";
+import { BarChart3, Users, GraduationCap, DollarSign, Settings, Star, Shield, BookOpen, Video, ClipboardList, TrendingUp, Globe, Bot, MessageSquare, Gamepad2, Mail, Share2, Megaphone, UserCheck, MousePointerClick, FolderOpen, Plug, FileCheck, Search, KeyRound, LayoutGrid, MessageCircle, ImageIcon, ScrollText, ShieldCheck, Image, Bell, CreditCard, Package, Inbox } from "lucide-react";
 import AdminMarqueeManager from "@/components/admin/AdminMarqueeManager";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminCoaches from "@/components/admin/AdminCoaches";
@@ -43,6 +43,10 @@ import AdminCoachFeatureControl from "@/components/admin/AdminCoachFeatureContro
 import AdminLandingPages from "@/components/admin/AdminLandingPages";
 import AdminCourseThumbnails from "@/components/admin/AdminCourseThumbnails";
 import AdminNotificationCenter from "@/components/admin/AdminNotificationCenter";
+import AdminPlans from "@/components/admin/AdminPlans";
+import AdminBundles from "@/components/admin/AdminBundles";
+import AdminCoachSubscriptions from "@/components/admin/AdminCoachSubscriptions";
+import AdminFeatureRequests from "@/components/admin/AdminFeatureRequests";
 
 const navItems = [
   { label: "Analytics", path: "/admin", icon: <BarChart3 className="h-4 w-4" /> },
@@ -80,6 +84,10 @@ const navItems = [
   { label: "Workshop Access", path: "/admin/workshop-access", icon: <Video className="h-4 w-4" /> },
   { label: "Workshop Tracking", path: "/admin/workshop-tracking", icon: <BarChart3 className="h-4 w-4" /> },
   { label: "Feature Control", path: "/admin/feature-control", icon: <ShieldCheck className="h-4 w-4" /> },
+  { label: "Plans", path: "/admin/plans", icon: <CreditCard className="h-4 w-4" /> },
+  { label: "Feature Bundles", path: "/admin/bundles", icon: <Package className="h-4 w-4" /> },
+  { label: "Coach Subscriptions", path: "/admin/subscriptions", icon: <CreditCard className="h-4 w-4" /> },
+  { label: "Feature Requests", path: "/admin/feature-requests", icon: <Inbox className="h-4 w-4" /> },
   { label: "Landing Pages", path: "/admin/landing-pages", icon: <Globe className="h-4 w-4" /> },
   { label: "Course Thumbnails", path: "/admin/course-thumbnails", icon: <Image className="h-4 w-4" /> },
   { label: "Notifications", path: "/admin/notifications", icon: <Bell className="h-4 w-4" /> },
@@ -134,6 +142,10 @@ const AdminDashboard = () => {
         <Route path="workshop-access" element={<AdminWorkshopAccess />} />
         <Route path="workshop-tracking" element={<AdminWorkshopTracking />} />
         <Route path="feature-control" element={<AdminCoachFeatureControl />} />
+        <Route path="plans" element={<AdminPlans />} />
+        <Route path="bundles" element={<AdminBundles />} />
+        <Route path="subscriptions" element={<AdminCoachSubscriptions />} />
+        <Route path="feature-requests" element={<AdminFeatureRequests />} />
         <Route path="landing-pages" element={<AdminLandingPages />} />
         <Route path="course-thumbnails" element={<AdminCourseThumbnails />} />
         <Route path="notifications" element={<AdminNotificationCenter />} />
