@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 const CourseDetail = () => {
   const { slug } = useParams();
   const { user } = useAuth();
-  const { isLearner } = useUserRole();
+  const { isLearner, isCoach } = useUserRole();
   const navigate = useNavigate();
   const [course, setCourse] = useState<any>(null);
   const [coach, setCoach] = useState<any>(null);
@@ -271,14 +271,31 @@ const CourseDetail = () => {
                     </div>
                   </PopoverContent>
                 </Popover>
-              ) : (
+              ) : user && isCoach ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-primary/40 bg-primary/5 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/10">
+                      <Share2 className="h-4 w-4" /> Invite Coaches Like You
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-3">
+                    <p className="mb-1 text-xs font-semibold text-foreground">Invite fellow coaches</p>
+                    <p className="mb-2 text-[11px] text-muted-foreground">Grow the network and lower your student acquisition cost.</p>
+                    <div className="flex flex-col gap-1">
+                      <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/signup/coach?ref=${user.id}`); toast({ title: "Invite link copied!" }); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📋 Copy Invite Link</button>
+                      <button onClick={() => { const msg = encodeURIComponent(`Join me on AI Coach Portal as a coach: ${window.location.origin}/signup/coach?ref=${user.id}`); window.open(`https://wa.me/?text=${msg}`, "_blank"); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">💬 WhatsApp</button>
+                      <button onClick={() => { const s = encodeURIComponent(`Join me on AI Coach Portal`); const b = encodeURIComponent(`I'd like to invite you to join AI Coach Portal as a coach.\n\n${window.location.origin}/signup/coach?ref=${user.id}`); window.open(`mailto:?subject=${s}&body=${b}`); }} className="rounded-md px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary">📧 Email</button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : !user ? (
                 <button
                   onClick={() => navigate("/auth")}
                   className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border py-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
                 >
                   <Lock className="h-3.5 w-3.5" /> Login as a learner to unlock Share & Earn 10%
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
