@@ -86,8 +86,8 @@ const LearnerReferrals = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-foreground">Referral Program</h2>
-      <p className="text-sm text-muted-foreground">Earn 10% commission when your referrals enroll in courses</p>
+      <h2 className="text-xl font-bold text-foreground">Share & Earn</h2>
+      <p className="text-sm text-muted-foreground">Share courses with friends and earn 10% commission on every enrollment.</p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {[
