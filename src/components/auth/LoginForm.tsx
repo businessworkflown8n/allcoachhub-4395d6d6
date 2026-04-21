@@ -18,25 +18,45 @@ const LoginForm = () => {
   const [showReset, setShowReset] = useState(false);
   const navigate = useNavigate();
 
+  // Use production domain for OAuth on the live site; fall back to current origin in preview/dev
+  const getOAuthRedirectUri = () => {
+    const host = window.location.hostname;
+    if (host === "www.aicoachportal.com" || host === "aicoachportal.com") {
+      return "https://www.aicoachportal.com";
+    }
+    return window.location.origin;
+  };
+
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: getOAuthRedirectUri(),
     });
     setGoogleLoading(false);
     if (error) {
+      console.error("Google OAuth error:", error);
       toast({ title: "Google Sign-In failed", description: String(error), variant: "destructive" });
     }
   };
 
   const handleAppleSignIn = async () => {
     setAppleLoading(true);
+    const redirectUri = getOAuthRedirectUri();
     const { error } = await lovable.auth.signInWithOAuth("apple", {
-      redirect_uri: window.location.origin,
+      redirect_uri: redirectUri,
     });
     setAppleLoading(false);
     if (error) {
-      toast({ title: "Apple Sign-In failed", description: String(error), variant: "destructive" });
+      console.error("Apple OAuth error:", error, "redirect_uri:", redirectUri);
+      const msg = String(error);
+      const isRedirectIssue = msg.toLowerCase().includes("redirect_uri") || msg.toLowerCase().includes("invalid_request");
+      toast({
+        title: "Apple Sign-In failed",
+        description: isRedirectIssue
+          ? "This domain isn't authorized for Apple Sign-In yet. Please try on www.aicoachportal.com or contact support."
+          : msg,
+        variant: "destructive",
+      });
     }
   };
 
