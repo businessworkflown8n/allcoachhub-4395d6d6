@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, TrendingUp, Mail, Phone, ArrowRight, Trash2 } from "lucide-react";
+import { Plus, TrendingUp, Mail, Phone, ArrowRight, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
+import LeadsCSVDialog from "./LeadsCSVDialog";
 
 interface Lead {
   id: string;
@@ -42,6 +43,7 @@ export default function CoachLeads() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Lead | null>(null);
+  const [csvOpen, setCsvOpen] = useState(false);
   const [form, setForm] = useState({ full_name: "", email: "", phone: "", stage: "new", source: "manual", estimated_value: 0, notes: "", next_action: "" });
 
   const load = async () => {
@@ -107,8 +109,13 @@ export default function CoachLeads() {
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2"><TrendingUp className="h-5 w-5" /> Lead Pipeline</h2>
           <p className="text-sm text-muted-foreground">{leads.length} leads · ₹{totalValue.toLocaleString()} pipeline value</p>
         </div>
-        <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Add Lead</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setCsvOpen(true)}><Upload className="h-4 w-4 mr-1" /> Import / Export</Button>
+          <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Add Lead</Button>
+        </div>
       </div>
+
+      {user && <LeadsCSVDialog open={csvOpen} onOpenChange={setCsvOpen} coachId={user.id} leads={leads} onImported={load} />}
 
       {loading ? <p className="text-muted-foreground">Loading...</p> : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
