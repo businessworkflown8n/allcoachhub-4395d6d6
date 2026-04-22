@@ -3538,6 +3538,48 @@ export type Database = {
         }
         Relationships: []
       }
+      gsc_connections: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          id: string
+          last_synced_at: string | null
+          refresh_token: string | null
+          scope: string | null
+          site_url: string
+          status: string
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          last_synced_at?: string | null
+          refresh_token?: string | null
+          scope?: string | null
+          site_url: string
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          last_synced_at?: string | null
+          refresh_token?: string | null
+          scope?: string | null
+          site_url?: string
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       indexing_logs: {
         Row: {
           action: string
@@ -5312,6 +5354,48 @@ export type Database = {
           },
         ]
       }
+      seo_alerts: {
+        Row: {
+          alert_type: string
+          coach_id: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          is_resolved: boolean
+          message: string
+          page_url: string
+          resolved_at: string | null
+          severity: string
+          updated_at: string
+        }
+        Insert: {
+          alert_type: string
+          coach_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          is_resolved?: boolean
+          message: string
+          page_url: string
+          resolved_at?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: string
+          coach_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          is_resolved?: boolean
+          message?: string
+          page_url?: string
+          resolved_at?: string | null
+          severity?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       seo_page_metadata: {
         Row: {
           canonical_url: string | null
@@ -5408,6 +5492,36 @@ export type Database = {
           seo_suggestions?: Json | null
           sitemap_included?: boolean
           updated_at?: string
+        }
+        Relationships: []
+      }
+      seo_ping_log: {
+        Row: {
+          http_status: number | null
+          id: string
+          pinged_at: string
+          response_body: string | null
+          search_engine: string
+          sitemap_url: string
+          status: string
+        }
+        Insert: {
+          http_status?: number | null
+          id?: string
+          pinged_at?: string
+          response_body?: string | null
+          search_engine: string
+          sitemap_url: string
+          status: string
+        }
+        Update: {
+          http_status?: number | null
+          id?: string
+          pinged_at?: string
+          response_body?: string | null
+          search_engine?: string
+          sitemap_url?: string
+          status?: string
         }
         Relationships: []
       }
