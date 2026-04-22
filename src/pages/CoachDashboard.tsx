@@ -35,6 +35,7 @@ import CoachWorkshops from "@/components/coach/CoachWorkshops";
 import CoachNotificationRequests from "@/components/coach/CoachNotificationRequests";
 import CoachReferrals from "@/components/coach/CoachReferrals";
 import DailyZip from "@/pages/DailyZip";
+import CoachSEOPanel from "@/components/coach/CoachSEOPanel";
 
 const CoachDashboard = () => {
   useSEO({
