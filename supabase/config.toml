@@ -53,3 +53,12 @@ verify_jwt = false
 
 [functions.funnel-processor]
 verify_jwt = false
+
+[functions.auto-indexer]
+verify_jwt = false
+
+[functions.dynamic-sitemap]
+verify_jwt = false
+
+[functions.gsc-oauth]
+verify_jwt = true

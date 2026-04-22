@@ -24,3 +24,7 @@
 
 /registerSW.js
   Cache-Control: public, max-age=0, must-revalidate
+
+# Dynamic sitemap (rewrite to edge function)
+/sitemap.xml
+  Cache-Control: public, max-age=3600
