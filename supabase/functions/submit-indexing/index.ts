@@ -104,8 +104,13 @@ serve(async (req) => {
     if (!urls || !Array.isArray(urls) || urls.length === 0) {
       throw new Error("urls array is required");
     }
-    if (urls.length > 100) {
-      throw new Error("Maximum 100 URLs per batch");
+
+    // Auto-chunk: Google Indexing API allows up to 200 URLs/day; we batch in 100s
+    // to keep request payloads small and avoid timeouts. Callers can pass any size.
+    const MAX_BATCH = 100;
+    const batches: string[][] = [];
+    for (let i = 0; i < urls.length; i += MAX_BATCH) {
+      batches.push(urls.slice(i, i + MAX_BATCH));
     }
 
     const accessToken = await getAccessToken(sa);
