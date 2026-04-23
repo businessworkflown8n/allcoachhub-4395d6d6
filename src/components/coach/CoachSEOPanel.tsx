@@ -110,7 +110,7 @@ const CoachSEOPanel = () => {
     const submitted = Number((data as any)?.submitted ?? 0);
     const fallbackSubmitted = Number((data as any)?.fallback_submitted ?? 0);
     if (error || (!(data as any)?.ok && submitted === 0)) {
-      toast({ title: "Bulk indexing failed", description: error.message, variant: "destructive" });
+      toast({ title: "Bulk indexing failed", description: error?.message || (data as any)?.error || "Could not queue pages for indexing.", variant: "destructive" });
     } else {
       toast({
         title: fallbackSubmitted > 0 ? `Queued ${submitted} URLs` : `Submitted ${submitted} URLs`,
