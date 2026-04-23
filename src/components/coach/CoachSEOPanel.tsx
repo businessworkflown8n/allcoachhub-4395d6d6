@@ -86,10 +86,15 @@ const CoachSEOPanel = () => {
       body: { urls: [url], action: "URL_UPDATED" },
     });
     setReindexingUrl(null);
-    if (error || (data as any)?.error) {
-      toast({ title: "Reindex failed", description: error?.message || (data as any)?.error, variant: "destructive" });
+    const submitted = Number((data as any)?.submitted ?? 0);
+    const fallbackSubmitted = Number((data as any)?.fallback_submitted ?? 0);
+    if (error || (!(data as any)?.ok && submitted === 0)) {
+      toast({ title: "Reindex failed", description: error?.message || (data as any)?.error || "Could not queue this page for indexing.", variant: "destructive" });
     } else {
-      toast({ title: "Submitted to Google", description: url });
+      toast({
+        title: fallbackSubmitted > 0 ? "Queued for indexing" : "Submitted to Google",
+        description: fallbackSubmitted > 0 ? "Direct Google API is unavailable, so this page was queued through sitemap submission." : url,
+      });
       load();
     }
   };
@@ -102,11 +107,15 @@ const CoachSEOPanel = () => {
       body: { urls, action: "URL_UPDATED" },
     });
     setBulkRunning(false);
-    if (error) {
-      toast({ title: "Bulk indexing failed", description: error.message, variant: "destructive" });
+    const submitted = Number((data as any)?.submitted ?? 0);
+    const fallbackSubmitted = Number((data as any)?.fallback_submitted ?? 0);
+    if (error || (!(data as any)?.ok && submitted === 0)) {
+      toast({ title: "Bulk indexing failed", description: error?.message || (data as any)?.error || "Could not queue pages for indexing.", variant: "destructive" });
     } else {
-      const submitted = (data as any)?.submitted || 0;
-      toast({ title: `Submitted ${submitted} URLs`, description: "Google will crawl these soon." });
+      toast({
+        title: fallbackSubmitted > 0 ? `Queued ${submitted} URLs` : `Submitted ${submitted} URLs`,
+        description: fallbackSubmitted > 0 ? "Pages were queued through sitemap submission while direct Google API access is unavailable." : "Google will crawl these soon.",
+      });
       load();
     }
   };

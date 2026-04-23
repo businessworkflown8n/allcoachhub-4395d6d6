@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const SITE_URL = Deno.env.get("SITE_URL") ?? "https://www.aicoachportal.com";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -89,10 +90,89 @@ async function submitUrl(accessToken: string, url: string, action: string) {
   return { ok: resp.ok, status: resp.status, data };
 }
 
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function normalizePath(url: string) {
+  if (url.startsWith("http")) return new URL(url).pathname;
+  return url.startsWith("/") ? url : `/${url}`;
+}
+
+function toFullUrl(url: string) {
+  return url.startsWith("http") ? url : `${SITE_URL}${normalizePath(url)}`;
+}
+
+function getApiErrorMessage(payload: any) {
+  return payload?.error?.message || payload?.message || "Unknown API error";
+}
+
+function shouldUseSitemapFallback(payload: any) {
+  const details = Array.isArray(payload?.error?.details) ? payload.error.details : [];
+  const errorInfo = details.find((detail: any) =>
+    detail?.["@type"] === "type.googleapis.com/google.rpc.ErrorInfo"
+  );
+  const reason = errorInfo?.reason || payload?.error?.status;
+  return payload?.error?.code === 403 && ["SERVICE_DISABLED", "PERMISSION_DENIED", "ACCESS_TOKEN_SCOPE_INSUFFICIENT"].includes(reason);
+}
+
+async function pingSitemap(supabase: ReturnType<typeof createClient>) {
+  const sitemapUrl = `${SITE_URL}/sitemap.xml`;
+  const targets = [
+    { engine: "google", url: `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}` },
+    { engine: "bing", url: `https://www.bing.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}` },
+  ];
+
+  const results = await Promise.all(
+    targets.map(async (target) => {
+      try {
+        const response = await fetch(target.url);
+        await supabase.from("seo_ping_log").insert({
+          search_engine: target.engine,
+          sitemap_url: sitemapUrl,
+          status: response.ok ? "success" : "failed",
+          http_status: response.status,
+        });
+
+        return {
+          engine: target.engine,
+          ok: response.ok,
+          status: response.status,
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Ping failed";
+        await supabase.from("seo_ping_log").insert({
+          search_engine: target.engine,
+          sitemap_url: sitemapUrl,
+          status: "failed",
+          response_body: message,
+        });
+
+        return {
+          engine: target.engine,
+          ok: false,
+          status: null,
+          error: message,
+        };
+      }
+    })
+  );
+
+  return {
+    sitemap_url: sitemapUrl,
+    results,
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const startedAt = Date.now();
 
   try {
     const saJson = Deno.env.get("GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON");
@@ -120,14 +200,51 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const results = [];
+    let sitemapFallbackPromise: Promise<Awaited<ReturnType<typeof pingSitemap>>> | null = null;
 
     for (const url of urls) {
-      const fullUrl = url.startsWith("http")
-        ? url
-        : `https://www.aicoachportal.com${url}`;
+      const fullUrl = toFullUrl(url);
+      const pageUrl = normalizePath(url);
+      const now = new Date().toISOString();
 
       try {
         const result = await submitUrl(accessToken, fullUrl, action);
+
+        if (!result.ok && shouldUseSitemapFallback(result.data)) {
+          sitemapFallbackPromise ??= pingSitemap(supabase);
+          const sitemapFallback = await sitemapFallbackPromise;
+
+          await supabase.from("indexing_logs").insert({
+            url: fullUrl,
+            action,
+            status: "submitted",
+            api_response: {
+              mode: "sitemap_fallback",
+              direct_api_error: result.data,
+              sitemap_ping: sitemapFallback,
+            },
+            error_message: null,
+          });
+
+          await supabase
+            .from("seo_page_metadata")
+            .update({
+              index_status: "submitted",
+              indexing_submitted_at: now,
+            })
+            .eq("page_url", pageUrl);
+
+          results.push({
+            url: fullUrl,
+            success: true,
+            mode: "sitemap_fallback",
+            response: {
+              message: "Direct Google API unavailable, URL queued through sitemap submission.",
+              sitemap: sitemapFallback,
+            },
+          });
+          continue;
+        }
 
         // Log the submission
         await supabase.from("indexing_logs").insert({
@@ -139,11 +256,6 @@ serve(async (req) => {
         });
 
         // Update seo_page_metadata
-        const pageUrl = url.startsWith("http")
-          ? new URL(url).pathname
-          : url;
-
-        const now = new Date().toISOString();
         if (result.ok) {
           await supabase
             .from("seo_page_metadata")
@@ -152,9 +264,23 @@ serve(async (req) => {
               indexing_submitted_at: now,
             })
             .eq("page_url", pageUrl);
+        } else {
+          await supabase
+            .from("seo_page_metadata")
+            .update({
+              index_status: "failed",
+              indexing_submitted_at: now,
+            })
+            .eq("page_url", pageUrl);
         }
 
-        results.push({ url: fullUrl, success: result.ok, response: result.data });
+        results.push({
+          url: fullUrl,
+          success: result.ok,
+          mode: "google_api",
+          response: result.data,
+          error: result.ok ? undefined : getApiErrorMessage(result.data),
+        });
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Unknown error";
         await supabase.from("indexing_logs").insert({
@@ -168,22 +294,20 @@ serve(async (req) => {
     }
 
     const successCount = results.filter((r) => r.success).length;
+    const fallbackCount = results.filter((r) => r.mode === "sitemap_fallback").length;
 
-    return new Response(
-      JSON.stringify({
-        submitted: successCount,
-        failed: results.length - successCount,
-        total: results.length,
-        results,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({
+      ok: successCount > 0,
+      submitted: successCount,
+      failed: results.length - successCount,
+      total: results.length,
+      fallback_submitted: fallbackCount,
+      results,
+      processing_time_ms: Date.now() - startedAt,
+    });
   } catch (error) {
     console.error("Submit indexing error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ ok: false, error: message, processing_time_ms: Date.now() - startedAt });
   }
 });

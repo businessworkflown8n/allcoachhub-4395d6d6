@@ -61,9 +61,19 @@ const SEOIndexingCenter = () => {
 
       if (error) throw error;
 
+      const submitted = Number((data as any)?.submitted ?? 0);
+      const total = Number((data as any)?.total ?? urls.length);
+      const fallbackSubmitted = Number((data as any)?.fallback_submitted ?? 0);
+
+      if (!(data as any)?.ok && submitted === 0) {
+        throw new Error((data as any)?.error || "Failed to submit URLs for indexing.");
+      }
+
       toast({
-        title: "Indexing Submitted",
-        description: `${data.submitted}/${data.total} URLs submitted successfully to Google.`,
+        title: fallbackSubmitted > 0 ? "Queued for Indexing" : "Indexing Submitted",
+        description: fallbackSubmitted > 0
+          ? `${submitted}/${total} URLs were queued via sitemap fallback while direct Google API access is unavailable.`
+          : `${submitted}/${total} URLs submitted successfully to Google.`,
       });
 
       // Refresh data
