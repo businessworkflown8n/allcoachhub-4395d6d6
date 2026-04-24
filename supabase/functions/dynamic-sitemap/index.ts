@@ -83,6 +83,27 @@ serve(async (req) => {
       entries.push(urlEntry(`/lp/${lp.slug}`, lp.updated_at || today, "0.9", "weekly"))
     );
 
+    // Knowledge Hub: topics
+    const { data: ktopics } = await supabase
+      .from("knowledge_topics")
+      .select("slug, updated_at")
+      .eq("is_published", true);
+    ktopics?.forEach((t: any) =>
+      entries.push(urlEntry(`/knowledge/${t.slug}`, t.updated_at || today, "0.8", "weekly"))
+    );
+
+    // Knowledge Hub: questions (joined with topic slug)
+    const { data: kqs } = await supabase
+      .from("knowledge_questions")
+      .select("slug, updated_at, topic:knowledge_topics(slug)")
+      .eq("is_published", true);
+    kqs?.forEach((q: any) => {
+      const topicSlug = q.topic?.slug;
+      if (topicSlug) {
+        entries.push(urlEntry(`/knowledge/${topicSlug}/${q.slug}`, q.updated_at || today, "0.85", "weekly"));
+      }
+    });
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${entries.join("\n")}

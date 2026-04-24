@@ -50,6 +50,9 @@ const BrowseCoaches = lazy(() => import("./pages/BrowseCoaches"));
 const OAuthCallback = lazy(() => import("./pages/OAuthCallback"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
 const LandingPageThankYou = lazy(() => import("./pages/LandingPageThankYou"));
+const KnowledgeHub = lazy(() => import("./pages/KnowledgeHub"));
+const KnowledgeTopic = lazy(() => import("./pages/KnowledgeTopic"));
+const KnowledgeQuestion = lazy(() => import("./pages/KnowledgeQuestion"));
 
 // Lazy-loaded global widgets (non-critical)
 
@@ -168,6 +171,9 @@ const App = () => (
             <Route path="/materials" element={<Suspense fallback={<PageFallback />}><Materials /></Suspense>} />
             <Route path="/materials/:slug" element={<Suspense fallback={<PageFallback />}><MaterialDetail /></Suspense>} />
             <Route path="/prompt-generator" element={<Suspense fallback={<PageFallback />}><PromptGenerator /></Suspense>} />
+            <Route path="/knowledge" element={<Suspense fallback={<PageFallback />}><KnowledgeHub /></Suspense>} />
+            <Route path="/knowledge/:topic" element={<Suspense fallback={<PageFallback />}><KnowledgeTopic /></Suspense>} />
+            <Route path="/knowledge/:topic/:question" element={<Suspense fallback={<PageFallback />}><KnowledgeQuestion /></Suspense>} />
             <Route path="/coach/*" element={
               <ProtectedRoute allowedRole="coach">
                 <Suspense fallback={<PageFallback />}><CoachDashboard /></Suspense>
