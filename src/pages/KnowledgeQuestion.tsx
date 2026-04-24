@@ -60,7 +60,7 @@ const KnowledgeQuestion = () => {
         .eq("slug", questionSlug)
         .eq("is_published", true)
         .maybeSingle();
-      setQ(qd as KQ | null);
+      setQ(qd as unknown as KQ | null);
 
       // related questions in same topic
       const { data: rel } = await supabase
