@@ -3675,6 +3675,137 @@ export type Database = {
           },
         ]
       }
+      knowledge_questions: {
+        Row: {
+          ai_summary: string | null
+          author_expertise: string | null
+          author_name: string | null
+          created_at: string
+          detailed_explanation: string | null
+          faqs: Json | null
+          focus_keyword: string | null
+          hero_image_url: string | null
+          id: string
+          is_published: boolean
+          key_takeaways: Json | null
+          last_reviewed_at: string | null
+          meta_description: string | null
+          meta_title: string | null
+          published_at: string | null
+          question: string
+          reviewed_by: string | null
+          secondary_keywords: string[] | null
+          slug: string
+          source_references: Json | null
+          topic_id: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          ai_summary?: string | null
+          author_expertise?: string | null
+          author_name?: string | null
+          created_at?: string
+          detailed_explanation?: string | null
+          faqs?: Json | null
+          focus_keyword?: string | null
+          hero_image_url?: string | null
+          id?: string
+          is_published?: boolean
+          key_takeaways?: Json | null
+          last_reviewed_at?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          question: string
+          reviewed_by?: string | null
+          secondary_keywords?: string[] | null
+          slug: string
+          source_references?: Json | null
+          topic_id: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          ai_summary?: string | null
+          author_expertise?: string | null
+          author_name?: string | null
+          created_at?: string
+          detailed_explanation?: string | null
+          faqs?: Json | null
+          focus_keyword?: string | null
+          hero_image_url?: string | null
+          id?: string
+          is_published?: boolean
+          key_takeaways?: Json | null
+          last_reviewed_at?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          question?: string
+          reviewed_by?: string | null
+          secondary_keywords?: string[] | null
+          slug?: string
+          source_references?: Json | null
+          topic_id?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_questions_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_topics: {
+        Row: {
+          created_at: string
+          description: string | null
+          hero_image_url: string | null
+          id: string
+          is_published: boolean
+          meta_description: string | null
+          meta_title: string | null
+          name: string
+          primary_keyword: string | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          hero_image_url?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          name: string
+          primary_keyword?: string | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          hero_image_url?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          name?: string
+          primary_keyword?: string | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       landing_page_cta_clicks: {
         Row: {
           clicked_at: string | null
