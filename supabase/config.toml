@@ -62,3 +62,6 @@ verify_jwt = false
 
 [functions.gsc-oauth]
 verify_jwt = true
+
+[functions.knowledge-generator]
+verify_jwt = true
