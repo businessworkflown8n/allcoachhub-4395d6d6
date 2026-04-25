@@ -191,6 +191,9 @@ const AdminNotificationCenter = () => {
           <TabsTrigger value="broadcast">Direct Broadcast</TabsTrigger>
           <TabsTrigger value="permissions">Coach Permissions</TabsTrigger>
           <TabsTrigger value="settings">Global Settings</TabsTrigger>
+          <TabsTrigger value="inactive">
+            <MailWarning className="mr-1 h-4 w-4" /> Inactive User Reminder
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="queue" className="space-y-3">
