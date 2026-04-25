@@ -42,6 +42,7 @@ const DEFAULT_FEATURES: CoachFeatures = {
   automations_access: false,
   copilot_access: false,
   content_studio_access: false,
+  external_materials_access: false,
   status: "pending",
 };
 
