@@ -73,6 +73,7 @@ const CoachDashboard = () => {
     { label: "Campaign Insights", path: "/coach/insights", icon: <TrendingUp className="h-4 w-4" /> },
     { label: "Report Builder", path: "/coach/reports", icon: <FileBarChart className="h-4 w-4" /> },
     ...(((features as any).materials_access !== false) ? [{ label: "Materials", path: "/coach/materials", icon: <FileText className="h-4 w-4" /> }] : []),
+    ...((features as any).external_materials_access ? [{ label: "Material Links", path: "/coach/external-materials", icon: <LinkIcon className="h-4 w-4" /> }] : []),
     ...(features.feed_access ? [
       { label: "Social Media", path: "/coach/social", icon: <Share2 className="h-4 w-4" /> },
     ] : []),
