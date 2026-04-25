@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, Check, X, Send, Users, Trash2, Megaphone } from "lucide-react";
+import { Bell, Check, X, Send, Users, Trash2, Megaphone, MailWarning } from "lucide-react";
+import AdminInactiveReminder from "./AdminInactiveReminder";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -190,6 +191,9 @@ const AdminNotificationCenter = () => {
           <TabsTrigger value="broadcast">Direct Broadcast</TabsTrigger>
           <TabsTrigger value="permissions">Coach Permissions</TabsTrigger>
           <TabsTrigger value="settings">Global Settings</TabsTrigger>
+          <TabsTrigger value="inactive">
+            <MailWarning className="mr-1 h-4 w-4" /> Inactive User Reminder
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="queue" className="space-y-3">
@@ -320,6 +324,10 @@ const AdminNotificationCenter = () => {
             </div>
             <Switch checked={coachEnabled} onCheckedChange={(v) => toggleSetting("coach_notifications_enabled", v)} />
           </div>
+        </TabsContent>
+
+        <TabsContent value="inactive">
+          <AdminInactiveReminder />
         </TabsContent>
       </Tabs>
     </div>

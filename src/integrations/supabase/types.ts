@@ -3619,6 +3619,120 @@ export type Database = {
         }
         Relationships: []
       }
+      inactive_reminder_config: {
+        Row: {
+          created_at: string
+          cta_new_tab: boolean
+          cta_text: string
+          cta_url: string
+          email_body: string
+          email_subject: string
+          frequency_type: string
+          id: string
+          inactivity_days: number
+          is_enabled: boolean
+          repeat_interval_days: number
+          updated_at: string
+          updated_by: string | null
+          user_type: string
+        }
+        Insert: {
+          created_at?: string
+          cta_new_tab?: boolean
+          cta_text?: string
+          cta_url?: string
+          email_body?: string
+          email_subject?: string
+          frequency_type?: string
+          id?: string
+          inactivity_days?: number
+          is_enabled?: boolean
+          repeat_interval_days?: number
+          updated_at?: string
+          updated_by?: string | null
+          user_type?: string
+        }
+        Update: {
+          created_at?: string
+          cta_new_tab?: boolean
+          cta_text?: string
+          cta_url?: string
+          email_body?: string
+          email_subject?: string
+          frequency_type?: string
+          id?: string
+          inactivity_days?: number
+          is_enabled?: boolean
+          repeat_interval_days?: number
+          updated_at?: string
+          updated_by?: string | null
+          user_type?: string
+        }
+        Relationships: []
+      }
+      inactive_reminder_logs: {
+        Row: {
+          created_at: string
+          cycle_count: number | null
+          email: string
+          error_message: string | null
+          id: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          cycle_count?: number | null
+          email: string
+          error_message?: string | null
+          id?: string
+          status: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          cycle_count?: number | null
+          email?: string
+          error_message?: string | null
+          id?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      inactive_user_tracking: {
+        Row: {
+          created_at: string
+          email_sent_flag: boolean
+          id: string
+          last_email_sent_date: string | null
+          last_login_date: string | null
+          reminder_cycle_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_sent_flag?: boolean
+          id?: string
+          last_email_sent_date?: string | null
+          last_login_date?: string | null
+          reminder_cycle_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_sent_flag?: boolean
+          id?: string
+          last_email_sent_date?: string | null
+          last_login_date?: string | null
+          reminder_cycle_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       indexing_logs: {
         Row: {
           action: string
