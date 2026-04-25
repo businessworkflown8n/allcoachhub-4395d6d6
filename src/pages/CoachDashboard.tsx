@@ -22,6 +22,7 @@ import CoachCampaigns from "@/components/coach/CoachCampaigns";
 import CoachOverview from "@/components/coach/CoachOverview";
 import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import CoachMaterials from "@/components/coach/CoachMaterials";
+import CoachExternalMaterials from "@/components/coach/CoachExternalMaterials";
 import CoachCampaignInsights from "@/components/coach/CoachCampaignInsights";
 import CoachReportBuilder from "@/components/coach/CoachReportBuilder";
 import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
