@@ -52,6 +52,7 @@ const FEATURES = [
   { key: "automations_access", label: "Automations" },
   { key: "copilot_access", label: "AI Copilot" },
   { key: "content_studio_access", label: "Content Studio" },
+  { key: "external_materials_access", label: "Material Links (External Only)" },
 ] as const;
 
 const AdminCoachFeatureControl = () => {
