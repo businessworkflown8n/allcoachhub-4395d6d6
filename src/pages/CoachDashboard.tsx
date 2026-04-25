@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles, Globe, MessageCircle, Bell, Gamepad2, UserPlus, Rocket, Users, Calendar, Target, Package, Zap, Bot, Search } from "lucide-react";
+import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles, Globe, MessageCircle, Bell, Gamepad2, UserPlus, Rocket, Users, Calendar, Target, Package, Zap, Bot, Search, Link as LinkIcon } from "lucide-react";
 import CoachClients from "@/components/coach/CoachClients";
 import CoachLeads from "@/components/coach/CoachLeads";
 import CoachSessions from "@/components/coach/CoachSessions";
