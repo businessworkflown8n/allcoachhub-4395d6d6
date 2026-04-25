@@ -1283,6 +1283,7 @@ export type Database = {
           courses_access: boolean
           created_at: string
           crm_access: boolean
+          external_materials_access: boolean
           feed_access: boolean
           id: string
           leads_access: boolean
@@ -1310,6 +1311,7 @@ export type Database = {
           courses_access?: boolean
           created_at?: string
           crm_access?: boolean
+          external_materials_access?: boolean
           feed_access?: boolean
           id?: string
           leads_access?: boolean
@@ -1337,6 +1339,7 @@ export type Database = {
           courses_access?: boolean
           created_at?: string
           crm_access?: boolean
+          external_materials_access?: boolean
           feed_access?: boolean
           id?: string
           leads_access?: boolean
@@ -1415,6 +1418,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      coach_materials: {
+        Row: {
+          category: string | null
+          coach_id: string
+          created_at: string
+          description: string | null
+          external_link: string
+          id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          coach_id: string
+          created_at?: string
+          description?: string | null
+          external_link: string
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          coach_id?: string
+          created_at?: string
+          description?: string | null
+          external_link?: string
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       coach_notification_permissions: {
         Row: {

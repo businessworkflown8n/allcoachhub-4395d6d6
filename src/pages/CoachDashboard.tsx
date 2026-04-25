@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles, Globe, MessageCircle, Bell, Gamepad2, UserPlus, Rocket, Users, Calendar, Target, Package, Zap, Bot, Search } from "lucide-react";
+import { User, BookOpen, BarChart3, DollarSign, Plus, Video, Share2, Megaphone, LayoutDashboard, FileText, TrendingUp, FileBarChart, Sparkles, Globe, MessageCircle, Bell, Gamepad2, UserPlus, Rocket, Users, Calendar, Target, Package, Zap, Bot, Search, Link as LinkIcon } from "lucide-react";
 import CoachClients from "@/components/coach/CoachClients";
 import CoachLeads from "@/components/coach/CoachLeads";
 import CoachSessions from "@/components/coach/CoachSessions";
@@ -22,6 +22,7 @@ import CoachCampaigns from "@/components/coach/CoachCampaigns";
 import CoachOverview from "@/components/coach/CoachOverview";
 import DashboardMaterials from "@/components/shared/DashboardMaterials";
 import CoachMaterials from "@/components/coach/CoachMaterials";
+import CoachExternalMaterials from "@/components/coach/CoachExternalMaterials";
 import CoachCampaignInsights from "@/components/coach/CoachCampaignInsights";
 import CoachReportBuilder from "@/components/coach/CoachReportBuilder";
 import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
@@ -72,6 +73,7 @@ const CoachDashboard = () => {
     { label: "Campaign Insights", path: "/coach/insights", icon: <TrendingUp className="h-4 w-4" /> },
     { label: "Report Builder", path: "/coach/reports", icon: <FileBarChart className="h-4 w-4" /> },
     ...(((features as any).materials_access !== false) ? [{ label: "Materials", path: "/coach/materials", icon: <FileText className="h-4 w-4" /> }] : []),
+    ...((features as any).external_materials_access ? [{ label: "Material Links", path: "/coach/external-materials", icon: <LinkIcon className="h-4 w-4" /> }] : []),
     ...(features.feed_access ? [
       { label: "Social Media", path: "/coach/social", icon: <Share2 className="h-4 w-4" /> },
     ] : []),
@@ -108,6 +110,7 @@ const CoachDashboard = () => {
         <Route path="reports" element={<CoachReportBuilder />} />
         <Route path="materials" element={((features as any).materials_access !== false) ? <CoachMaterials /> : <Navigate to="overview" replace />} />
         <Route path="materials/library" element={<DashboardMaterials />} />
+        <Route path="external-materials" element={(features as any).external_materials_access ? <CoachExternalMaterials /> : <Navigate to="overview" replace />} />
         <Route path="social" element={features.feed_access ? <SocialMediaHub /> : <Navigate to="overview" replace />} />
         <Route path="campaigns" element={hasEmailAccess && features.messaging_access ? <CoachCampaigns /> : <Navigate to="overview" replace />} />
         <Route path="whatsapp" element={hasWhatsAppAccess && features.messaging_access ? <CoachWhatsApp /> : <Navigate to="overview" replace />} />

@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText, MessageSquare, Sparkles, Bell, Star } from "lucide-react";
+import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText, MessageSquare, Sparkles, Bell, Star, Link as LinkIcon } from "lucide-react";
 import LearnerProfile from "@/components/learner/LearnerProfile";
 import LearnerCourses from "@/components/learner/LearnerCourses";
 import LearnerWishlist from "@/components/learner/LearnerWishlist";
@@ -18,6 +18,7 @@ import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
 import LearnerWorkshops from "@/components/learner/LearnerWorkshops";
 import LearnerNotifications from "@/components/learner/LearnerNotifications";
 import LearnerReviews from "@/components/learner/LearnerReviews";
+import LearnerCoachMaterials from "@/components/learner/LearnerCoachMaterials";
 
 const LearnerDashboard = () => {
   useSEO({
@@ -35,6 +36,7 @@ const LearnerDashboard = () => {
     { label: "Workshops", path: "/learner/workshops", icon: <Video className="h-4 w-4" /> },
     { label: "Certificates", path: "/learner/certificates", icon: <Award className="h-4 w-4" /> },
     { label: "Materials", path: "/learner/materials", icon: <FileText className="h-4 w-4" /> },
+    { label: "My Coach Materials", path: "/learner/coach-materials", icon: <LinkIcon className="h-4 w-4" /> },
     { label: "Chat History", path: "/learner/chat-history", icon: <MessageSquare className="h-4 w-4" /> },
     { label: "Daily Zip", path: "/learner/daily-zip", icon: <Zap className="h-4 w-4" /> },
     { label: "Prompt Generator", path: "/learner/prompt-generator", icon: <Sparkles className="h-4 w-4" /> },
@@ -55,6 +57,7 @@ const LearnerDashboard = () => {
         <Route path="workshops" element={<LearnerWorkshops />} />
         <Route path="certificates" element={<LearnerCertificates />} />
         <Route path="materials" element={<DashboardMaterials />} />
+        <Route path="coach-materials" element={<LearnerCoachMaterials />} />
         <Route path="chat-history" element={<LearnerChatHistory />} />
         <Route path="daily-zip" element={<DailyZip />} />
         <Route path="prompt-generator" element={<div className="space-y-4"><h2 className="text-xl font-bold text-foreground">Prompt Generator</h2><div className="rounded-xl border border-border bg-card p-6"><PromptGeneratorForm showSave userRole="learner" /></div></div>} />

@@ -31,6 +31,7 @@ interface CoachFlags {
   automations_access: boolean;
   copilot_access: boolean;
   content_studio_access: boolean;
+  external_materials_access: boolean;
 }
 
 const FEATURES = [
@@ -51,6 +52,7 @@ const FEATURES = [
   { key: "automations_access", label: "Automations" },
   { key: "copilot_access", label: "AI Copilot" },
   { key: "content_studio_access", label: "Content Studio" },
+  { key: "external_materials_access", label: "Material Links (External Only)" },
 ] as const;
 
 const AdminCoachFeatureControl = () => {
@@ -92,6 +94,7 @@ const AdminCoachFeatureControl = () => {
           automations_access: f?.automations_access ?? false,
           copilot_access: f?.copilot_access ?? false,
           content_studio_access: f?.content_studio_access ?? false,
+          external_materials_access: f?.external_materials_access ?? false,
         };
       });
     setCoaches(list);
