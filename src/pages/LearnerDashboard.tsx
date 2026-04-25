@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText, MessageSquare, Sparkles, Bell, Star } from "lucide-react";
+import { BookOpen, User, Heart, History, Award, Settings, Video, Zap, Share2, FileText, MessageSquare, Sparkles, Bell, Star, Link as LinkIcon } from "lucide-react";
 import LearnerProfile from "@/components/learner/LearnerProfile";
 import LearnerCourses from "@/components/learner/LearnerCourses";
 import LearnerWishlist from "@/components/learner/LearnerWishlist";
