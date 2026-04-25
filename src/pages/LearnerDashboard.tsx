@@ -18,6 +18,7 @@ import PromptGeneratorForm from "@/components/prompt/PromptGeneratorForm";
 import LearnerWorkshops from "@/components/learner/LearnerWorkshops";
 import LearnerNotifications from "@/components/learner/LearnerNotifications";
 import LearnerReviews from "@/components/learner/LearnerReviews";
+import LearnerCoachMaterials from "@/components/learner/LearnerCoachMaterials";
 
 const LearnerDashboard = () => {
   useSEO({
