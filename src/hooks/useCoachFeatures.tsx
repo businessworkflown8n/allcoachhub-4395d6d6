@@ -20,6 +20,7 @@ export interface CoachFeatures {
   automations_access: boolean;
   copilot_access: boolean;
   content_studio_access: boolean;
+  external_materials_access: boolean;
   status: string;
 }
 
