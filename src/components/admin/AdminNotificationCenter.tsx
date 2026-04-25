@@ -325,6 +325,10 @@ const AdminNotificationCenter = () => {
             <Switch checked={coachEnabled} onCheckedChange={(v) => toggleSetting("coach_notifications_enabled", v)} />
           </div>
         </TabsContent>
+
+        <TabsContent value="inactive">
+          <AdminInactiveReminder />
+        </TabsContent>
       </Tabs>
     </div>
   );
