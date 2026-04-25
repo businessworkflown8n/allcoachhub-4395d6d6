@@ -110,6 +110,7 @@ const CoachDashboard = () => {
         <Route path="reports" element={<CoachReportBuilder />} />
         <Route path="materials" element={((features as any).materials_access !== false) ? <CoachMaterials /> : <Navigate to="overview" replace />} />
         <Route path="materials/library" element={<DashboardMaterials />} />
+        <Route path="external-materials" element={(features as any).external_materials_access ? <CoachExternalMaterials /> : <Navigate to="overview" replace />} />
         <Route path="social" element={features.feed_access ? <SocialMediaHub /> : <Navigate to="overview" replace />} />
         <Route path="campaigns" element={hasEmailAccess && features.messaging_access ? <CoachCampaigns /> : <Navigate to="overview" replace />} />
         <Route path="whatsapp" element={hasWhatsAppAccess && features.messaging_access ? <CoachWhatsApp /> : <Navigate to="overview" replace />} />
