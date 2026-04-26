@@ -33,7 +33,7 @@ const SignupForm = () => {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -60,12 +60,16 @@ const SignupForm = () => {
       return;
     }
 
+    // CRITICAL: With email confirmation enabled, the user is NOT signed in after signUp.
+    // Use signUpData.user.id directly — supabase.auth.getUser() will return null.
+    const newUserId = signUpData?.user?.id ?? null;
+    console.log("[Signup] User created:", newUserId, email, role);
+
     // [Additive] Capture full email signup payload (non-blocking)
-    const { data: { user: capturedUser } } = await supabase.auth.getUser();
     captureEmailSignupSubmission({
       userType: role,
       email,
-      userId: capturedUser?.id ?? null,
+      userId: newUserId,
       formData: {
         full_name: fullName,
         email,
