@@ -40,7 +40,7 @@ const CoachSignupForm = () => {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -62,12 +62,16 @@ const CoachSignupForm = () => {
       return;
     }
 
+    // CRITICAL: With email confirmation enabled, the user is NOT signed in after signUp.
+    // We must use signUpData.user.id directly — supabase.auth.getUser() will return null.
+    const newUserId = signUpData?.user?.id ?? null;
+    console.log("[CoachSignup] User created:", newUserId, email);
+
     // [Additive] Capture full email signup payload (non-blocking)
-    const { data: { user: capturedUser } } = await supabase.auth.getUser();
     captureEmailSignupSubmission({
       userType: "coach",
       email,
-      userId: capturedUser?.id ?? null,
+      userId: newUserId,
       formData: {
         full_name: fullName,
         email,
@@ -82,25 +86,29 @@ const CoachSignupForm = () => {
       },
     });
 
-    // Update profile with extra coach fields after signup
-    const { data: { user: signedUpUser } } = await supabase.auth.getUser();
-    if (signedUpUser) {
-      await supabase.from("profiles").update({
+    // Update profile with extra coach fields after signup (fire-and-forget; trigger
+    // already inserted the base profile from raw_user_meta_data).
+    if (newUserId) {
+      supabase.from("profiles").update({
         bio,
         experience,
         category: expertise,
         category_id: categoryId,
-      }).eq("user_id", signedUpUser.id);
+      }).eq("user_id", newUserId).then(({ error: profileErr }) => {
+        if (profileErr) console.error("[CoachSignup] Profile update failed:", profileErr);
+      });
 
       // Auto-create primary category permission
       if (categoryId) {
-        await supabase.from("coach_category_permissions").upsert({
-          coach_id: signedUpUser.id,
+        supabase.from("coach_category_permissions").upsert({
+          coach_id: newUserId,
           category_id: categoryId,
           is_primary: true,
           status: "approved",
           approved_at: new Date().toISOString(),
-        }, { onConflict: "coach_id,category_id" });
+        }, { onConflict: "coach_id,category_id" }).then(({ error: catErr }) => {
+          if (catErr) console.error("[CoachSignup] Category permission failed:", catErr);
+        });
       }
     }
 
@@ -116,7 +124,7 @@ const CoachSignupForm = () => {
 
     // Notify all learners about new coach (fire-and-forget)
     supabase.functions.invoke("notify-new-coach-to-learners", {
-      body: { coachName: fullName, expertise, bio, coachUserId: signedUpUser?.id },
+      body: { coachName: fullName, expertise, bio, coachUserId: newUserId },
     }).catch((err) => console.error("Learner notification failed:", err));
 
     setLoading(false);
