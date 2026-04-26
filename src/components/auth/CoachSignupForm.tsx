@@ -124,7 +124,7 @@ const CoachSignupForm = () => {
 
     // Notify all learners about new coach (fire-and-forget)
     supabase.functions.invoke("notify-new-coach-to-learners", {
-      body: { coachName: fullName, expertise, bio, coachUserId: signedUpUser?.id },
+      body: { coachName: fullName, expertise, bio, coachUserId: newUserId },
     }).catch((err) => console.error("Learner notification failed:", err));
 
     setLoading(false);
