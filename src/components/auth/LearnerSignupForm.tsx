@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowRight, CheckCircle, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { captureEmailSignupSubmission } from "@/lib/signupCapture";
 
 const LearnerSignupForm = () => {
   const [fullName, setFullName] = useState("");
@@ -52,6 +53,22 @@ const LearnerSignupForm = () => {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
       return;
     }
+
+    // [Additive] Capture full email signup payload (non-blocking)
+    const { data: { user: capturedUser } } = await supabase.auth.getUser();
+    captureEmailSignupSubmission({
+      userType: "learner",
+      email,
+      userId: capturedUser?.id ?? null,
+      formData: {
+        full_name: fullName,
+        email,
+        mobile,
+        city,
+        country,
+        referral_code: referralCode,
+      },
+    });
 
     // Gather UTM params from URL
     const urlParams = new URLSearchParams(window.location.search);
