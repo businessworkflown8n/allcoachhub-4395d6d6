@@ -54,8 +54,8 @@ export async function captureEmailSignupSubmission(params: {
     } else {
       // Optional analytics event
       try {
-        // @ts-expect-error - gtag may exist on window
-        window.gtag?.("event", "email_signup_completed", {
+        const w = window as unknown as { gtag?: (...args: unknown[]) => void };
+        w.gtag?.("event", "email_signup_completed", {
           user_type: params.userType,
           number_of_fields_filled: fieldCount,
         });
