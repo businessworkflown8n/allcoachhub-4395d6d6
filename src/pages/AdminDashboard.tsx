@@ -6,6 +6,7 @@ import AdminMarqueeManager from "@/components/admin/AdminMarqueeManager";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminCoaches from "@/components/admin/AdminCoaches";
 import AdminLearners from "@/components/admin/AdminLearners";
+import AdminSignupSubmissions from "@/components/admin/AdminSignupSubmissions";
 import AdminCourses from "@/components/admin/AdminCourses";
 import AdminRevenue from "@/components/admin/AdminRevenue";
 import AdminReviews from "@/components/admin/AdminReviews";
@@ -56,6 +57,7 @@ const navItems = [
   { label: "Coach Categories", path: "/admin/coach-categories", icon: <LayoutGrid className="h-4 w-4" /> },
   { label: "Category Requests", path: "/admin/category-requests", icon: <ClipboardList className="h-4 w-4" /> },
   { label: "Learners", path: "/admin/learners", icon: <GraduationCap className="h-4 w-4" /> },
+  { label: "Signup Submissions", path: "/admin/signup-submissions", icon: <GraduationCap className="h-4 w-4" /> },
   { label: "Courses", path: "/admin/courses", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Blog Management", path: "/admin/blogs", icon: <BookOpen className="h-4 w-4" /> },
   { label: "Materials", path: "/admin/materials", icon: <FolderOpen className="h-4 w-4" /> },
@@ -115,6 +117,7 @@ const AdminDashboard = () => {
         <Route path="coach-categories" element={<AdminCoachCategories />} />
         <Route path="category-requests" element={<AdminCategoryRequests />} />
         <Route path="learners" element={<AdminLearners />} />
+        <Route path="signup-submissions" element={<AdminSignupSubmissions />} />
         <Route path="courses" element={<AdminCourses />} />
         <Route path="blogs" element={<AdminBlogs />} />
         <Route path="materials" element={<AdminMaterials />} />
