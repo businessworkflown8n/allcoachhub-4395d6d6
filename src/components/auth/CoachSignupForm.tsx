@@ -61,6 +61,26 @@ const CoachSignupForm = () => {
       return;
     }
 
+    // [Additive] Capture full email signup payload (non-blocking)
+    const { data: { user: capturedUser } } = await supabase.auth.getUser();
+    captureEmailSignupSubmission({
+      userType: "coach",
+      email,
+      userId: capturedUser?.id ?? null,
+      formData: {
+        full_name: fullName,
+        email,
+        mobile,
+        company_name: companyName,
+        category_id: categoryId,
+        expertise,
+        experience,
+        bio,
+        city,
+        country,
+      },
+    });
+
     // Update profile with extra coach fields after signup
     const { data: { user: signedUpUser } } = await supabase.auth.getUser();
     if (signedUpUser) {
