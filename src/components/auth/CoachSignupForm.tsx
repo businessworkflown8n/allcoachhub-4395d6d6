@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCoachCategories } from "@/hooks/useCoachCategories";
+import { captureEmailSignupSubmission } from "@/lib/signupCapture";
 
 const CoachSignupForm = () => {
   const { categories, loading: categoriesLoading } = useCoachCategories(true);

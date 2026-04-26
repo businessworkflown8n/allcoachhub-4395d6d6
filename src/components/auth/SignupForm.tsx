@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowRight, CheckCircle, GraduationCap, Users, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { captureEmailSignupSubmission } from "@/lib/signupCapture";
 
 const SignupForm = () => {
   const [fullName, setFullName] = useState("");
@@ -58,6 +59,22 @@ const SignupForm = () => {
       });
       return;
     }
+
+    // [Additive] Capture full email signup payload (non-blocking)
+    const { data: { user: capturedUser } } = await supabase.auth.getUser();
+    captureEmailSignupSubmission({
+      userType: role,
+      email,
+      userId: capturedUser?.id ?? null,
+      formData: {
+        full_name: fullName,
+        email,
+        mobile,
+        city,
+        country,
+        ...(role === "coach" ? { company_name: companyName } : {}),
+      },
+    });
 
     // Gather UTM params from URL
     const urlParams = new URLSearchParams(window.location.search);
