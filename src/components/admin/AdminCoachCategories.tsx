@@ -18,6 +18,7 @@ interface Category {
   icon: string | null;
   sort_order: number;
   is_active: boolean;
+  is_system?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -139,6 +140,10 @@ const AdminCoachCategories = () => {
   };
 
   const handleDelete = async (cat: Category) => {
+    if (cat.is_system) {
+      toast({ title: "System category", description: `"${cat.name}" is system-reserved and cannot be deleted.`, variant: "destructive" });
+      return;
+    }
     const count = coachCounts[cat.id] || 0;
     if (count > 0) {
       toast({
@@ -156,6 +161,10 @@ const AdminCoachCategories = () => {
   };
 
   const toggleActive = async (cat: Category) => {
+    if (cat.is_system && cat.is_active) {
+      toast({ title: "System category", description: `"${cat.name}" is system-reserved and must remain active.`, variant: "destructive" });
+      return;
+    }
     const { error } = await supabase.from("coach_categories").update({ is_active: !cat.is_active }).eq("id", cat.id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     toast({ title: cat.is_active ? "Category deactivated" : "Category activated" });
@@ -220,14 +229,24 @@ const AdminCoachCategories = () => {
             ) : filtered.map((cat, i) => (
               <TableRow key={cat.id} className={!cat.is_active ? "opacity-60" : ""}>
                 <TableCell className="text-muted-foreground">{cat.sort_order}</TableCell>
-                <TableCell className="font-medium">{cat.icon && <span className="mr-1">{cat.icon}</span>}{cat.name}</TableCell>
+                <TableCell className="font-medium">
+                  <span className="inline-flex items-center gap-2">
+                    {cat.icon && <span>{cat.icon}</span>}
+                    {cat.name}
+                    {cat.is_system && <Badge variant="outline" className="text-[10px] py-0 px-1.5">System</Badge>}
+                  </span>
+                </TableCell>
                 <TableCell className="text-muted-foreground font-mono text-xs">{cat.slug}</TableCell>
                 <TableCell>{cat.icon || "—"}</TableCell>
                 <TableCell className="text-center">
                   <Badge variant="secondary" className="gap-1"><Users className="h-3 w-3" />{coachCounts[cat.id] || 0}</Badge>
                 </TableCell>
                 <TableCell className="text-center">
-                  <Badge variant={cat.is_active ? "default" : "outline"} className="cursor-pointer" onClick={() => toggleActive(cat)}>
+                  <Badge
+                    variant={cat.is_active ? "default" : "outline"}
+                    className={cat.is_system ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}
+                    onClick={() => !cat.is_system && toggleActive(cat)}
+                  >
                     {cat.is_active ? "Active" : "Inactive"}
                   </Badge>
                 </TableCell>
@@ -246,7 +265,14 @@ const AdminCoachCategories = () => {
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(cat)}>
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(cat)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-destructive disabled:opacity-30"
+                      onClick={() => handleDelete(cat)}
+                      disabled={cat.is_system}
+                      title={cat.is_system ? "System category cannot be deleted" : "Delete"}
+                    >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>

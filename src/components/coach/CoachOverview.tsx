@@ -8,6 +8,7 @@ import GrowthTools from "./GrowthTools";
 import ProfileStrengthMeter from "./ProfileStrengthMeter";
 import AIClientMatching from "./AIClientMatching";
 import CoachLockedFeatures from "./CoachLockedFeatures";
+import CoachCategoryCounts from "./CoachCategoryCounts";
 
 const USD_TO_INR_FALLBACK = 83.5;
 
@@ -207,6 +208,9 @@ const CoachOverview = () => {
           </div>
         )}
       </div>
+
+      {/* Courses by Category (includes Others fallback) */}
+      <CoachCategoryCounts />
 
       {/* Profile Strength & AI Matching */}
       <div className="grid gap-6 lg:grid-cols-2">
