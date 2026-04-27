@@ -1357,6 +1357,50 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_feature_override: {
+        Row: {
+          coach_id: string
+          created_at: string
+          enabled: boolean | null
+          feature_key: string
+          id: string
+          notes: string | null
+          updated_at: string
+          updated_by: string | null
+          usage_limit: number | null
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          enabled?: boolean | null
+          feature_key: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          usage_limit?: number | null
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          enabled?: boolean | null
+          feature_key?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          usage_limit?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_feature_override_feature_key_fkey"
+            columns: ["feature_key"]
+            isOneToOne: false
+            referencedRelation: "features_master"
+            referencedColumns: ["feature_key"]
+          },
+        ]
+      }
       coach_leads: {
         Row: {
           coach_id: string
@@ -3326,6 +3370,134 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      feature_control_audit: {
+        Row: {
+          changed_by: string | null
+          coach_id: string | null
+          created_at: string
+          feature_key: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          scope: string
+        }
+        Insert: {
+          changed_by?: string | null
+          coach_id?: string | null
+          created_at?: string
+          feature_key: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          scope: string
+        }
+        Update: {
+          changed_by?: string | null
+          coach_id?: string | null
+          created_at?: string
+          feature_key?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          scope?: string
+        }
+        Relationships: []
+      }
+      feature_controls: {
+        Row: {
+          default_usage_limit: number | null
+          feature_key: string
+          free_enabled: boolean
+          free_usage_limit: number | null
+          global_enabled: boolean
+          id: string
+          premium_enabled: boolean
+          premium_usage_limit: number | null
+          pro_enabled: boolean
+          pro_usage_limit: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          default_usage_limit?: number | null
+          feature_key: string
+          free_enabled?: boolean
+          free_usage_limit?: number | null
+          global_enabled?: boolean
+          id?: string
+          premium_enabled?: boolean
+          premium_usage_limit?: number | null
+          pro_enabled?: boolean
+          pro_usage_limit?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          default_usage_limit?: number | null
+          feature_key?: string
+          free_enabled?: boolean
+          free_usage_limit?: number | null
+          global_enabled?: boolean
+          id?: string
+          premium_enabled?: boolean
+          premium_usage_limit?: number | null
+          pro_enabled?: boolean
+          pro_usage_limit?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_controls_feature_key_fkey"
+            columns: ["feature_key"]
+            isOneToOne: true
+            referencedRelation: "features_master"
+            referencedColumns: ["feature_key"]
+          },
+        ]
+      }
+      features_master: {
+        Row: {
+          category: string
+          created_at: string
+          depends_on: string[] | null
+          description: string | null
+          feature_key: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          supports_usage_limit: boolean
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          depends_on?: string[] | null
+          description?: string | null
+          feature_key: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          supports_usage_limit?: boolean
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          depends_on?: string[] | null
+          description?: string | null
+          feature_key?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          supports_usage_limit?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       funnel_config: {
         Row: {
@@ -6870,6 +7042,10 @@ export type Database = {
       }
       get_coach_effective_features: {
         Args: { _coach_id: string }
+        Returns: Json
+      }
+      get_effective_feature: {
+        Args: { _coach_id: string; _feature_key: string; _plan?: string }
         Returns: Json
       }
       has_role: {
