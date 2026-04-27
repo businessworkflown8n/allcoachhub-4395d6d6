@@ -140,6 +140,10 @@ const AdminCoachCategories = () => {
   };
 
   const handleDelete = async (cat: Category) => {
+    if (cat.is_system) {
+      toast({ title: "System category", description: `"${cat.name}" is system-reserved and cannot be deleted.`, variant: "destructive" });
+      return;
+    }
     const count = coachCounts[cat.id] || 0;
     if (count > 0) {
       toast({
@@ -157,6 +161,10 @@ const AdminCoachCategories = () => {
   };
 
   const toggleActive = async (cat: Category) => {
+    if (cat.is_system && cat.is_active) {
+      toast({ title: "System category", description: `"${cat.name}" is system-reserved and must remain active.`, variant: "destructive" });
+      return;
+    }
     const { error } = await supabase.from("coach_categories").update({ is_active: !cat.is_active }).eq("id", cat.id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     toast({ title: cat.is_active ? "Category deactivated" : "Category activated" });
