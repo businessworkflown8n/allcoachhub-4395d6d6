@@ -8,6 +8,7 @@ import GrowthTools from "./GrowthTools";
 import ProfileStrengthMeter from "./ProfileStrengthMeter";
 import AIClientMatching from "./AIClientMatching";
 import CoachLockedFeatures from "./CoachLockedFeatures";
+import CoachCategoryCounts from "./CoachCategoryCounts";
 
 const USD_TO_INR_FALLBACK = 83.5;
 
