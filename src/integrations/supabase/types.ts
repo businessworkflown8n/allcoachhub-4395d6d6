@@ -1027,6 +1027,7 @@ export type Database = {
           icon: string | null
           id: string
           is_active: boolean
+          is_system: boolean
           name: string
           slug: string
           sort_order: number
@@ -1037,6 +1038,7 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean
+          is_system?: boolean
           name: string
           slug: string
           sort_order?: number
@@ -1047,6 +1049,7 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean
+          is_system?: boolean
           name?: string
           slug?: string
           sort_order?: number
@@ -2642,7 +2645,7 @@ export type Database = {
         }
         Insert: {
           approval_status?: string
-          category: string
+          category?: string
           category_request_id?: string | null
           coach_id: string
           created_at?: string
