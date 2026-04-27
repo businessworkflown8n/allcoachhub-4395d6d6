@@ -315,7 +315,7 @@ serve(async (req) => {
 
     // Action: Select account after OAuth
     if (action === "select_account") {
-      const { accountId: selAccountId, accountName: selAccountName } = await req.json().catch(() => ({}));
+      const { accountId: selAccountId, accountName: selAccountName } = body;
 
       if (!coachId || !selAccountId) {
         return new Response(
