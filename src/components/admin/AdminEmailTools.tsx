@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Mail, Send, Upload, Users, FileText, Plus, Pencil, Trash2, Eye, Clock, LayoutTemplate, MessageCircle, Phone, Code, Download, ShieldCheck, UserPlus } from "lucide-react";
+import DOMPurify from "dompurify";
 
 type Campaign = {
   id: string;
