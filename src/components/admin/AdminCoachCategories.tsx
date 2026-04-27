@@ -229,14 +229,24 @@ const AdminCoachCategories = () => {
             ) : filtered.map((cat, i) => (
               <TableRow key={cat.id} className={!cat.is_active ? "opacity-60" : ""}>
                 <TableCell className="text-muted-foreground">{cat.sort_order}</TableCell>
-                <TableCell className="font-medium">{cat.icon && <span className="mr-1">{cat.icon}</span>}{cat.name}</TableCell>
+                <TableCell className="font-medium">
+                  <span className="inline-flex items-center gap-2">
+                    {cat.icon && <span>{cat.icon}</span>}
+                    {cat.name}
+                    {cat.is_system && <Badge variant="outline" className="text-[10px] py-0 px-1.5">System</Badge>}
+                  </span>
+                </TableCell>
                 <TableCell className="text-muted-foreground font-mono text-xs">{cat.slug}</TableCell>
                 <TableCell>{cat.icon || "—"}</TableCell>
                 <TableCell className="text-center">
                   <Badge variant="secondary" className="gap-1"><Users className="h-3 w-3" />{coachCounts[cat.id] || 0}</Badge>
                 </TableCell>
                 <TableCell className="text-center">
-                  <Badge variant={cat.is_active ? "default" : "outline"} className="cursor-pointer" onClick={() => toggleActive(cat)}>
+                  <Badge
+                    variant={cat.is_active ? "default" : "outline"}
+                    className={cat.is_system ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}
+                    onClick={() => !cat.is_system && toggleActive(cat)}
+                  >
                     {cat.is_active ? "Active" : "Inactive"}
                   </Badge>
                 </TableCell>
@@ -255,7 +265,14 @@ const AdminCoachCategories = () => {
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(cat)}>
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(cat)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-destructive disabled:opacity-30"
+                      onClick={() => handleDelete(cat)}
+                      disabled={cat.is_system}
+                      title={cat.is_system ? "System category cannot be deleted" : "Delete"}
+                    >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
