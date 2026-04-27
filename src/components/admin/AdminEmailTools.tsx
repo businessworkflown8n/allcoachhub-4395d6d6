@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Mail, Send, Upload, Users, FileText, Plus, Pencil, Trash2, Eye, Clock, LayoutTemplate, MessageCircle, Phone, Code, Download, ShieldCheck, UserPlus } from "lucide-react";
+import DOMPurify from "dompurify";
 
 type Campaign = {
   id: string;
@@ -476,13 +477,13 @@ const AdminEmailTools = () => {
     if (ch !== "email") {
       const msg = campaign.content.replace(/\{Name\}/g, "John").replace(/\{Email\}/g, "john@example.com");
       const html = `<div style="max-width:400px;margin:0 auto;padding:24px;font-family:Arial,sans-serif"><div style="background:${ch === "whatsapp" ? "#dcf8c6" : "#e3f2fd"};border-radius:16px;padding:16px;margin-bottom:12px"><p style="font-size:14px;color:#333;margin:0;white-space:pre-wrap">${msg}</p></div>${campaign.cta_text ? `<div style="text-align:center;margin-top:16px"><span style="background:#6366f1;color:#fff;padding:8px 20px;border-radius:8px;font-size:14px;font-weight:600">${campaign.cta_text}</span></div>` : ""}<p style="text-align:center;font-size:11px;color:#999;margin-top:16px">${ch.toUpperCase()} Preview</p></div>`;
-      setPreviewHtml(html);
+      setPreviewHtml(DOMPurify.sanitize(html, { USE_PROFILES: { html: true } }));
     } else {
       const ctaHtml = campaign.cta_text
         ? `<div style="text-align:center;margin:24px 0"><a href="https://www.aicoachportal.com${campaign.cta_link || "/courses"}" style="background-color:#6366f1;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">${campaign.cta_text}</a></div>`
         : "";
       const html = `<div style="max-width:600px;margin:0 auto;padding:32px 24px;font-family:Arial,sans-serif"><div style="text-align:center;margin-bottom:24px"><h2 style="color:#1a1a2e">AI Coach Portal</h2></div><div style="color:#333;font-size:16px;line-height:1.6;white-space:pre-wrap">${campaign.content.replace(/\{Name\}/g, "John").replace(/\{Email\}/g, "john@example.com")}</div>${ctaHtml}<hr style="border:none;border-top:1px solid #eee;margin:32px 0"><div style="text-align:center;font-size:12px;color:#999"><p>© ${new Date().getFullYear()} AI Coach Portal</p><p><a href="#" style="color:#999">Unsubscribe</a></p></div></div>`;
-      setPreviewHtml(html);
+      setPreviewHtml(DOMPurify.sanitize(html, { USE_PROFILES: { html: true } }));
     }
     setPreviewOpen(true);
   };

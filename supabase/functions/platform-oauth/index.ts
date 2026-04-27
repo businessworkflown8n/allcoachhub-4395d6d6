@@ -72,13 +72,60 @@ serve(async (req) => {
   }
 
   try {
-    const { action, platform, code, redirectUri, coachId } = await req.json();
+    const body = await req.json();
+    const { action, platform, code, redirectUri, coachId } = body;
 
     if (!platform || !PLATFORM_CONFIGS[platform]) {
       return new Response(
         JSON.stringify({ error: `Unsupported platform: ${platform}` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Authenticate caller for any action that touches a coach's stored data
+    const SENSITIVE_ACTIONS = new Set(["exchange_code", "select_account", "refresh_token"]);
+    let authedUserId: string | null = null;
+    if (SENSITIVE_ACTIONS.has(action)) {
+      const authHeader = req.headers.get("Authorization") || "";
+      const token = authHeader.replace("Bearer ", "").trim();
+      if (!token) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const supaAuth = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: `Bearer ${token}` } } }
+      );
+      const { data: userData, error: userErr } = await supaAuth.auth.getUser(token);
+      if (userErr || !userData?.user) {
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      authedUserId = userData.user.id;
+      if (!coachId || coachId !== authedUserId) {
+        // Allow admins to act on behalf of a coach
+        const admin = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        );
+        const { data: roleRow } = await admin
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", authedUserId)
+          .eq("role", "admin")
+          .maybeSingle();
+        if (!roleRow) {
+          return new Response(
+            JSON.stringify({ error: "Forbidden: coachId does not match authenticated user" }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
     }
 
     const config = PLATFORM_CONFIGS[platform];
@@ -268,7 +315,7 @@ serve(async (req) => {
 
     // Action: Select account after OAuth
     if (action === "select_account") {
-      const { accountId: selAccountId, accountName: selAccountName } = await req.json().catch(() => ({}));
+      const { accountId: selAccountId, accountName: selAccountName } = body;
 
       if (!coachId || !selAccountId) {
         return new Response(
